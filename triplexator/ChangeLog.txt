@@ -1,0 +1,73 @@
+*******************
+* Changelog
+*******************
+
+2013-03-31 Fabian Buske		v1.3.2
+	Help messages shortened
+	Parameters Change: Filtering set to Brute-Force by default
+	Bugfix: Detection of parallel environments
+	Compiler warnings resolved
+	Switch to serial processing in case number of processors is 1
+	GCC 4.7 support added
+
+2012-11-12 Fabian Buske		v1.3.1
+	Bugfix: Variable initialization
+
+2012-07-06  Fabian Buske	v1.3.0
+	Updated repeat finder directives to seqan rev 12251
+	Migrated to cmake for cross platform compatibility and packaging
+	Incorporated triplex-inspector v0.1.0
+
+2012-05-30  Fabian Buske	v1.2.1
+	Updated repeat finder directives to seqan rev 11739
+	Updated alphabet directives to seqan rev 11739
+
+2012-01-05  Fabian Buske	v1.2.0
+	Added feature: maximum guanine rate for targets can be specified (--max_guanine)
+	Refactoring: percent-guanine parameter changed to --min_guanine
+	Added feature: Output now also shows the guanine-rate of the triplex feature
+	Bugfix: perform parallel tts detection if requested (--runtime-mode 2)
+	Added feature: triplex potential is now an accurate calculation rather than approximation
+	Added feature: triplex potential is now computed by default, option --normalized-score is obsolete and therefore removed
+	Refactoring: maximum triplex feature length parameter (short) changed from "-u" to "-L"
+	Default changed: maximum triplex feature length set to 30 by default (from unrestricted)
+	Refactoring: output.h and triplex.h merged
+
+2011-11-28  Fabian Buske	v1.1.2
+	Updated parallel processing directives to seqan rev 10701
+	Updated repeat finder directives to seqan rev 10701
+	Added feature: all-matches : process and report all sub-matches in addition to the longest match
+	Added feature: min-block-run : run of consecutive matches of a given length that a feature must contain to quality
+	Added feature: merge-fetures : allows to collapse overlapping features and reports cluster regions instead individual features
+	Refactoring: disentangle the triplexator application from the triplex template files
+	Added feature: errors/mismatches are now correspond to a user selectable reference point (parameter -re)
+	Added feature: maximum and minimum guanine percentage in GT motif triplexes can be used to specify whether such a feature qualifies for parallel or anti-parallel oriented binding 
+
+2011-09-01  Fabian Buske	v1.1.1
+	Bugfix with respect to q-gram filtering (maximal error taken into account when calculating the seed thresholds)
+	Bugfix low-complexity filtering in duplexes when searching triplexes made optional
+
+2011-08-26  Fabian Buske	v1.1.0
+	Default error-rate adjusted to 5%
+	Minimum guanine rate adjusted to 10%
+	Q-gram weight set to maximum of 14 nt.
+	Allow user to specify whether to compute the length-normalised triplex potential
+	Bugfix that affected a small proportion of predicted targets when guanine rate is set > 0
+	Allow user to specify maximum feature length.
+	
+
+2011-08-16  Fabian Buske	v1.0.3
+	Adjusted default minimum triplex length to 16 nucleotides
+	Allow user to specify q-gram threshold 
+	Removed TTS-ID and TFO-ID columns from output
+
+2011-08-11  Fabian Buske	v1.0.2
+	Crop sequence ids of single-stranded sequences at first whitespace
+	Fixed but for TFO/TTS-naming in output when run in triplex search mode
+	Replaced deprecated MultiFasta class with MultiSeqFile
+
+
+2011-08-11  Fabian Buske	v1.0.1
+	Fixed bug in duplex processing
+	Adjusted log output to report relevant parameters only
+	Fixed bug in Makefiles
