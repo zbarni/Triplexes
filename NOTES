@@ -1,0 +1,30 @@
+--- Notes and ideas on the original triplexator implementation ---
+
+[ TFO detection ]
+	* Automaton based filtering to find regions with at most {omega} consecutive errors.
+	* =filterRepeats= ignore low complexity regions such as "GA" and "GAA" using SeqAn's function which is based on lazy
+      suffix trees. Min-max lengths of such regions are given as parameter. This is done for each Oligo sequence.
+    * Input sequence is split into valid (respecting {omega}) parts using the automaton, and each part is subsequently
+      searched for motifs that respect all parameters (length, guanine rate, etc.). This is done with quite a greedy /
+      brute-force procedure using some sort of window-shifting along the string. [?]
+
+
+[ TFO-TTS detection ]
+    (mapTriplexes)
+    * first it retrieves the TFOs and uses the same findRepeats SeqAn function to remove low complexity regions.
+    * maybe detect and handle duplicates, if option is set
+
+    (_findTriplex)
+    * an index (suffix array) is created for the set of valid TFOs.
+    * A pattern is created from this index, i.e., the set of TFO motifs.
+
+    (startTriplexSearchSerial / Parallel [Gardener / BruteForce])
+    * Serial / parallel search, with or without pattern depending on whether QGRAM FILTERING is set
+    * iterate over each duplex and remove low complexity regions (repeats)
+
+    (_detectTriplex)
+    * Prefilter for putative TTSs, i.e., for each sequence in the duplex file apply filtering to get only substrings
+      (possible TTS) that respect the parameters: `processDuplex`
+    
+!!! (_detectTriplexBruteForce)
+    * for each duplex string, previously optimized, we iterate through the TFO set; there's a char-by-char match / check

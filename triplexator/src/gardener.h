@@ -1232,6 +1232,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename Position<TSequence>::Type									TPosition;
 		typedef typename Gardener<TId, TSpec>::THitSet								THits;
 		
+        std::cout << "foo\n";
 		// create index
 		TQGramIndex index_qgram(targets);
 		resize(indexShape(index_qgram), weight(shape));
@@ -1261,7 +1262,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	>
 	void plant(Gardener<TId, TSpec>	&gardener,
 			   Pattern<TIndex, QGramsLookup< TShape, TPatternSpec> > const	&pattern,
-			   TQuerySet			&queries,
+			   TQuerySet			&queries,   // ttsSet
 			   TError const			&errorRate,
 			   TSize const			&minLength,
 			   TDrop const			&xDrop,
@@ -1340,6 +1341,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		// w+1−(k+1)q | w=minimum length, k=errors, q=weight(q-grams)
 		TPos minSeedsThreshold = static_cast<TPos>(minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape));
 #ifdef TRIPLEX_DEBUG
+        std::cout << "qux\n";
 		::std::cout << "minLength:" << minLength << " errorRate:" << errorRate << " qgram:" << weight(pattern.shape) << ::std::endl;
 		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
 #endif								
@@ -1398,6 +1400,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		// w+1−(k+1)q | w=minimum length, k=errors, q=weight(q-grams)
 		TPos minSeedsThreshold = static_cast<TPos>(minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape));
 #ifdef TRIPLEX_DEBUG
+        std::cout << "bla\n";
 		::std::cout << "minLength:" << minLength << " errorRate:" << errorRate << " qgram:" << weight(pattern.shape) << ::std::endl;
 		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
 #endif		
@@ -1459,6 +1462,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		// w+1−(k+1)q | w=minimum length, k=errors, q=weight(q-grams)
 		TPos minSeedsThreshold = static_cast<TPos>(minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape));
 #ifdef TRIPLEX_DEBUG
+        std::cout << "qwe\n";
 		::std::cout << "minLength:" << minLength << " errorRate:" << errorRate << " qgram:" << weight(pattern.shape) << ::std::endl;
 		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
 #endif	

@@ -33,7 +33,7 @@
 // ==========================================================================
 
 #define SEQAN_PROFILE					// enable time measuring
-//#define TRIPLEX_DEBUG					// print verification regions
+#define TRIPLEX_DEBUG					// print verification regions
 
 //#ifndef SEQAN_ENABLE_PARALLELISM
 //#define SEQAN_ENABLE_PARALLELISM 1		// disable parallelism on default
@@ -521,8 +521,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		}		
 		options.logFileHandle << "*************************************************************" << ::std::endl;
 		options.logFileHandle << "*** Main Options:" << ::std::endl;
-	//	options.logFileHandle << "- consider forward strand in duplex : " << (options.forward?"Yes":"No") << ::std::endl;
-	//	options.logFileHandle << "- consider reverse strand in duplex : " << (options.reverse?"Yes":"No") << ::std::endl;
+		options.logFileHandle << "- consider forward strand in duplex : " << (options.forward?"Yes":"No") << ::std::endl;
+		options.logFileHandle << "- consider reverse strand in duplex : " << (options.reverse?"Yes":"No") << ::std::endl;
 		options.logFileHandle << "- maximum error-rate : " << (options.errorRate*100) << "%" << ::std::endl;
 		if (options.maximalError>=0)
 			options.logFileHandle << "- maximum total error : " << (options.maximalError) << ::std::endl;	

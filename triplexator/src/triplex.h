@@ -1821,6 +1821,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		TString valid   = "TCY";   // the valid characters
 		TString invalid = "GARN";  // the interrupting characters
 		
+		// TODO@barni this is done unnecessarily at each function call, even if it's always the same. Profile this part
 		// create parser
 		TGraph parser;
 		_makeParser(parser, valid, invalid, options);
@@ -3456,6 +3457,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	//////////////////////////////////////////////////////////////////////////////
 	// Create a parser object using an automaton that allows segments with up to
 	// options.maxInterruptions interruptions of invalid characters
+	// TODO@barni try bit parallel automaton?
 	template <typename TGraph, typename TString>
 	int _makeParser(TGraph			&parser, 	// the automaton to be created
 					TString			&valids,	// the valid characters
