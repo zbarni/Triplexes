@@ -37,6 +37,7 @@
 
 #include <seqan/find.h>
 #include <seqan/index.h>
+#define ENTER std::cout << "Entered [" << __FILE__ << ":" << __LINE__ << "]\t" << __func__ << std::endl;
 
 namespace SEQAN_NAMESPACE_MAIN
 {
@@ -95,13 +96,13 @@ namespace SEQAN_NAMESPACE_MAIN
 		int				maxHitThreshold;
 		
 		Finder():
-		_needReinit(true), hasShape(false) { }
+		_needReinit(true), hasShape(false) { ENTER  }
 		
 		Finder(THaystack &haystack):
 		data_iterator(begin(haystack, Rooted())),
 		_needReinit(true),
 		hasShape(false),
-		maxHitThreshold(0){ 
+		maxHitThreshold(0){ ENTER  
 			TShape shape;
 		}
 		
@@ -111,7 +112,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		_needReinit(true),
 		hasShape(false),
 		maxHitThreshold(_maxHitThreshold)
-		{ 
+		{ ENTER  
 			TShape shape;
 		}
 		
@@ -121,7 +122,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		_needReinit(true) ,
 		hasShape(false),
 		maxHitThreshold(0)
-		{
+		{ ENTER 
 			findRepeats(data_repeats, haystack, minRepeatLen, maxPeriod);
 		}
 		
@@ -131,19 +132,19 @@ namespace SEQAN_NAMESPACE_MAIN
 		_needReinit(true) ,
 		hasShape(false),
 		maxHitThreshold(_maxHitThreshold)
-		{
+		{ ENTER 
 			findRepeats(data_repeats, haystack, minRepeatLen, maxPeriod);
 		}
 		
 		Finder(TIterator &iter):
 		data_iterator(iter),
 		_needReinit(true),
-		hasShape(false){ }
+		hasShape(false){ ENTER  }
 		
 		Finder(TIterator const &iter):
 		data_iterator(iter),
 		_needReinit(true),
-		hasShape(false){ }
+		hasShape(false){ ENTER  }
 		
 		Finder(Finder const &orig):
 		data_iterator(orig.data_iterator),
@@ -159,7 +160,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		hasShape(orig.hasShape),
 		shape(orig.shape),
 		maxHitThreshold(orig.maxHitThreshold)
-		{
+		{ ENTER 
 			curHit = begin(hits, Rooted()) + (orig.curHit - begin(orig.hits, Rooted()));
 			endHit = end(hits, Rooted());
 			curRepeat = begin(data_repeats, Rooted()) + (orig.curRepeat - begin(orig.data_repeats, Rooted()));
@@ -230,14 +231,14 @@ namespace SEQAN_NAMESPACE_MAIN
 	template <typename THaystack, typename TSpec>
 	inline bool
 	atEnd(Finder<THaystack,  QGramsLookup<TSpec> > & me)
-	{
+	{ ENTER 
 		return hostIterator(hostIterator(me)) == hostIterator(me.haystackEnd);
 	}
 	
 	template <typename THaystack, typename TSpec>
 	inline void
 	goEnd(Finder<THaystack,  QGramsLookup<TSpec>  > & me)
-	{
+	{ ENTER 
 		hostIterator(me) = me.haystackEnd;
 	}
 
@@ -250,7 +251,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	_qgramLemma(Pattern<TIndex, QGramsLookup<TSpec> > const & pattern, 
 				TSeqNo seqNo, 
 				int errors
-	){
+	){ ENTER 
 		// q-gram lemma: How many conserved q-grams we see at least?
 		// each error destroys at most <weight> many (gapped) q-grams
 		return 
@@ -262,7 +263,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline bool 
 	_nextNonRepeatRange(TFinder &finder,
 						Pattern<TIndex,  QGramsLookup<TSpec>  > const &pattern
-	){
+	){ ENTER 
 		typedef typename TFinder::TRepeat		TRepeat;
 		typedef typename Value<TRepeat>::Type	TPos;
 		
@@ -294,7 +295,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline bool 
 	_firstNonRepeatRange(TFinder &finder,
 						 Pattern<TIndex, QGramsLookup<TSpec> > const &pattern
-	){
+	){ ENTER 
 		typedef typename TFinder::TRepeat		TRepeat;
 		typedef typename Value<TRepeat>::Type	TPos;
 		
@@ -322,7 +323,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	template< typename THaystack, typename TIndex, typename TShape, typename TSpec>
 	inline void setPattern(Finder<THaystack, QGramsLookup<TShape, TSpec> >		&finder,
 						   Pattern<TIndex,  QGramsLookup<TShape, TSpec> > const &pattern
-	){
+	){ ENTER 
 		finder.hasShape = true;
 		finder.shape = pattern.shape;
 	}
@@ -332,7 +333,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	find(
 		 Finder<THaystack,  QGramsLookup<TShape, TSpec> >		&finder,
 		 Pattern<TIndex,  QGramsLookup<TShape, TSpec> > const	&pattern
-	){
+	){ ENTER 
 		typedef	typename Value<TShape>::Type				THashValue;
 		
 		if (empty(finder)){
@@ -388,7 +389,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	template <typename TQGramHit, typename TText, typename TShape>
 	inline typename Infix<TText>::Type
 	hitInfix(TQGramHit const &hit, TText &text, TShape &shape)
-	{
+	{ ENTER 
 		__int64 hitBegin = hit.hstkPos;
 		__int64 hitEnd = hit.hstkPos + weight(shape);
 		__int64 textEnd = length(text);
@@ -401,14 +402,14 @@ namespace SEQAN_NAMESPACE_MAIN
 	template <typename THaystack, typename TSpec>
 	inline typename Infix<THaystack>::Type
 	infix(Finder<THaystack, QGramsLookup<TSpec> > &finder)
-	{
+	{ ENTER 
 		return hitInfix(*finder.curHit, haystack(finder), finder.shape);
 	}
 
 	template <typename THaystack, typename TSpec, typename TText>
 	inline typename Infix<TText>::Type
 	infix(Finder<THaystack, QGramsLookup<TSpec> > &finder, TText &text)
-	{
+	{ ENTER 
 		return hitInfix(*finder.curHit, text);
 	}
 
@@ -418,7 +419,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	template <typename TIndex, typename TSpec, typename TQGramHit, typename TText>
 	inline typename Infix<TText>::Type
 	infix(Pattern<TIndex, QGramsLookup<TSpec> > const & pattern, TQGramHit const &hit, TText &text)
-	{
+	{ ENTER 
 		__int64 hitBegin = hit.ndlPos;
 		__int64 hitEnd = hit.ndlPos + weight(pattern.shape);
 		__int64 textLength = sequenceLength(hit.ndlSeqNo, needle(pattern));
@@ -432,7 +433,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	template <typename TIndex, typename TSpec, typename TQGramHit>
 	inline typename Infix< typename GetSequenceByNo< TIndex const >::Type >::Type
 	infix(Pattern<TIndex, QGramsLookup<TSpec> > const & pattern, TQGramHit const &hit)
-	{
+	{ ENTER 
 		return infix(pattern, hit, getSequenceByNo(hit.ndlSeqNo, needle(pattern)));
 	}
 		
@@ -447,7 +448,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline bool _seedMultiProcessQGram(TFinder & finder,
 									   Pattern<TIndex, QGramsLookup<TSpec> > const & pattern,
 									   THashValue hash)
-	{
+	{ ENTER 
 		typedef Pattern<TIndex,  QGramsLookup<TSpec>  >				TPattern;
 		typedef typename Size<TIndex>::Type							TSize;
 		typedef typename Fibre<TIndex, QGramSA>::Type				TSA;

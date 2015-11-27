@@ -28,3 +28,37 @@
     
 !!! (_detectTriplexBruteForce)
     * for each duplex string, previously optimized, we iterate through the TFO set; there's a char-by-char match / check
+
+
+
+Summary:_______________________________________________________________________________________________________________
+
+    First it retrieves the TFOs and uses the same findRepeats SeqAn function to remove low complexity regions.
+    Duplicates may be detected and handled, if option is set. An index (IndexQGram) based on an array of sorted q-grams
+    is then created from the set of TFOs. 
+        [IndexQGram]: The fibres (see Index and Fibre) of this index are a suffix array sorted by the first q characters
+                     (see QGramSA) and a q-gram directory (see QGramDir). The size of the q-gram directory is |Σ|^q. On 
+                     a 32bit system the q-gram length is limited to 3 for char alphabets or 13-14 for Dna alphabets. 
+        [QGramSA]   :  The suffix array. Remarks: Contains all occurrences of q-grams, s.t. the occurrences of a single 
+                       q-gram are stored in a contiguous block (q-gram bucket). q-grams exceeding the end of the text 
+                       are ignored. The beginning of each bucket can be determined by the q-gram directory (QGramDir).
+                       It corresponds to a suffix array which is sorted by the first q-gram.
+
+    Next, the file containing the double stranded sequence D is opened and each sequence in this file is processed
+    independently / in parallel. Each D is then matched against all entries in the TFO index as follows:
+        1)  remove low complexity regions (repeats), similarly to TFOs
+        2)  D is processed (processDuplex), i.e., it's broken up into putative TTS subsequences. This way for each D we
+            get a set of substrings of D (d_1, d_2, ...) which are actually used in the pattern matching against TFOs.
+            ---------------------------------------
+            TFOs = PATTERN, NEEDLE (set of strings)
+            d_i  = HAYSTACK
+            ---------------------------------------
+        3*) Collect seeds: get maximal 'seeds' of each TFO in the needle that match anywhere in the haystack (d_i),
+            i.e., maximal substrings of each TFO that match d_i somewhere and have a minimum length. This is EXACT
+            MATCHING. 
+            A "Finder" object is created from the haystack and the pattern, and by recursively calling the SeqAn "find"
+            function all common q-gram substrings (q is defined at the beginning) are returned and analyzed. This "find"
+            function is based on ..... ??????? TBD
+
+        4)  A scoring schema is calculated and then the seeds / q-grams are extended using the scoring schema and X-Drop
+            algorithm.

@@ -671,6 +671,12 @@ namespace SEQAN_NAMESPACE_MAIN
 				if (options._debugLevel >= 1)
 					options.logFileHandle << _getTimeStamp() <<  " - Finised creating q-gram index for all TFOs" << ::std::endl;
 				
+				// TODO @barni remove
+				::std::cerr << "printing all tfo segments (" << length(tfoMotifSet) << ")" << ::std::endl;
+				for (unsigned i =0; i < length(tfoMotifSet); ++i){
+					::std::cerr << "tfo pattern [" << i << "]" << tfoMotifSet[i] << " length: "<< length(tfoMotifSet[i]) << ::std::endl;
+				}
+				
 				errorCode = startTriplexSearchParallelDuplex(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, TGardener());
 			} else {
                 TQGramIndex pattern;
@@ -691,7 +697,12 @@ namespace SEQAN_NAMESPACE_MAIN
 				// create index
 				if (options._debugLevel >= 1)
 					options.logFileHandle << _getTimeStamp() <<  " - Finised creating q-gram index for all TFOs" << ::std::endl;
-				
+				// TODO @barni remove
+				::std::cerr << "printing all tfo segments (" << length(tfoMotifSet) << ")" << ::std::endl;
+				for (unsigned i =0; i < length(tfoMotifSet); ++i){
+					::std::cerr << "tfo pattern [" << i << "]" << tfoMotifSet[i] << " length: "<< length(tfoMotifSet[i]) << ::std::endl;
+				}
+
 				errorCode = startTriplexSearchSerial(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, TGardener());
 			} else {
                 TQGramIndex pattern;

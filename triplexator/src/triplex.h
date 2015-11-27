@@ -2202,6 +2202,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			processDuplex(ttsSet_forward, duplexString, duplexId, true, reduceSet, options);
 #ifdef TRIPLEX_DEBUG
 			typedef typename Iterator<TDuplexModSet>::Type  TIterMotifSet;
+            std::cout << "NEW RUN _detectTriplex ****************************\n";
 			::std::cerr << "printing all tts segments (forward)" << ::std::endl;
 			for (TIterMotifSet itr=begin(ttsSet_forward); itr != end(ttsSet_forward);++itr){
 				::std::cerr << "tts: " << ttsString(*itr) << " type: " << (*itr).motif << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << " " << ::std::endl;

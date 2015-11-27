@@ -58,6 +58,7 @@ _Pragma(STRINGIFY(code))
 #define SEQAN_PRAGMA_IF_PARALLEL(code)
 #endif // SEQAN_ENABLE_PARALLELISM
 #endif // SEQAN_PRAGMA_IF_PARALLEL
+#define ENTER std::cout << "Entered [" << __FILE__ << ":" << __LINE__ << "]\t" << __func__ << std::endl;
 
 using namespace seqan;
 namespace SEQAN_NAMESPACE_MAIN
@@ -212,7 +213,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	// indicates if two seeds overlap
 	// ATTENTION assumes same diagonal and size of seeds
 	template <typename TSeed>
-	bool isOverlapping(TSeed const & a, TSeed const & b){
+	bool isOverlapping(TSeed const & a, TSeed const & b){ ENTER
 		if (getBeginDim0(a) < getBeginDim0(b) and getBeginDim0(b) < getEndDim0(a)) return true;
 		if (getBeginDim0(b) < getBeginDim0(a) and getBeginDim0(a) < getEndDim0(b)) return true;
 		return false;
@@ -339,7 +340,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline bool
 	hasAnyHit(Gardener<TId, TSpec> &gardener, 
 			  TId &queryid
-			  ){
+			  ){ ENTER
 		if (hasKey(gardener.hits, queryid))
 			return true;
 		else
@@ -353,7 +354,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline typename Iterator<typename Gardener<TId, TSpec>::THitSet>::Type 
 	harvestBegin(Gardener<TId, TSpec> &gardener, 
 				 TId &queryid
-				 ){
+				 ){ ENTER
 		if (hasKey(gardener.hits, queryid))
 			return begin(*cargo(gardener.hits, queryid));
 		else
@@ -369,7 +370,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline typename Iterator<typename Gardener<TId, TSpec>::THitSet>::Type 
 	harvestEnd(Gardener<TId, TSpec> &gardener, 
 			   TId &queryid
-			   ){
+			   ){ ENTER
 		if (hasKey(gardener.hits, queryid))
 			return end(*cargo(gardener.hits, queryid));
 		else
@@ -385,7 +386,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline typename Size<typename Gardener<TId, TSpec>::THitSet>::Type 
 	length(Gardener<TId, TSpec> &gardener, 
 		   TId &queryid
-		   ){
+		   ){ ENTER
 		if (hasKey(gardener.hits, queryid))
 			return length(*cargo(gardener.hits, queryid));
 		else
@@ -401,7 +402,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline bool hasHit(Gardener<TId, TSpec> &gardener, 
 					   TId &queryid, 
 					   typename Gardener<TId, TSpec>::TGardenerHit hit
-					   ){
+					   ){ ENTER
 		if (hasKey(gardener.hits, queryid) && hasKey(*cargo(gardener.hits,queryid), hit))
 			return true;
 		else {
@@ -417,7 +418,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	 * erase all hits
 	 */
 	template<typename TSpec, typename TId >
-	inline void eraseAll(Gardener<TId, TSpec>  &gardener){
+	inline void eraseAll(Gardener<TId, TSpec>  &gardener){ ENTER
 		typedef typename Value<Gardener<TId, TSpec> >::Type	THitMap;
 		typedef typename Iterator<THitMap>::Type				THitMapIter;
 		typedef typename Value<THitMap>::Type					THitMapPair;
@@ -440,7 +441,7 @@ namespace SEQAN_NAMESPACE_MAIN
 						  TSeed				&seed,
 						  TTripleSet		&runs
 						  )
-	{
+	{ ENTER
 		SEQAN_CHECKPOINT
 		typedef typename Value<TTripleSet>::Type	TRun;
 		typedef typename Value<TRun, 1>::Type		TPos;
@@ -489,7 +490,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	_isEpsMatch(Triple<TPos, TPos, TPos> const &left,
 				Triple<TPos, TPos, TPos> const &right,
 				TError &errorRate
-				) {
+				) { ENTER
 		SEQAN_CHECKPOINT
 		// compute mismatches and length
 		TPos errors = right.i3 - left.i3 - (right.i2 - right.i1);
@@ -507,7 +508,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline TPos
 	_countMatches(Triple<TPos, TPos, TPos> const &left,
 				  Triple<TPos, TPos, TPos> const &right
-				  ) {
+				  ) { ENTER
 		SEQAN_CHECKPOINT
 		// compute mismatches and length
 		TPos errors = right.i3 - left.i3 - (right.i2 - right.i1);
@@ -530,7 +531,7 @@ namespace SEQAN_NAMESPACE_MAIN
 								 TSeed				&seed,
 								 TPos const			&matchMinLength,
 								 TError	const		&errorRate
-								 ){
+								 ){ ENTER
 		SEQAN_CHECKPOINT
 		// Preprocessing: compute and store mismatch and lengths
 		// A run is a triple of mismatch begin position, mismatch end position, 
@@ -605,7 +606,7 @@ namespace SEQAN_NAMESPACE_MAIN
 									TError		&errorRate,
 									TSize		&minLength,
 									SINGLE_WORKER const & 
-									){
+									){ ENTER
 		typedef typename Iterator<TSeedSet, Rooted>::Type	TIter;
 		typedef typename Value<TSeedSet>::Type				TSeed;
 		typedef typename Position<TSeed>::Type				TPos;
@@ -732,7 +733,7 @@ namespace SEQAN_NAMESPACE_MAIN
 								 TSize const				&minLength,
 								 TScore	const				&scoreDropOff, 
 								 TId						&queryid
-								 ){
+								 ){ ENTER
 		typedef typename Iterator<TMap>::Type				TMapIter;
 		typedef Finder<THaystack, TSpec>					TFinder;
 		typedef typename Value<TMap>::Type					TMapPair;
@@ -855,7 +856,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline void _adjustSeeds(TSeedSet					&seedset, 
 							 Segment<TSequence, TSpec>	&sequence, 
 							 TSize						dim
-							 ){
+							 ){ ENTER
 		typedef typename Iterator<TSeedSet>::Type					TSeedSetIter;
 		typedef typename Position<Segment<TSequence, TSpec> >::Type	TPos;
 		
@@ -886,7 +887,7 @@ namespace SEQAN_NAMESPACE_MAIN
 							   TId	const	&seqNo,
 							   TDiag const	&diag,
 							   TSet		&posSet
-							   ){
+							   ){ ENTER
 		typedef typename Value<TMap>::Type				TMapPair;
 		typedef typename Cargo<TMapPair>::Type			TDiagMapPointer;
 		typedef typename Value<TDiagMapPointer>::Type 	TDiagMap;
@@ -969,7 +970,7 @@ namespace SEQAN_NAMESPACE_MAIN
 							  TPos const									&seedsThreshold,
 							  TPos const									&minLength,
 							  TMap											&seqmap
-							  ){
+							  ){ ENTER
 		typedef typename Value<TMap>::Type				TMapPair;
 		typedef typename Key<TMapPair>::Type			TId;
 		typedef typename Cargo<TMapPair>::Type			TDMPointer;
@@ -992,9 +993,11 @@ namespace SEQAN_NAMESPACE_MAIN
 		TSeqMap tmpSeqmap;
 		while (find(finder, pattern)) {
 #ifdef TRIPLEX_DEBUG			
-			::std::cout << "Q:" << infix(finder) << ::std::endl;
+			::std::cout << "Q:" << infix(finder) << ::std::endl; // The Infix of the match in the haystack.
 			::std::cout << "T:" << infix(pattern, *finder.curHit) << ::std::endl;
 			::std::cout << "H:" << (*finder.curHit).hstkPos << "-N" << (*finder.curHit).ndlSeqNo << ":P" << (*finder.curHit).ndlPos << ":D" << (*finder.curHit).diag << ::std::endl;
+            //@gandalf
+			::std::cout << "needle itself@barni: " << getSequenceByNo((*finder.curHit).ndlSeqNo, needle(pattern)) << ::std::endl;
 			::std::cout << "tmpseqmanSize:" << length(tmpSeqmap) << " ,KeyKnown:" << hasKey(tmpSeqmap, (*finder.curHit).ndlSeqNo) << ::std::endl;
 			::std::cout << "seqmanSize:" << length(seqmap) << " ,KeyKnown:" << hasKey(seqmap, (*finder.curHit).ndlSeqNo) << ::std::endl;
 #endif			
@@ -1091,7 +1094,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					  TPos const						&seedsThreshold,
 					  TDrop const						&xDrop,
 					  TId								&queriyid
-					  ){
+					  ){ ENTER
 		// used datastructure: Map < NeedleSeqNo, < Map < diagonal, SeedSet > > 
 		// for each needle all q-gram hits are stored according to the diagonal they reside in
 		typedef int											TScore;
@@ -1155,7 +1158,7 @@ namespace SEQAN_NAMESPACE_MAIN
 						   Pattern<TIndex, TPatternSpec> const	&pattern,
 						   TQuerySet							&queries,
 						   TId									&queryid
-						   ){
+						   ){ ENTER
 		typedef Gardener<TId, TSpec>						TGardener;
 		typedef typename Iterator<TGardener >::Type			TIter;
 		typedef typename Value<TGardener>::Type				THitMap;
@@ -1183,7 +1186,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	template< 
 	typename THit 
 	>	
-	inline void _printHit(THit	&hit){
+	inline void _printHit(THit	&hit){ ENTER
 		::std::cout << hit.ndlSeqNo << "("<< hit.ndlPos <<":" << (hit.ndlPos+hit.hitLength) << ")\t";
 		::std::cout << hit.hstId << "("<< hit.hstkPos <<":" << (hit.hstkPos+hit.hitLength) << ")\t";
 		::std::cout << "d:" << hit.diag << "\t";
@@ -1218,7 +1221,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			   TDrop const				&xDrop,
 			   TShape const				&shape,
 			   TWORKER
-			   ){
+			   ){ ENTER
 		typedef StringSet<TMotif>													TTargetSet;
 		typedef Index<TTargetSet, IndexQGram<TShape, OpenAddressing> >				TQGramIndex;
 		// configure Pattern
@@ -1261,13 +1264,13 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TWorker
 	>
 	void plant(Gardener<TId, TSpec>	&gardener,
-			   Pattern<TIndex, QGramsLookup< TShape, TPatternSpec> > const	&pattern,
+			   Pattern<TIndex, QGramsLookup< TShape, TPatternSpec> > const	&pattern, // index of tfoSet patterns
 			   TQuerySet			&queries,   // ttsSet
 			   TError const			&errorRate,
 			   TSize const			&minLength,
 			   TDrop const			&xDrop,
 			   TWorker
-			   ){
+			   ){ ENTER
 		typedef typename Iterator<TQuerySet>::Type									TQueryIter;
 		typedef typename Value<Gardener<TId, TSpec> >::Type							THitMap;
 		typedef typename Value<THitMap>::Type										THitMapEntry;
@@ -1281,8 +1284,11 @@ namespace SEQAN_NAMESPACE_MAIN
 		// w+1-(k+1)q | w=minimum length, k=errors, q=weight(q-grams)
 		TPos minSeedsThreshold = static_cast<TPos>(minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape));
 #ifdef TRIPLEX_DEBUG
+        ::std::cout << "\nPlant called ------------------------------\n";
 		::std::cout << "minLength:" << minLength << " errorRate:" << errorRate << " qgram:" << weight(pattern.shape) << ::std::endl;
 		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
+        ::std::cout << "queries length: " << length(queries) << ::std::endl;
+        ::std::cout << "queries[0]: " << queries[0] << ::std::endl;
 #endif						
 		
 		// serial processing
@@ -1384,7 +1390,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			   TSize const			&minLength,
 			   TDrop const			&xDrop,
 			   MULTIPLE_WORKER
-			   ){
+			   ){ ENTER
 		typedef typename Iterator<TQuerySet>::Type									TQueryIter;
 		typedef typename Value<Gardener<TId, TSpec> >::Type							THitMap;
 		typedef typename Value<THitMap>::Type										THitMapEntry;
