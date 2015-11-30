@@ -32,10 +32,18 @@
 
 
 Summary:_______________________________________________________________________________________________________________
+    
+    Key observations: 
+        a)  if the minimum triplex length is 10 and max allowed error is 1, there must be at least two 4-grams that match
+            in `d` and `s`. 
+
+    ========================================
 
     First it retrieves the TFOs and uses the same findRepeats SeqAn function to remove low complexity regions.
     Duplicates may be detected and handled, if option is set. An index (IndexQGram) based on an array of sorted q-grams
-    is then created from the set of TFOs. 
+    is then created from the set of TFOs. More exactly, this index is a complex data structure containing a sorted suffix 
+    array, some tables (directories) mapping the hash values of q-grams to indices in the suffix array, etc.
+    
         [IndexQGram]: The fibres (see Index and Fibre) of this index are a suffix array sorted by the first q characters
                      (see QGramSA) and a q-gram directory (see QGramDir). The size of the q-gram directory is |Σ|^q. On 
                      a 32bit system the q-gram length is limited to 3 for char alphabets or 13-14 for Dna alphabets. 
@@ -43,6 +51,9 @@ Summary:________________________________________________________________________
                        q-gram are stored in a contiguous block (q-gram bucket). q-grams exceeding the end of the text 
                        are ignored. The beginning of each bucket can be determined by the q-gram directory (QGramDir).
                        It corresponds to a suffix array which is sorted by the first q-gram.
+        Functions on the index:
+            {countOccurrences(index, shape)}:   Returns the number of occurrences of a q-gram in the index text
+            {getOccurrences(index, shape)}  :   Returns an occurrence / OR multiple a q-gram in the index text.
 
     Next, the file containing the double stranded sequence D is opened and each sequence in this file is processed
     independently / in parallel. Each D is then matched against all entries in the TFO index as follows:
@@ -59,6 +70,13 @@ Summary:________________________________________________________________________
             A "Finder" object is created from the haystack and the pattern, and by recursively calling the SeqAn "find"
             function all common q-gram substrings (q is defined at the beginning) are returned and analyzed. This "find"
             function is based on ..... ??????? TBD
+            q-gram matching is based on hash functions / values.
 
         4)  A scoring schema is calculated and then the seeds / q-grams are extended using the scoring schema and X-Drop
             algorithm.
+
+
+     =======================================
+     Calculating q-gram size
+            Size of qgram : (qgram threshold - 1 - minLength) / (- #errors - 1)
+            
