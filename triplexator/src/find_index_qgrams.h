@@ -367,6 +367,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 		
 		// find next hit
+		// @@@@@@@@@@@@@@@@@@@barni this is the important shit
 		do{
 			if (atEnd(++finder)){
 				if (!_nextNonRepeatRange(finder, pattern)){
@@ -438,7 +439,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	}
 		
 	//////////////////////////////////////////////////////////////////////
-	// 
+	// @@@@@@@@barni This function finds all 
 	template <
 		typename TFinder,
 		typename TIndex,

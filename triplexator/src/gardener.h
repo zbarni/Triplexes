@@ -1122,7 +1122,9 @@ namespace SEQAN_NAMESPACE_MAIN
 			TScore mismatch = (TScore)_max((TScore) (-1.0/(errorRate+0.00000001)) + 1, -(TScore)length(host(finder)));
 			Score<TScore> scoreMatrix(match, mismatch, std::numeric_limits<int>::max());
 			TScore scoreDropOff = (TScore) _max((TScore) xDrop * (-mismatch), minValue<TScore>()+1);
-			// extend seeds 
+			// extend seeds             
+            std::cout << "Extending seedlings:\n\tscoreDropOff: " << scoreDropOff 
+                      << "\n\tqueriyid: " << queriyid << "\n";
 			_extendSeedlings(hitSet, finder, pattern, seqmap, scoreMatrix, minLength, scoreDropOff, queriyid);
 			
 			// housekeeping

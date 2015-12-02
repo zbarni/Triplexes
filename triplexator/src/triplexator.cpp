@@ -82,10 +82,12 @@ namespace SEQAN_NAMESPACE_MAIN
 		addHelpLine(parser, "1) only the third strand (-ss) - search for putative triplex-forming oligonucleotides (TFO)");
 		addHelpLine(parser, "2) only the duplex (-ds) - search for putative triplex target sites (TTS)");
 		addHelpLine(parser, "3) both - search for triplexes (matching TFO-TTS pairs)");
+		addHelpLine(parser, "4) inverted preprocessing - search for triplexes (matching TFO-TTS pairs), but use preprocessing on DNA instead of RNA");
 		addHelpLine(parser, "");
 		addOption(parser, addArgumentText(CommandLineOption("ss",  "single-strand-file",    "File in FASTA format that is searched for TFOs (e.g. RNA or DNA)", OptionType::String), "<FILE>"));
 		addOption(parser, addArgumentText(CommandLineOption("ds", "duplex-file", 			"File in FASTA format that is searched for TTSs (e.g. DNA)", OptionType::String), "<FILE>"));
 		addSection(parser, "Main Options:");
+		addOption(parser, CommandLineOption("i",  "inverted-preprocessing",					"inverted mode where DNA is preprocessed and RNA is the pattern", OptionType::Boolean));
 		addOption(parser, CommandLineOption("l",  "lower-length-bound",						"minimum triplex feature length required", OptionType::Int| OptionType::Label, options.minLength));
 		addOption(parser, CommandLineOption("L",  "upper-length-bound",						"maximum triplex feature length permitted, -1 = unrestricted ", OptionType::Int | OptionType::Label, options.maxLength ));
 		addOption(parser, CommandLineOption("e",  "error-rate",								"set the maximal error-rate in % tolerated", OptionType::Double | OptionType::Label, (100.0 * options.errorRate)));
@@ -104,7 +106,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		
 		addOption(parser, CommandLineOption("b",  "minimum-block-run",						"required number of consecutive matches, disable with -1", OptionType::Int | OptionType::Label, options.minBlockRun));
 		addOption(parser, CommandLineOption("a",  "all-matches",							"process and report all sub-matches in addition to the longest match", OptionType::Boolean));
-		addHelpLine(parser, "Careful! This can result in hugh output files when searching for TFO-TTS pairs.");
+		addHelpLine(parser, "Careful! This can result in huge output files when searching for TFO-TTS pairs.");
 		addOption(parser, CommandLineOption("dd", "detect-duplicates",						"indicates whether and how duplicates should be detected", OptionType::Int | OptionType::Label, options.detectDuplicates));
 		addHelpLine(parser, "0 = off         do not detect duplicates");
 		addHelpLine(parser, "1 = permissive  detect duplicates in sequence space, e.g. AGGGAcGAGGA != AGGGAtGAGGA");	
@@ -179,6 +181,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		
 		//////////////////////////////////////////////////////////////////////////////
 		// Extract options
+		options.invertedPp = isSetLong(parser, "inverted-preprocessing");
+
 		getOptionValueLong(parser, "error-rate", options.errorRate);
 		getOptionValueLong(parser, "maximal-error", options.maximalError);
 		getOptionValueLong(parser, "min-guanine", options.minGuanineRate);
@@ -372,6 +376,8 @@ namespace SEQAN_NAMESPACE_MAIN
 			options.showHelp = true;
 			return 0;
 		}
+		if ((options.runmode != TRIPLEX_TFO_SEARCH && options.invertedPp) && (stop = true))
+			::std::cerr << "Preprocessing inversion enabled but running mode is not triplex search." << ::std::endl;
 		if ((options.errorRate > 20 || options.errorRate < 0) && (stop = true))
 			::std::cerr << "Error-rate must be a value between 0 and 20" << ::std::endl;
 		if ((options.minGuanineRate < 0 || options.minGuanineRate > 100) && (stop = true))

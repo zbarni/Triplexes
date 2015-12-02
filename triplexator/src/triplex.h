@@ -475,6 +475,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		// 1..TRIPLEX_TTS_SEARCH
 		// 2..TRIPLEX_TFO_SEARCH
 		// 3..TRIPLEX_TRIPLEX_SEARCH
+        bool        invertedPp;         // inverted preprocessing: double strand is indexed and used as pattern
 		bool		ttsFileSupplied;  	// indicates that at least one file as triplex target has been specified
 		bool		tfoFileSupplied;  	// indicates that one file as triplex source has been specified
 		bool		forward;			// compute forward oriented read matches
