@@ -2006,6 +2006,27 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 	}
 
+	// Search for triplexes given a set of duplexes and a set of TFOs
+	template<
+	typename TId,
+	typename TGardenerSpec,
+	typename TPattern,
+	typename TQuery
+	>
+	inline void _filterTriplexInverted(Gardener< TId, TGardenerSpec>	&gardener,
+									   TPattern	const					&pattern, // ttsSet (pattern of this' index)
+									   TQuery							&tfoSet,
+									   Options const					&options
+									   ){
+
+		// adjust errorRate if maximalError is set and caps the errorRate setting wrt the minimum length constraint
+		double eR = options.errorRate;
+		if (options.maximalError >= 0){
+			eR = min(options.errorRate, max(double(options.maximalError)/options.minLength, 0.0));
+		}
+		assert(tfoSet[0].isTFO);
+		plant(gardener, pattern, tfoSet, eR, options.minLength, options.maxInterruptions+1, SINGLE_WORKER() );
+	}
 	
 	
 #if SEQAN_ENABLE_PARALLELISM
@@ -3682,6 +3703,181 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 	}
 	
+	// Store all matches in a vector and convert the references accordingly
+	template<
+	typename TMatches,
+	typename TPotentials,
+	typename TId,
+	typename TGardenerSpec,
+	typename TPattern,
+	typename TStringSet
+	>
+	void _verifyAndStoreInverted(TMatches				&matches,
+						 TPotentials					&potentials,
+						 Gardener<TId, TGardenerSpec>	&gardener,
+						 TPattern	const				&pattern,
+						 TStringSet	const				&tfoSet,
+						 TId	const					&duplexId,
+						 bool	const					plusstrandd,
+						 Options						&options
+						 ){
+		typedef Gardener<TId, TGardenerSpec>				TGardener;
+		typedef typename Value<TGardener>::Type				THitMap;
+		typedef typename Value<THitMap>::Type				THitMapEntry;
+		typedef typename Value<THitMapEntry,2>::Type		THitSetPointer;
+		typedef typename Value<THitSetPointer>::Type		THitSet;
+		typedef typename Value<THitSet>::Type				THit;
+		typedef typename Iterator<THitSet>::Type			TIter;
+		typedef typename Position<TMatch>::Type				TPos;
+		typedef typename Value<TStringSet>::Type			TString;
+		typedef typename Iterator<TStringSet>::Type			TStringIter;
+		typedef typename Host<TString>::Type				THost;
+		typedef typename Iterator<THost>::Type				THostIter;
+
+		typedef typename Infix<THost>::Type					TSegment;
+		typedef String<TSegment>							TSegString;
+		typedef typename Iterator<TSegString>::Type			TSegStringIter;
+
+		typedef typename Iterator<TPotentials>::Type		TPotIter;
+		typedef typename Value<TPotentials>::Type			TPotValue;
+		typedef typename Key<TPotValue>::Type				TPotKey;
+		typedef typename Cargo<TPotValue>::Type				TPotCargo;
+
+		// check all queries for hits
+		for (TId queryid=0; queryid<(TId)length(tfoSet); ++queryid){
+			for (TIter it = harvestBegin(gardener,queryid); it != harvestEnd(gardener, queryid); ++it){
+				THit hit = *it;
+				TPos tfoStart;
+				TPos tfoEnd;
+				TPos ttsStart;
+				TPos ttsEnd;
+				char strand;
+
+				THost tts = infix(ttsString(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))), hit.getNdlPos(), hit.getNdlPos() + hit.getHitLength());
+				THost triplex(infix(ttsString(value(tfoSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
+
+#ifdef TRIPLEX_DEBUG
+				::std::cerr << "transform (triplex): " << triplex << :: std::endl;
+				::std::cerr << "transform (tts): " << tts << :: std::endl;
+#endif
+				THostIter itTFO=begin(triplex);
+				for (THostIter itTTS=begin(tts); itTTS!=end(tts); ++itTFO,++itTTS){
+					if (*itTFO!=*itTTS){
+						*itTFO = 'N';
+					}
+				}
+#ifdef TRIPLEX_DEBUG
+				::std::cerr << "to       : " << triplex << :: std::endl;
+#endif
+
+				// run through TTS parser
+ 				TStringSet triplexSet;
+				// create parser once
+				if (empty(options.triplexParser)){
+					THost valid("GAR");		// the valid characters
+					THost invalid("TCYN");	// the interrupting characters
+					_makeParser(options.triplexParser, valid, invalid, options);
+				}
+
+				// split duplex into valid parts
+				TSegString seqString;	// target segment container
+				_parse(seqString, options.triplexParser, triplex, options);
+				unsigned totalNumberOfMatches = 0;
+
+				// process one segment at a time
+				for (TSegStringIter it = begin(seqString, Standard()); it != end(seqString, Standard()); ++it){
+#ifdef TRIPLEX_DEBUG
+					::std::cerr << "pTriplex:" << *it << ::std::endl;
+#endif
+					TString ttsfilter(*it, true, hit.getHstId(), false, '+');
+					bool reduceSet = false; // don't merge overlapping triplexes
+					totalNumberOfMatches += _filterWithGuanineAndErrorRate(triplexSet, ttsfilter, 'G', 'Y', reduceSet, TRIPLEX_ORIENTATION_BOTH, options, TTS());
+				}
+#ifdef TRIPLEX_DEBUG
+				::std::cerr << "totalNumberOfMatches:" << totalNumberOfMatches << ::std::endl;
+				ModStringTriplex<TDuplex, TDuplex> ttsDuplex(getSequenceByNo(hit.getNdlSeqNo(), needle(pattern)));
+				std::cout << "@zb tts orientation: " << ttsDuplex.motif << std::endl;
+#endif
+				// skip parts below if no matches have been detected
+				if (totalNumberOfMatches == 0){
+					continue;
+				}
+
+				for (TStringIter itr=begin(triplexSet); itr!=end(triplexSet); ++itr){
+					// compute score = matching positions, which can be found in the triplex string (number of N's within the interval found)
+					int score=0;
+					int guanines=0;
+					for (unsigned int i=beginPosition(*itr); i<endPosition(*itr); ++i){
+						if (triplex[i]!='N')
+							++score;
+						if (triplex[i]=='G')
+							++guanines;
+					}
+
+					// calculate tts positions according to strand in the duplex
+
+//					if (plusstrand){
+					if (false) {// TODO @next
+						ttsStart = hit.getHstkPos() + beginPosition(value(tfoSet,hit.getHstId()))+ beginPosition(*itr);
+						ttsEnd = ttsStart + length(*itr);
+						strand = '+';
+					} else {
+						ttsEnd = endPosition(value(tfoSet,hit.getHstId())) - (hit.getHstkPos() + beginPosition(*itr));
+						ttsStart = ttsEnd - length(*itr);
+						strand = '-';
+					}
+
+					// calculate tfo positions according to binding orientation
+					if (isParallel(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern)))){
+						tfoStart = hit.getNdlPos() + beginPosition(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern)))+beginPosition(*itr);
+						tfoEnd = tfoStart + length(*itr);
+					} else {
+						tfoEnd = endPosition(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))) - (hit.getNdlPos() + beginPosition(*itr));
+						tfoStart = tfoEnd - length(*itr);
+
+					}
+
+					// save the corresponding triplex match
+					TMatch match(hit.getNdlSeqNo(),
+								 tfoStart,
+								 tfoEnd,
+								 duplexId,
+								 queryid,
+								 ttsStart,
+								 ttsEnd,
+								 score,
+								 isParallel(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))),
+								 getMotif(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))),
+								 strand,
+								 guanines
+								 );
+					appendValue(matches, match);
+
+#ifdef TRIPLEX_DEBUG
+ 					::std::cerr << "tts: " << ttsString(*itr) << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << "-" <<endPosition(*itr) << " " << infix(triplex, beginPosition(*itr), endPosition(*itr)) << ::std::endl;
+					THost ftfo = infix(ttsString(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))), tfoStart, tfoEnd);
+					THost ftts = infix(ttsString(value(tfoSet,hit.getHstId())), ttsStart, ttsEnd);
+					::std::cerr << "tts: " << ftts << ::std::endl << "tfo: "<< ftfo << ::std::endl;
+#endif
+				}
+
+				// save potential
+				TPotKey pkey(getSequenceNo(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))), getSequenceNo(value(tfoSet,hit.getHstId())));
+				if (hasKey(potentials, pkey)){
+					// sequence pair already known, just add counts
+					TPotCargo* potential = &cargo(potentials, pkey);
+					addCount(*potential, totalNumberOfMatches, getMotif(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))));
+				} else {
+					// new sequence pair, add counts and compute norm
+					TPotCargo potential(pkey);
+					addCount(potential, totalNumberOfMatches, getMotif(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))));
+					setNorm(potential, length(host(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern)))), length(host(tfoSet[queryid])), options);
+					insert(potentials, TPotValue(pkey, potential));
+				}
+			}
+		}
+	}
+
 	
 	//////////////////////////////////////////////////////////////////////////////
 	// Take a sequence and generate a block queue (tolerated, matching, interrupting chars)
@@ -3783,6 +3979,131 @@ namespace SEQAN_NAMESPACE_MAIN
 		return (seqCount > 0);
 	}
 		
+
+	//////////////////////////////////////////////////////////////////////////////
+	// Inverted. Find triplexes in many duplex sequences (import from Fasta) in parallel
+	// by reading in all duplex sequences and storing the results on memory
+	template <
+	typename TMotifSet,
+	typename TFile,
+    typename TShape,
+	typename TId,
+	typename TGardenerSpec
+	>
+	int inline startTriplexSearchSerialInverted(
+                                        TMotifSet					&tfoMotifSet,
+                                        TMotifSet					&revTfoMotifSet,
+										StringSet<CharString> const	&tfoNames,
+										TFile						&outputfile,
+										TId							duplexSeqNo,
+                                        TShape const                &shape,
+										Options						&options,
+										Gardener<TId, TGardenerSpec>
+										){
+		typedef TriplexString										TDuplex;
+		typedef StringSet<ModStringTriplex<TDuplex, TDuplex> >		TDuplexModSet;
+		typedef Gardener<TId, TGardenerSpec>						TGardener;
+		typedef ::std::list<TMatch>									TMatches;
+
+		typedef Pair<unsigned, unsigned>							TPotKey;
+		typedef TriplexPotential<TPotKey>							TPotPair;
+		typedef Map<Pair<TPotKey, TPotPair>, Skiplist<> >			TPotentials;
+		
+		typedef Repeat<unsigned, unsigned>							TRepeat;
+		typedef String<TRepeat>										TRepeatString; 
+		typedef typename Iterator<TRepeatString, Rooted>::Type		TRepeatIterator;
+
+        typedef Index<TDuplexModSet, IndexQGram<TShape, OpenAddressing> >            TQGramIndex;
+        typedef Pattern<TQGramIndex, QGramsLookup< TShape, Standard_QGramsLookup > > TPattern;
+        //from detectTriplex
+        typedef StringSet<ModStringTriplex<TDuplex, TDuplex> > 	TDuplexModSet;
+        typedef Gardener<TId, TGardenerSpec>					TGardener;
+
+        TDuplexModSet ttsSet; // set containing all putative tts after filtering, used to build index & pattern
+        TDuplexModSet ttsSet_reverse; // set containing all putative tts after filtering, used to build index & pattern
+		
+		// open duplex file
+		::std::ifstream file;
+		file.open(toCString(options.duplexFileNames[0]), ::std::ios_base::in | ::std::ios_base::binary);
+		if (!file.is_open())
+			return TRIPLEX_READFILE_FAILED;
+		
+		// remove the directory prefix of current duplex file
+		::std::string duplexFile(toCString(options.duplexFileNames[0]));
+		size_t lastPos = duplexFile.find_last_of('/') + 1;
+		if (lastPos == duplexFile.npos) lastPos = duplexFile.find_last_of('\\') + 1;
+		if (lastPos == duplexFile.npos) lastPos = 0;
+		::std::string duplexName = duplexFile.substr(lastPos);
+		TId duplexSeqNoWithinFile = 0;
+		
+		if (options._debugLevel >= 1)
+			::std::cerr << "Starting on duplex file " << duplexName << ::std::endl;
+            
+        bool reduceSet = true; // merge overlapping features
+		
+        std::cout << "NEW RUN startTriplexSearchSerialInverted ****************************\n";
+		// iterate over duplex sequences, and add them to ttsSet after processing
+		for(; !_streamEOF(file); ++duplexSeqNo, ++duplexSeqNoWithinFile){
+			TDuplex	duplexSeq;
+			CharString duplexName;
+			//readID(file, id, Fasta());			// read Fasta id
+			readShortID(file, duplexName, Fasta());	// read Fasta id up to first whitespace
+			if (options._debugLevel >= 2)
+				::std::cerr << "Processing:\t" << duplexName << "\t(seq " << duplexSeqNoWithinFile << ")\r" << ::std::flush;
+			
+			read(file, duplexSeq, Fasta());			// read Fasta sequence
+
+			// find low complexity regions and mask sequences if requested
+			if (options.filterRepeats){
+				TRepeatString	data_repeats;
+				findRepeats(data_repeats, duplexSeq, options.minRepeatLength, options.maxRepeatPeriod);
+				for (TRepeatIterator rbeg = begin(data_repeats); rbeg != end(data_repeats); ++rbeg){
+					TRepeat repeat = *rbeg;
+					CharString replacement = string(repeat.endPosition-repeat.beginPosition, 'N' );
+					replace(duplexSeq, repeat.beginPosition, repeat.endPosition, replacement);
+				}
+			}
+			
+            // prefilter for putative TTSs
+    		if (options.forward) {
+    			processDuplex(ttsSet, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
+    		}
+    		if (options.reverse) {
+    			processDuplex(ttsSet, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
+    		}
+		}
+		file.close();
+
+        // create index 
+        TQGramIndex index_qgram(ttsSet);
+        resize(indexShape(index_qgram), weight(shape));
+        // create pattern   
+        TPattern pattern(index_qgram,shape);
+
+#ifdef TRIPLEX_DEBUG
+        typedef typename Iterator<TDuplexModSet>::Type  TIterMotifSet;
+        ::std::cerr << "printing all tts segments (forward)" << ::std::endl;
+        for (TIterMotifSet itr=begin(ttsSet); itr != end(ttsSet);++itr) {
+        	::std::cerr << "tts: " << ttsString(*itr) << " type: " << (*itr).motif << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << " " << ::std::endl;
+        }
+#endif
+        options.timeFindTriplexes = 0;
+
+        TMatches matches;
+        TPotentials potentials;
+        TGardener gardener;
+
+        if (length(tfoMotifSet)>0) {
+        	_filterTriplexInverted(gardener, pattern, tfoMotifSet, options);
+        	_verifyAndStoreInverted(matches, potentials, gardener, pattern, tfoMotifSet, (TId)0, true, options); // true and false, handle with care TODO
+        }
+        eraseAll(gardener);
+        // clean up
+        clear(matches);
+        return TRIPLEX_NORMAL_PROGAM_EXIT;
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////////
 	// Find triplexes in many duplex sequences (import from Fasta) in parallel
 	// by reading in all duplex sequences and storing the results on memory

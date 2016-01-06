@@ -1122,9 +1122,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TScore mismatch = (TScore)_max((TScore) (-1.0/(errorRate+0.00000001)) + 1, -(TScore)length(host(finder)));
 			Score<TScore> scoreMatrix(match, mismatch, std::numeric_limits<int>::max());
 			TScore scoreDropOff = (TScore) _max((TScore) xDrop * (-mismatch), minValue<TScore>()+1);
-			// extend seeds             
-            std::cout << "Extending seedlings:\n\tscoreDropOff: " << scoreDropOff 
-                      << "\n\tqueriyid: " << queriyid << "\n";
+			// extend seeds
 			_extendSeedlings(hitSet, finder, pattern, seqmap, scoreMatrix, minLength, scoreDropOff, queriyid);
 			
 			// housekeeping
@@ -1266,8 +1264,8 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TWorker
 	>
 	void plant(Gardener<TId, TSpec>	&gardener,
-			   Pattern<TIndex, QGramsLookup< TShape, TPatternSpec> > const	&pattern, // index of tfoSet patterns
-			   TQuerySet			&queries,   // ttsSet
+			   Pattern<TIndex, QGramsLookup< TShape, TPatternSpec> > const	&pattern, // index of tfoSet patterns (originally), now tts
+			   TQuerySet			&queries,   // tts(original), now tfoSet
 			   TError const			&errorRate,
 			   TSize const			&minLength,
 			   TDrop const			&xDrop,
@@ -1281,16 +1279,20 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename Value<TQuerySet>::Type										TSequence;
 		typedef Finder<TSequence, QGramsLookup< TShape, Standard_QGramsLookup > >	TFinder;
 		typedef typename Position<TFinder>::Type									TPos;
+
+		typedef Pattern<TIndex, QGramsLookup< TShape, TPatternSpec> >			 	TPattern;
+		typedef typename Iterator< TPattern >::Type									TPatternIter;
 		
 		// q-gram lemma
 		// w+1-(k+1)q | w=minimum length, k=errors, q=weight(q-grams)
 		TPos minSeedsThreshold = static_cast<TPos>(minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape));
 #ifdef TRIPLEX_DEBUG
-        ::std::cout << "\nPlant called ------------------------------\n";
-		::std::cout << "minLength:" << minLength << " errorRate:" << errorRate << " qgram:" << weight(pattern.shape) << ::std::endl;
-		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
-        ::std::cout << "queries length: " << length(queries) << ::std::endl;
-        ::std::cout << "queries[0]: " << queries[0] << ::std::endl;
+        ::std::cout << "\n\nPlant called ------------------------------ ==============================================\n";
+//		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
+        ::std::cout << "queries[0] (original tts, now tfo): " << queries[0] << ::std::endl;
+        ::std::cout << "pattern: " << ::std::endl;
+
+
 #endif						
 		
 		// serial processing
@@ -1301,7 +1303,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			_find(*hitsPointer, finder, pattern, errorRate, (TPos) minLength, minSeedsThreshold, xDrop, queryid );	
 			insert(gardener.hits, queryid, hitsPointer);
 #ifdef TRIPLEX_DEBUG
-			::std::cout << "TTS " << queryid << " : " << queries[queryid] << ::std::endl;
+			::std::cout << "TTS (originally, now TFO) " << queryid << " : " << queries[queryid] << ::std::endl;
 			_printHits(gardener, pattern, queries, queryid);
 #endif
 		}		

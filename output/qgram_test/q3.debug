@@ -1,0 +1,244 @@
+qgram-threshold:1 weight(qgram):5
+read 1 sequences.
+11111
+Parser: vertices=3 edges=13
+Parser: vertices=3 edges=13
+GAGAAGGGAGG
+10100111011
+00000000000
+01011000100
+
+011111111111
+001111111111
+000111111111
+000011111111
+000001111111
+000000111111
+000000011111
+000000001111
+000000000111
+000000000011
+000000000001
+Any hit: 1 11
+ filter:0.6 errors:0 orientation:-1
+ filter:0.636364 errors:0 orientation:-1
+add match:GAGAAGGGAGG
+len : 11
+err : 0
+gua : 0.363636
+ filter:0.6 errors:0 orientation:-1
+# Elements before merging:1
+# Elements final patterns:1
+Parser: vertices=3 edges=13
+printing all tfo segments
+tfo: GGAGGGAAGAG type: R length: 11 position: 0 0
+open ./tmp_q3.out
+printing all tfo segments (1)
+tfo pattern [0]: GGAGGGAAGAG, reverse complement: GGAGGGAAGAG
+Starting on duplex file qgram1_ds.fasta
+NEW RUN startTriplexSearchSerialInverted ****************************
+Processing:	chr11:135178906-135179538	(seq 0)Parser: vertices=3 edges=13
+Parser: vertices=3 edges=13
+pTTS:CTCCTCTCTC
+GAGAGAGGAG
+1010101101
+0000000000
+0101010010
+
+01111111111
+00111111111
+00011111111
+00001111111
+00000111111
+00000011111
+00000001111
+00000000111
+00000000011
+00000000001
+Any hit: 1 10
+ filter:0.6 errors:0 orientation:0
+add match:GAGAGAGGAG
+len : 10
+err : 0
+gua : 0.4
+# Elements before merging:1
+# Elements final patterns:1
+Processing:	chr10:135178806-135179438	(seq 1)Parser: vertices=3 edges=13
+Parser: vertices=3 edges=13
+pTTS:CTCCCTTCTC
+GAGAAGGGAG
+1010011101
+0000000000
+0101100010
+
+01111111111
+00111111111
+00011111111
+00001111111
+00000111111
+00000011111
+00000001111
+00000000111
+00000000011
+00000000001
+Any hit: 1 10
+ filter:0.6 errors:0 orientation:0
+add match:GAGAAGGGAG
+len : 10
+err : 0
+gua : 0.4
+# Elements before merging:1
+# Elements final patterns:2
+printing all tts segments (forward)
+tts: GAGAGAGGAG type: - length: 10 position: 1 
+tts: GAGAAGGGAG type: - length: 10 position: 1 
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:1273]	plant
+
+
+Plant called ------------------------------ ==============================================
+queries[0] (original tts, now tfo): GAGAAGGGAGG
+pattern: 
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:105]	Finder
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:1097]	_find
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:973]	_collectSeeds
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:336]	find
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:326]	setPattern
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:298]	_firstNonRepeatRange
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:452]	_seedMultiProcessQGram
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:406]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:393]	hitInfix
+Q:GAGAA
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:437]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:423]	infix
+T:GAGAA
+H:0-N1:P0:D0
+needle itself@barni: GAGAAGGGAG
+tmpseqmanSize:0 ,KeyKnown:0
+seqmanSize:0 ,KeyKnown:0
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:890]	_putSeedsInMap
+add new window:1-0 0
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:336]	find
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:452]	_seedMultiProcessQGram
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:406]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:393]	hitInfix
+Q:AGAAG
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:437]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:423]	infix
+T:AGAAG
+H:1-N1:P1:D0
+needle itself@barni: GAGAAGGGAG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:890]	_putSeedsInMap
+add new window:2-0 1
+extend? 0=0 1 2
+was: 0-1 0-1
+now: 0-2 0-2
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:336]	find
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:452]	_seedMultiProcessQGram
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:406]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:393]	hitInfix
+Q:GAAGG
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:437]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:423]	infix
+T:GAAGG
+H:2-N1:P2:D0
+needle itself@barni: GAGAAGGGAG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:890]	_putSeedsInMap
+add new window:3-0 2
+extend? 0=0 2 3
+was: 0-2 0-2
+now: 0-3 0-3
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:336]	find
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:452]	_seedMultiProcessQGram
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:406]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:393]	hitInfix
+Q:AAGGG
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:437]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:423]	infix
+T:AAGGG
+H:3-N1:P3:D0
+needle itself@barni: GAGAAGGGAG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:890]	_putSeedsInMap
+add new window:4-0 3
+extend? 0=0 3 4
+was: 0-3 0-3
+now: 0-4 0-4
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:336]	find
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:452]	_seedMultiProcessQGram
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:406]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:393]	hitInfix
+Q:AGGGA
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:437]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:423]	infix
+T:AGGGA
+H:4-N1:P4:D0
+needle itself@barni: GAGAAGGGAG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:890]	_putSeedsInMap
+add new window:5-0 4
+extend? 0=0 4 5
+was: 0-4 0-4
+now: 0-5 0-5
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:336]	find
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:452]	_seedMultiProcessQGram
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:406]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:393]	hitInfix
+Q:GGGAG
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:437]	infix
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:423]	infix
+T:GGGAG
+H:5-N1:P5:D0
+needle itself@barni: GAGAAGGGAG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:890]	_putSeedsInMap
+add new window:6-0 5
+extend? 0=0 5 6
+was: 0-5 0-5
+now: 0-6 0-6
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:336]	find
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:452]	_seedMultiProcessQGram
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:234]	atEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/find_index_qgrams.h:266]	_nextNonRepeatRange
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:736]	_extendSeedlings
+seed_1:0:6 0:6
+seed_2:0:6 0:6
+seed_3:0:10 0:10
+newset:1 hitSet:0
+newset:0 hitSet:1
+TTS (originally, now TFO) 0 : GAGAAGGGAGG
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:1161]	_printHits
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:343]	hasAnyHit
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:357]	harvestBegin
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:373]	harvestEnd
+1(0:10)	0(0:10)	d:0	GAGAAGGGAG	1(1:11)	GAGAAGGGAG	0(0:10)	
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:373]	harvestEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:357]	harvestBegin
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:373]	harvestEnd
+transform (triplex): GGAGGGAAGA
+transform (tts): GAGAAGGGAG
+to       : GNNNNGNNNN
+Parser: vertices=3 edges=13
+totalNumberOfMatches:0
+@zb tts orientation: -
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:373]	harvestEnd
+Entered [/home/zbarni/code/triplexator-project/triplexator/src/gardener.h:421]	eraseAll
+rename temorary file ./tmp_q3.out to ./q3.out

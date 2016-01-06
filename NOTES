@@ -64,19 +64,48 @@ Summary:________________________________________________________________________
             TFOs = PATTERN, NEEDLE (set of strings)
             d_i  = HAYSTACK
             ---------------------------------------
-        3*) Collect seeds: get maximal 'seeds' of each TFO in the needle that match anywhere in the haystack (d_i),
+        3)  Collect seeds: get maximal 'seeds' of each TFO in the needle that match anywhere in the haystack (d_i),
             i.e., maximal substrings of each TFO that match d_i somewhere and have a minimum length. This is EXACT
             MATCHING. 
-            A "Finder" object is created from the haystack and the pattern, and by recursively calling the SeqAn "find"
-            function all common q-gram substrings (q is defined at the beginning) are returned and analyzed. This "find"
-            function is based on ..... ??????? TBD
-            q-gram matching is based on hash functions / values.
+            A "Finder" object is created from the haystack and the pattern, and by recursively calling a custom
+            implementation of the "find" function all common q-gram substrings (q is defined at the beginning) are 
+            returned and analyzed. 
+
+        3*) `find` function: move a window of length `q` over the haystack, and for each q-gram take its hash value.
+            This hash value is then used to find the right bucket(s) in the pattern (TFO) index; i.e., q-gram matching 
+            is based on hash functions / values.
 
         4)  A scoring schema is calculated and then the seeds / q-grams are extended using the scoring schema and X-Drop
-            algorithm.
+            algorithm. Seed extension is done using the built-in SeqAn function, `extendSeed`
+
 
 
      =======================================
      Calculating q-gram size
             Size of qgram : (qgram threshold - 1 - minLength) / (- #errors - 1)
             
+
+
+Implementation details:________________________________________________________________________________________________
+    *)  Index of TFOs, q-grams is of type `IndexQGram<TShape, OpenAddressing>`
+    *)  (Search) Pattern for the TFO index has type `Pattern<TQGramIndex, QGramsLookup< TShape, Standard_QGramsLookup>>`
+        , where QGramsLookup is the search algorithm 
+
+
+    Typedefs:
+    ==================================
+    typedef StringSet<Ttts>                                 TttsSet;
+    typedef StringSet<TriplexString>                        TOligoMotifSet;
+    typedef TriplexString                                   TTriplex;       ---|
+    typedef TriplexString                                   TDuplex;        ---|
+    typedef StringSet<ModStringTriplex<TDuplex, TDuplex> >  TTargetSet;     -----|
+    typedef StringSet<TTriplex>                             TTriplexSet;         |
+    typedef __int64                                         TId;                 |
+    typedef ModStringTriplex<TTriplex, TTriplex>            TOligoMotif;         |
+    typedef StringSet<TOligoMotif>                          TMotifSet;      -----|
+    
+
+
+
+
+
