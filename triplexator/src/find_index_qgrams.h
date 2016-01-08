@@ -37,7 +37,7 @@
 
 #include <seqan/find.h>
 #include <seqan/index.h>
-#define ENTER std::cout << "Entered [" << __FILE__ << ":" << __LINE__ << "]\t" << __func__ << std::endl;
+#define ENTER //std::cout << "Entered [" << __FILE__ << ":" << __LINE__ << "]\t" << __func__ << std::endl;
 
 namespace SEQAN_NAMESPACE_MAIN
 {

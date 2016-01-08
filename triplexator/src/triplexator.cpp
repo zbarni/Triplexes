@@ -705,10 +705,10 @@ namespace SEQAN_NAMESPACE_MAIN
                 if (options._debugLevel >= 1)
                     options.logFileHandle << _getTimeStamp() <<  " - Finised creating q-gram index for all TFOs" << ::std::endl;
                 // TODO @barni remove
-                    ::std::cerr << "printing all tfo segments (" << length(tfoMotifSet) << ") []" << ::std::endl;
-                    for (unsigned i =0; i < length(tfoMotifSet); ++i){
-                        ::std::cerr << "tfo pattern [" << i << "]" << tfoMotifSet[i] << " length: "<< length(tfoMotifSet[i]) << ::std::endl;
-                    }
+//                    ::std::cerr << "printing all tfo segments (" << length(tfoMotifSet) << ") []" << ::std::endl;
+//                    for (unsigned i =0; i < length(tfoMotifSet); ++i){
+//                        ::std::cerr << "tfo pattern [" << i << "]" << tfoMotifSet[i] << " length: "<< length(tfoMotifSet[i]) << ::std::endl;
+//                    }
 
                 errorCode = startTriplexSearchSerial(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, TGardener());
             } else {
@@ -756,7 +756,7 @@ namespace SEQAN_NAMESPACE_MAIN
         if (options.filterMode == FILTERING_GRAMS){
             options.logFileHandle << _getTimeStamp() <<  " - Skipping creating q-gram index for all TFOs. This will be done for the TTS instead." << ::std::endl;
             // TODO cleanup @barni
-            ::std::cerr << "printing all tfo segments (" << length(tfoMotifSet) << ")" << ::std::endl;
+//            ::std::cerr << "printing all tfo segments (" << length(tfoMotifSet) << ")" << ::std::endl;
             // create reverse complement of tfo-s
             TMotifSet revTfoMotifSet;              
             for (unsigned i =0; i < length(tfoMotifSet); ++i) {
@@ -764,7 +764,7 @@ namespace SEQAN_NAMESPACE_MAIN
                 //reverseComplement(motif);
                 complement(motif);
                 appendValue(revTfoMotifSet, motif);
-                ::std::cerr << "tfo pattern [" << i << "]: " << tfoString(tfoMotifSet[i]) << ", reverse complement: " << tfoString(revTfoMotifSet[i]) << ::std::endl;
+//                ::std::cerr << "tfo pattern [" << i << "]: " << tfoString(tfoMotifSet[i]) << ", reverse complement: " << tfoString(revTfoMotifSet[i]) << ::std::endl;
             }
 
             errorCode = startTriplexSearchSerialInverted(tfoMotifSet, revTfoMotifSet, tfoNames, outputfile, shape, options, TGardener());
@@ -999,7 +999,6 @@ namespace SEQAN_NAMESPACE_MAIN
         TMotifSet tfoMotifSet;
         for (TOligoIter it = begin(oligoSequences); it != end(oligoSequences); ++it){
             
-        	std::cout << "@zb oligosequence " << *it << std::endl;
             // find low complexity regions and mask sequences if requested
             if (options.filterRepeats){
                 TRepeatString data_repeats;
@@ -1013,19 +1012,19 @@ namespace SEQAN_NAMESPACE_MAIN
             
             // process TC motif
             if (options.motifTC) {
-                std::cout << "@zb TC #: " << processTCMotif(tfoMotifSet, *it, oligoSeqNo, reduceSet, options) << std::endl;
+                processTCMotif(tfoMotifSet, *it, oligoSeqNo, reduceSet, options);
             }
             // process GA motif
             if (options.motifGA) {
-            	std::cout << "@zb GA #: " << processGAMotif(tfoMotifSet, *it, oligoSeqNo, reduceSet, options) << std::endl;
+            	processGAMotif(tfoMotifSet, *it, oligoSeqNo, reduceSet, options);
             }
             // process GT motif
             if (options.motifGT_p && options.motifGT_a) {
-            	std::cout << "@zb GT_p,a #: " << processGTMotif(tfoMotifSet, *it, oligoSeqNo, TRIPLEX_ORIENTATION_BOTH, reduceSet, options) << std::endl;
+            	processGTMotif(tfoMotifSet, *it, oligoSeqNo, TRIPLEX_ORIENTATION_BOTH, reduceSet, options);
             } else if (options.motifGT_p){
-            	std::cout << "@zb GT_p #: " << processGTMotif(tfoMotifSet, *it, oligoSeqNo, TRIPLEX_ORIENTATION_PARALLEL, reduceSet, options) << std::endl;
+            	processGTMotif(tfoMotifSet, *it, oligoSeqNo, TRIPLEX_ORIENTATION_PARALLEL, reduceSet, options);
             } else if (options.motifGT_a){
-            	std::cout << "@zb GT_a #: " << processGTMotif(tfoMotifSet, *it, oligoSeqNo, TRIPLEX_ORIENTATION_ANTIPARALLEL, reduceSet, options) << std::endl;
+            	processGTMotif(tfoMotifSet, *it, oligoSeqNo, TRIPLEX_ORIENTATION_ANTIPARALLEL, reduceSet, options);
             }
             ++oligoSeqNo;
         }

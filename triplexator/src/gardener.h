@@ -58,7 +58,7 @@ _Pragma(STRINGIFY(code))
 #define SEQAN_PRAGMA_IF_PARALLEL(code)
 #endif // SEQAN_ENABLE_PARALLELISM
 #endif // SEQAN_PRAGMA_IF_PARALLEL
-#define ENTER std::cout << "Entered [" << __FILE__ << ":" << __LINE__ << "]\t" << __func__ << std::endl;
+#define ENTER //std::cout << "Entered [" << __FILE__ << ":" << __LINE__ << "]\t" << __func__ << std::endl;
 
 using namespace seqan;
 namespace SEQAN_NAMESPACE_MAIN
