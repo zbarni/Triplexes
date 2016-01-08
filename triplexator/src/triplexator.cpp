@@ -33,7 +33,7 @@
 // ==========================================================================
 
 #define SEQAN_PROFILE                   // enable time measuring
-#define TRIPLEX_DEBUG                   // print verification regions
+//#define TRIPLEX_DEBUG                   // print verification regions
 
 //#ifndef SEQAN_ENABLE_PARALLELISM
 //#define SEQAN_ENABLE_PARALLELISM 1        // disable parallelism on default
@@ -750,7 +750,6 @@ namespace SEQAN_NAMESPACE_MAIN
         SEQAN_PROTIMESTART(find_time);
         options.logFileHandle << _getTimeStamp() << " * Started searching for inverted triplexes" << ::std::endl;
         
-        TId duplexSeqNo = 0;
         // open duplex file
         options.logFileHandle << _getTimeStamp() << " * Processing " << options.duplexFileNames[0] << ::std::endl;
 
@@ -768,7 +767,7 @@ namespace SEQAN_NAMESPACE_MAIN
                 ::std::cerr << "tfo pattern [" << i << "]: " << tfoString(tfoMotifSet[i]) << ", reverse complement: " << tfoString(revTfoMotifSet[i]) << ::std::endl;
             }
 
-            errorCode = startTriplexSearchSerialInverted(tfoMotifSet, revTfoMotifSet, tfoNames, outputfile, duplexSeqNo, shape, options, TGardener());
+            errorCode = startTriplexSearchSerialInverted(tfoMotifSet, revTfoMotifSet, tfoNames, outputfile, shape, options, TGardener());
         } else {
             assert(false && "Should handle brute force inverted here. TODO");
         }   
