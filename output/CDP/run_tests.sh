@@ -26,9 +26,9 @@ else
 fi
 
 # run tests
-for e in {5..15..5}; do
-    for q in {1..2}; do
-        for c in {1..2}; do
+for e in {5..5..5}; do
+    for q in {1..1}; do
+        for c in {1..1}; do
             output="serial_l${l}_q${q}_c${c}_e${e}.out"
             tempOutput="tempOutput"
             if [ "$mem" = true ]; then
@@ -37,6 +37,9 @@ for e in {5..15..5}; do
                 rm ${tempOutput}*
             else
                 echo "Running l: ${l}, q: ${q}, c: ${c}, e: ${e}"
+                echo "Command started:"
+                echo "triplexator -ss $rna -ds $dna -o $output $inv -v -l $l -fm 1 -t $q -c $c -e $e"
+                echo ""
                 triplexator -ss $rna -ds $dna -o $output $inv -v -l $l -fm 1 -t $q -c $c -e $e 
             fi
         done

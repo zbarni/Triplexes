@@ -655,6 +655,9 @@ namespace SEQAN_NAMESPACE_MAIN
         typedef Gardener<TId, GardenerUngapped>                                 TGardener;
         
         unsigned errorCode = TRIPLEX_NORMAL_PROGAM_EXIT;
+        options.timeCreateTtssIndex = 0;
+        options.timeTriplexSearch 	= 0;
+        options.timeIOReadingTts 	= 0;
         
         SEQAN_PROTIMESTART(find_time);
         options.logFileHandle << _getTimeStamp() << " * Started searching for triplexes" << ::std::endl;
@@ -694,22 +697,18 @@ namespace SEQAN_NAMESPACE_MAIN
     #endif  
             if (options.filterMode == FILTERING_GRAMS){
                 // create index
-                if (options._debugLevel >= 1)
+                if (options._debugLevel >= 1) {
                     options.logFileHandle << _getTimeStamp() <<  " - Started creating q-gram index for all TFOs" << ::std::endl;
+                }
                 TQGramIndex index_qgram(tfoMotifSet);
                 resize(indexShape(index_qgram), weight(shape));
                 // create pattern   
                 TPattern pattern(index_qgram,shape);
                 options.timeFindTriplexes = 0;
                 // create index
-                if (options._debugLevel >= 1)
+                if (options._debugLevel >= 1) {
                     options.logFileHandle << _getTimeStamp() <<  " - Finised creating q-gram index for all TFOs" << ::std::endl;
-                // TODO @barni remove
-//                    ::std::cerr << "printing all tfo segments (" << length(tfoMotifSet) << ") []" << ::std::endl;
-//                    for (unsigned i =0; i < length(tfoMotifSet); ++i){
-//                        ::std::cerr << "tfo pattern [" << i << "]" << tfoMotifSet[i] << " length: "<< length(tfoMotifSet[i]) << ::std::endl;
-//                    }
-
+                }
                 errorCode = startTriplexSearchSerial(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, TGardener());
             } else {
                 TQGramIndex pattern;
@@ -723,6 +722,8 @@ namespace SEQAN_NAMESPACE_MAIN
             options.logFileHandle << _getTimeStamp() << " * Finished processing " << options.duplexFileNames[0] << ::std::endl; 
             options.timeFindTriplexes += SEQAN_PROTIMEDIFF(find_time);  
             options.logFileHandle << _getTimeStamp() << " * Finished searching for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << " * Time for triplex search only " << ::std::setprecision(3) << options.timeTriplexSearch << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIOReadingTts << " seconds (summed over all cpus)" << ::std::endl;
         }
         return errorCode;
     }
@@ -746,6 +747,9 @@ namespace SEQAN_NAMESPACE_MAIN
         typedef Gardener<TId, GardenerUngapped>                                 TGardener;
         
         unsigned errorCode = TRIPLEX_NORMAL_PROGAM_EXIT;
+        options.timeCreateTtssIndex = 0;
+        options.timeTriplexSearch 	= 0;
+        options.timeIOReadingTts 	= 0;
         
         SEQAN_PROTIMESTART(find_time);
         options.logFileHandle << _getTimeStamp() << " * Started searching for inverted triplexes" << ::std::endl;
@@ -755,8 +759,6 @@ namespace SEQAN_NAMESPACE_MAIN
 
         if (options.filterMode == FILTERING_GRAMS){
             options.logFileHandle << _getTimeStamp() <<  " - Skipping creating q-gram index for all TFOs. This will be done for the TTS instead." << ::std::endl;
-            // TODO cleanup @barni
-//            ::std::cerr << "printing all tfo segments (" << length(tfoMotifSet) << ")" << ::std::endl;
             // create reverse complement of tfo-s
             TMotifSet revTfoMotifSet;              
             for (unsigned i =0; i < length(tfoMotifSet); ++i) {
@@ -774,9 +776,13 @@ namespace SEQAN_NAMESPACE_MAIN
         
         if (errorCode == TRIPLEX_NORMAL_PROGAM_EXIT){
             options.logFileHandle << _getTimeStamp() << " * Finished processing " << options.duplexFileNames[0] << ::std::endl; 
-            options.timeFindTriplexes += SEQAN_PROTIMEDIFF(find_time);  
-            options.logFileHandle << _getTimeStamp() << " * Finished searching for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
+            options.timeFindTriplexes += SEQAN_PROTIMEDIFF(find_time);
+            options.logFileHandle << _getTimeStamp() << " * Finished searching (including IO) for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << " * Time for triplex search only " << ::std::setprecision(3) << options.timeTriplexSearch << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << " * Time for ds index creation only " << ::std::setprecision(3) << options.timeCreateTtssIndex << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIOReadingTts << " seconds (summed over all cpus)" << ::std::endl;
         }
+
         return errorCode;
     }
 
