@@ -721,9 +721,9 @@ namespace SEQAN_NAMESPACE_MAIN
         if (errorCode == TRIPLEX_NORMAL_PROGAM_EXIT){
             options.logFileHandle << _getTimeStamp() << " * Finished processing " << options.duplexFileNames[0] << ::std::endl; 
             options.timeFindTriplexes += SEQAN_PROTIMEDIFF(find_time);  
-            options.logFileHandle << _getTimeStamp() << " * Finished searching for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << " * Time for triplex search only " << ::std::setprecision(3) << options.timeTriplexSearch << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIOReadingTts << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished searching for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for triplex search only " << ::std::setprecision(3) << options.timeTriplexSearch << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIOReadingTts << " seconds (summed over all cpus)" << ::std::endl;
         }
         return errorCode;
     }
@@ -777,10 +777,10 @@ namespace SEQAN_NAMESPACE_MAIN
         if (errorCode == TRIPLEX_NORMAL_PROGAM_EXIT){
             options.logFileHandle << _getTimeStamp() << " * Finished processing " << options.duplexFileNames[0] << ::std::endl; 
             options.timeFindTriplexes += SEQAN_PROTIMEDIFF(find_time);
-            options.logFileHandle << _getTimeStamp() << " * Finished searching (including IO) for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << " * Time for triplex search only " << ::std::setprecision(3) << options.timeTriplexSearch << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << " * Time for ds index creation only " << ::std::setprecision(3) << options.timeCreateTtssIndex << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIOReadingTts << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished searching (including IO) for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for triplex search only " << ::std::setprecision(3) << options.timeTriplexSearch << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for ds index creation only " << ::std::setprecision(3) << options.timeCreateTtssIndex << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIOReadingTts << " seconds (summed over all cpus)" << ::std::endl;
         }
 
         return errorCode;
@@ -1662,7 +1662,7 @@ namespace SEQAN_NAMESPACE_MAIN
         
         closeSummaryFile(options);
         
-        options.logFileHandle << _getTimeStamp() << " * Finished program within " <<  ::std::setprecision(3)  << SEQAN_PROTIMEDIFF(runtime) << " seconds" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished program within " <<  ::std::setprecision(3)  << SEQAN_PROTIMEDIFF(runtime) << " seconds" << ::std::endl;
         closeLogFile(options);
         
         return result;
