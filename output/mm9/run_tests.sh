@@ -1,13 +1,14 @@
 #!/bin/bash
-
-#meta_bsub.sh cat mm9 mm9i1 1:00 8000 valgrind --tool=massif --massif-out-file=/home/bz107942/triplexator/output/mm9/inverted/profiling/chr1_serial_l19_q2_c1_e5.mem /home/bz107942/triplexator/triplexator/bin/triplexator -ss /home/bz107942/triplexator/data/rna/CDP_merged.fa -ds /home/bz107942/triplexator/data/dna/mm9/mm9.chr1.fa -i -v -l 19 -fm 1 -t 2 -c 1 -e 5 \> /home/bz107942/triplexator/output/mm9/inverted/chr1_serial_l19_q2_c1_e5.out
+# IMPORTANT: must be run from output/mm9 or similar
 
 mem=false   #memory profiling
 inv="f"      #inverted if -i given, otherwise original
 l=19
 chr=1
-#dna="../../../data/dna/mm9/mm9.chr1.fa"
-#rna="../../../data/rna/CDP_merged.fa"
+DATA_DIR="${PWD}/../../data"
+ROOT_DIR=$PWD
+EXEC_CMD="${PWD}/../../triplexator/bin/triplexator"
+LOCAL=true
 
 while getopts ":mil:c:" opt; do
     case ${opt} in
@@ -24,10 +25,9 @@ while getopts ":mil:c:" opt; do
     esac
 done
 
-dna="/home/bz107942/triplexator/data/dna/mm9/mm9.chr${chr}.fa"
-rna="/home/bz107942/triplexator/data/rna/CDP_merged.fa"
+DNA_FILE="${DATA_DIR}/dna/mm9/mm9.chr${chr}.fa"
+RNA_FILE="${DATA_DIR}/rna/CDP_merged.fa"
 
-cd /home/bz107942/triplexator/output/mm9
 # switch directory according to options
 if [ $inv == "-i" ]; then
     cd inverted
@@ -41,16 +41,22 @@ fi
 for e in {5..5..5}; do
     for q in {4..4}; do
         for c in {1..2}; do
-            output="chr${chr}_serial_l${l}_q${q}_c${c}_e${e}.out"
-            tempOutput="tempOutput"
+            OUTPUT="chr${chr}_serial_l${l}_q${q}_c${c}_e${e}.out"
 
             if [ "$mem" = true ]; then
                 echo "Running memory profiler with l: ${l}, q: ${q}, c: ${c}, e: ${e}"
-                meta_bsub.sh bsub mm9_mem mm9_mem_chr${chr}_l${l}_q${q}_c${c}_e${e} 24:00 16000 valgrind --tool=massif --massif-out-file="/home/bz107942/triplexator/output/mm9/inverted/profiling/${output}.mem" /home/bz107942/triplexator/triplexator/bin/triplexator -ss $rna -ds $dna -o "mem_${output}" $inv -v -l $l -fm 1 -t $q -c $c -e $e 
-                #rm ${tempOutput}*
+				if [ "$LOCAL" = true ]; then
+					valgrind --tool=massif --massif-out-file="${PWD}/profiling/${OUTPUT}.mem" $EXEC_CMD -ss $RNA_FILE -ds $DNA_FILE -o "mem_${OUTPUT}" $inv -v -l $l -fm 1 -t $q -c $c -e $e 
+				else
+					meta_bsub.sh bsub mm9_mem mm9_mem_chr${chr}_l${l}_q${q}_c${c}_e${e} 24:00 16000 valgrind --tool=massif --massif-out-file="${PWD}/profiling/${OUTPUT}.mem" $EXEC_CMD -ss $RNA_FILE -ds $DNA_FILE -o "mem_${OUTPUT}" $inv -v -l $l -fm 1 -t $q -c $c -e $e 
+				fi
             else
                 echo "Running l: ${l}, q: ${q}, c: ${c}, e: ${e}"
-                meta_bsub.sh bsub mm9 mm9_chr${chr}_l${l}_q${q}_c${c}_e${e} 6:00 16000 /home/bz107942/triplexator/triplexator/bin/triplexator -ss $rna -ds $dna -o $output $inv -v -l $l -fm 1 -t $q -c $c -e $e 
+				if [ "$LOCAL" = true ]; then
+					$EXEC_CMD -ss $RNA_FILE -ds $DNA_FILE -o $OUTPUT $inv -v -l $l -fm 1 -t $q -c $c -e $e 
+				else
+					meta_bsub.sh bsub mm9 mm9_chr${chr}_l${l}_q${q}_c${c}_e${e} 6:00 16000 $EXEC_CMD -ss $RNA_FILE -ds $DNA_FILE -o $OUTPUT $inv -v -l $l -fm 1 -t $q -c $c -e $e 
+				fi
             fi
         done
     done
