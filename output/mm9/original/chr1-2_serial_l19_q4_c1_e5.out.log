@@ -1,0 +1,79 @@
+*************************************************************
+*** Triplexator - Finding nucleic acid triple helices     ***
+***         (c) Copyright 2011 by Fabian Buske            ***
+***     Comments, Bugs, Feedback: f.buske@uq.edu.au       ***
+*************************************************************
+*** Version 1.3.2 (30/03/2012) SeqAn Revision: 1225
+*** COMMAND:
+>/home/zbarni/code/triplexator-project/output/mm9/../../triplexator/bin/triplexator -ss /home/zbarni/code/triplexator-project/output/mm9/../../data/rna/CDP_merged.fa -ds /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1-2.fa -o chr1-2_serial_l19_q4_c1_e5.out f -v -l 19 -fm 1 -t 4 -c 1 -e 5 
+*************************************************************
+*** INPUT:
+- single-stranded file supplied : Yes
+- duplex file supplied : Yes
+-> search putative triplexes (matching triplex-forming oligonucleotides and target sites)
+*************************************************************
+*** Output Options:
+- output directory : ./
+- output file : chr1-2_serial_l19_q4_c1_e5.out
+- output format : 0 = Triplex
+- merge features : Yes
+- report duplicate locations : No
+- error reference : 0 = Watson strand (TTS)
+*************************************************************
+*** Main Options:
+- consider forward strand in duplex : Yes
+- consider reverse strand in duplex : Yes
+- maximum error-rate : 5%
+- maximum total error : 1
+- minimum guanine content with respect to the target : 10%
+- maximum guanine content with respect to the target : 100%
+- minimum length : 19 nucleotides
+- maximum length : 30 nucleotides
+- maximum number of tolerated consecutive pyrimidine interruptions in a target: 1
+- include GT-motif : Yes
+- include GA-motif : Yes
+- include TC-motif : Yes
+- minimum guanine-percentage in anti-parallel mixed motif TFOs : 0%
+- maximum guanine-percentage in parallel mixed motif TFOs : 100%
+- number of consecutive matches required in a feature : 1
+- longest match only : yes
+- detect duplicates : 0 = off
+- same sequence duplicates : on
+*************************************************************
+*** Filtration Options :
+- filter repeats : Yes
+- minimum repeat length : 10
+- maximum repeat period : 4
+- duplicate cutoff : -1
+- filtering : qgrams
+- weight : 8
+- min. threshold specified: 4
+- min. threshold actual: 4
+*************************************************************
+*** Runtime mode:
+- OpenMP support : Yes
+- runtime mode : 0 = serial
+*************************************************************
+*** Log messages:
+[01/20/16 19:37:43] * Started checking duplex file
+[01/20/16 19:37:43] * Finished checking duplex file
+[01/20/16 19:37:43] * Started reading single-stranded file:/home/zbarni/code/triplexator-project/output/mm9/../../data/rna/CDP_merged.fa
+[01/20/16 19:37:43] * Finished reading single-stranded file (311 sequences read)
+[01/20/16 19:37:43] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
+[01/20/16 19:37:43] * Finished detecting TFOs within 0.0858 seconds (215 TFOs detected)
+[01/20/16 19:37:43] * Started searching for triplexes
+[01/20/16 19:37:43] * Processing /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1-2.fa
+[01/20/16 19:37:43] - Started creating q-gram index for all TFOs
+[01/20/16 19:37:43] - Finised creating q-gram index for all TFOs
+[01/20/16 19:39:32] * Finished processing /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1-2.fa
+
+[01/20/16 19:39:32] * Finished searching for triplexes  within 109.588 seconds (summed over all cpus)
+[01/20/16 19:39:32] * Time for triplex search only (search + verify - triplex.h) 29.434 seconds (summed over all cpus)
+[01/20/16 19:39:32] * Time for ds IO reading/processing only 78.708 seconds (summed over all cpus)
+[01/20/16 19:39:32] * Time for `find` function in qgram-Finder 2.963 seconds (summed over all cpus)
+[01/20/16 19:39:32] * Time for `collectSeeds` function in gardener 22.594 seconds (summed over all cpus)
+[01/20/16 19:39:32] * Time for `_find` function in gardener 26.179 seconds (summed over all cpus)
+[01/20/16 19:39:32] * Time for `verifyAndStore` function in triplex.h 2.984 seconds (summed over all cpus)
+
+[01/20/16 19:39:32] * Exit without errors 
+[01/20/16 19:39:32] * Finished program within 109.675 seconds

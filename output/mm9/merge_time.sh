@@ -11,7 +11,7 @@ echo "" >> $DATA
 for e in {5..10..1}; do
     for q in {1..5}; do
         for c in {1..3}; do
-            for FILE in $(find . -maxdepth 1 -name "chr*q${q}*c${c}*e${e}*.log.bkp"); do
+            for FILE in $(find . -maxdepth 1 -name "chr*q${q}*c${c}*e${e}*.log"); do
                 FILE=$(echo $FILE | sed 's/\.\///')
                 FILE_ORIG="../original/${FILE}"
                 if ([ -f $FILE ] && [ -f $FILE_ORIG ]); then
@@ -44,18 +44,4 @@ for e in {5..10..1}; do
             done
         done
     done
-done
-
-exit
-
-for FILE in chr*.log; do
-    [[ $FILE =~ q(.)_ ]] 
-    Q=${BASH_REMATCH[1]}
-    
-    [[ $FILE =~ c(.)_ ]] 
-    C=${BASH_REMATCH[1]}
-
-    [[ $FILE =~ _e(.[0-9]*)\. ]] 
-    E=${BASH_REMATCH[1]}
-    echo $Q $C $E
 done
