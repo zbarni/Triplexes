@@ -66,7 +66,16 @@ namespace SEQAN_NAMESPACE_MAIN
 	// ============================================================================
 	// Tags, Classes, Enums
 	// ============================================================================
-	
+	double timeCollectSeeds 	= 0;
+	double timeCollectSeedsLoop = 0;
+	double timeGardenerFind 	= 0;
+	double timePutSeedsInMap 	= 0;
+	double timeCSFreeSpace		= 0;
+	long long cntCSFind = 0;
+	long long cntCSNewNeedle	= 0;
+	long long cntCSExistingNeedle	= 0;
+
+
 	struct _MULTIPLE_WORKER;
 	typedef Tag<_MULTIPLE_WORKER> MULTIPLE_WORKER; // tag for parallel execution
 	
@@ -182,20 +191,43 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef Map<THitMapPair, Skiplist< > >					THitMap;	
 		typedef typename Iterator<THitSet, Standard>::Type		THitIterator;
 		
+		double timeQgramFind;
+		double timeQgramMultiSeed;
+		double timeCollectSeeds;
+		double timeGardenerFind;
+		double timePutSeedsInMap;
+
 		THitMap hits; // containing for each  duplex sequence (TId) the list of detected
 		
-		Gardener<TId, TGardenerSpec>(){}
+		Gardener<TId, TGardenerSpec>() :
+				timeQgramFind(0),
+				timeCollectSeeds(0),
+				timeGardenerFind(0),
+				timeQgramMultiSeed(0),
+				timePutSeedsInMap(0) {}
 		
-		Gardener<TId, TGardenerSpec>(Gardener<TId, TGardenerSpec> const &orig): hits(orig.hits) {};
+		Gardener<TId, TGardenerSpec>(Gardener<TId, TGardenerSpec> const &orig): hits(orig.hits),
+				timeQgramFind(0),
+				timeCollectSeeds(0),
+				timeGardenerFind(0),
+				timeQgramMultiSeed(0),
+				timePutSeedsInMap(0) {};
 		
 		Gardener<TId, TGardenerSpec> & operator = (Gardener<TId, TGardenerSpec> const &orig){
 			hits = orig.hits;
+			timeQgramFind 		= orig.timeQgramFind;
+			timeGardenerFind 	= orig.timeGardenerFind;
+			timeCollectSeeds	= orig.timeCollectSeeds;
+			timeQgramMultiSeed	= orig.timeQgramMultiSeed;
+			timePutSeedsInMap	= orig.timePutSeedsInMap;
+
 			return *this;
 		}
 		
 		~Gardener<TId, TGardenerSpec>()
 		{
 		}
+
 	};
 
 	// seed comparator
@@ -887,7 +919,9 @@ namespace SEQAN_NAMESPACE_MAIN
 							   TId	const	&seqNo,
 							   TDiag const	&diag,
 							   TSet		&posSet
-							   ){ ENTER
+							   ){
+        SEQAN_PROTIMESTART(time_putseeds);
+
 		typedef typename Value<TMap>::Type				TMapPair;
 		typedef typename Cargo<TMapPair>::Type			TDiagMapPointer;
 		typedef typename Value<TDiagMapPointer>::Type 	TDiagMap;
@@ -950,6 +984,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 			}
 		}	
+        timePutSeedsInMap += SEQAN_PROTIMEDIFF(time_putseeds);
 	}
 	
 	//____________________________________________________________________________
@@ -970,7 +1005,8 @@ namespace SEQAN_NAMESPACE_MAIN
 							  TPos const									&seedsThreshold,
 							  TPos const									&minLength,
 							  TMap											&seqmap
-							  ){ ENTER
+							  ){
+        SEQAN_PROTIMESTART(time_collectseeds);
 		typedef typename Value<TMap>::Type				TMapPair;
 		typedef typename Key<TMapPair>::Type			TId;
 		typedef typename Cargo<TMapPair>::Type			TDMPointer;
@@ -992,17 +1028,20 @@ namespace SEQAN_NAMESPACE_MAIN
 		
 		TSeqMap tmpSeqmap;
 		while (find(finder, pattern)) {
+			cntCSFind++;
+	        SEQAN_PROTIMESTART(time_collectseeds_loop);
 #ifdef TRIPLEX_DEBUG			
 			::std::cout << "Q:" << infix(finder) << ::std::endl; // The Infix of the match in the haystack.
 			::std::cout << "T:" << infix(pattern, *finder.curHit) << ::std::endl;
 			::std::cout << "H:" << (*finder.curHit).hstkPos << "-N" << (*finder.curHit).ndlSeqNo << ":P" << (*finder.curHit).ndlPos << ":D" << (*finder.curHit).diag << ::std::endl;
-            //@gandalf
+            //TODO@barni remove
 			::std::cout << "needle itself@barni: " << getSequenceByNo((*finder.curHit).ndlSeqNo, needle(pattern)) << ::std::endl;
 			::std::cout << "tmpseqmanSize:" << length(tmpSeqmap) << " ,KeyKnown:" << hasKey(tmpSeqmap, (*finder.curHit).ndlSeqNo) << ::std::endl;
 			::std::cout << "seqmanSize:" << length(seqmap) << " ,KeyKnown:" << hasKey(seqmap, (*finder.curHit).ndlSeqNo) << ::std::endl;
 #endif			
 			// new needle sequence that has no entries yet -- add new needle, and seedset corresponding to diagonal
-			if ( ! hasKey(tmpSeqmap, (*finder.curHit).ndlSeqNo)){		
+			if ( ! hasKey(tmpSeqmap, (*finder.curHit).ndlSeqNo)){
+				cntCSNewNeedle ++;
 				// create new needle map
 				{
 					TDiagMap* diagMapPointer = new TDiagMap;
@@ -1021,7 +1060,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 			}
 			// needle sequence is known
-			else { 
+			else {
 				TDiagMap* diagMapPointer = cargo(tmpSeqmap, (*finder.curHit).ndlSeqNo);
 				// but diagonal index is new
 				if (!hasKey(*diagMapPointer, (*finder.curHit).diag)){
@@ -1049,10 +1088,12 @@ namespace SEQAN_NAMESPACE_MAIN
 					}
 				}
 			}
+			timeCollectSeedsLoop += SEQAN_PROTIMEDIFF(time_collectseeds_loop);
 		}
-		
+
 		// housekeeping
 		// empty tmp seqmap properly
+		SEQAN_PROTIMESTART(time_delete);
 		for (TIterM sit=begin(tmpSeqmap); sit != end(tmpSeqmap); ++sit){
 			TDiagMap* diagmapPointer = (*sit).i2;
 			for (TIterD dit=begin(*diagmapPointer); dit != end(*diagmapPointer); ++dit){
@@ -1060,6 +1101,9 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 			delete diagmapPointer;
 		}
+		timeCSFreeSpace 	+= SEQAN_PROTIMEDIFF(time_delete);
+
+		timeCollectSeeds 	+= SEQAN_PROTIMEDIFF(time_collectseeds);
 	}
 
 		
@@ -1091,10 +1135,11 @@ namespace SEQAN_NAMESPACE_MAIN
 					  Pattern<TIndex,  TSpec > const	&pattern,
 					  TError const						&errorRate,
 					  TPos const						&minLength,
-					  TPos const						&seedsThreshold,
+					  TPos const						&seedsThreshold, // q-gram lemma
 					  TDrop const						&xDrop,
 					  TId								&queriyid
-					  ){ ENTER
+					  ){
+        SEQAN_PROTIMESTART(time_find);
 		// used datastructure: Map < NeedleSeqNo, < Map < diagonal, SeedSet > > 
 		// for each needle all q-gram hits are stored according to the diagonal they reside in
 		typedef int											TScore;
@@ -1136,9 +1181,10 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 				delete diagmapPointer;
 			}
-			
+			timeGardenerFind += SEQAN_PROTIMEDIFF(time_find);
 			return true;
-		} else 
+		} else
+			timeGardenerFind += SEQAN_PROTIMEDIFF(time_find);
 			return false;
 	}
 	
@@ -1270,7 +1316,12 @@ namespace SEQAN_NAMESPACE_MAIN
 			   TSize const			&minLength,
 			   TDrop const			&xDrop,
 			   TWorker
-			   ){ ENTER
+			   ){
+		// reset local timers
+		timeCollectSeeds = 0.0;
+		timeGardenerFind = 0.0;
+		timePutSeedsInMap = 0.0;
+
 		typedef typename Iterator<TQuerySet>::Type									TQueryIter;
 		typedef typename Value<Gardener<TId, TSpec> >::Type							THitMap;
 		typedef typename Value<THitMap>::Type										THitMapEntry;
@@ -1288,11 +1339,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		TPos minSeedsThreshold = static_cast<TPos>(minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape));
 #ifdef TRIPLEX_DEBUG
         ::std::cout << "\n\nPlant called ------------------------------ ==============================================\n";
-//		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
-        ::std::cout << "queries[0] (original tts, now tfo): " << queries[0] << ::std::endl;
-        ::std::cout << "pattern: " << ::std::endl;
-
-
+        std::cout << "min length: " << minLength << std::endl
+        		<< "errors (k): " << ceil(errorRate*minLength)+1 << std::endl
+        		<< "weight (q-grams): " << weight(pattern.shape) << std::endl;
 #endif						
 		
 		// serial processing
@@ -1302,11 +1351,16 @@ namespace SEQAN_NAMESPACE_MAIN
 			TFinder finder(queries[queryid]); 
 			_find(*hitsPointer, finder, pattern, errorRate, (TPos) minLength, minSeedsThreshold, xDrop, queryid );	
 			insert(gardener.hits, queryid, hitsPointer);
+
 #ifdef TRIPLEX_DEBUG
 			::std::cout << "TTS (originally, now TFO) " << queryid << " : " << queries[queryid] << ::std::endl;
 			_printHits(gardener, pattern, queries, queryid);
 #endif
+			gardener.timeQgramFind += finder.timeFind;
 		}		
+		gardener.timeCollectSeeds += timeCollectSeeds;
+		gardener.timeGardenerFind += timeGardenerFind;
+		gardener.timePutSeedsInMap+= timePutSeedsInMap;
 	}
 		
 	/** 

@@ -94,6 +94,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		TShape			shape;	// shape needs to be saved in Finder since it contains the next hashvalue and pattern needs to stay const 
 		bool			hasShape;
 		int				maxHitThreshold;
+		double			timeFind;
 		
 		Finder():
 		_needReinit(true), hasShape(false) { ENTER  }
@@ -102,7 +103,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		data_iterator(begin(haystack, Rooted())),
 		_needReinit(true),
 		hasShape(false),
-		maxHitThreshold(0){ ENTER  
+		maxHitThreshold(0),
+		timeFind(0)
+		{ ENTER
 			TShape shape;
 		}
 		
@@ -111,7 +114,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		data_iterator(begin(haystack, Rooted())),
 		_needReinit(true),
 		hasShape(false),
-		maxHitThreshold(_maxHitThreshold)
+		maxHitThreshold(_maxHitThreshold),
+		timeFind(0)
 		{ ENTER  
 			TShape shape;
 		}
@@ -121,7 +125,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		data_iterator(begin(haystack, Rooted())),
 		_needReinit(true) ,
 		hasShape(false),
-		maxHitThreshold(0)
+		maxHitThreshold(0),
+		timeFind(0)
 		{ ENTER 
 			findRepeats(data_repeats, haystack, minRepeatLen, maxPeriod);
 		}
@@ -131,7 +136,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		data_iterator(begin(haystack, Rooted())),
 		_needReinit(true) ,
 		hasShape(false),
-		maxHitThreshold(_maxHitThreshold)
+		maxHitThreshold(_maxHitThreshold),
+		timeFind(0)
 		{ ENTER 
 			findRepeats(data_repeats, haystack, minRepeatLen, maxPeriod);
 		}
@@ -159,7 +165,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		data_repeats(orig.data_repeats),
 		hasShape(orig.hasShape),
 		shape(orig.shape),
-		maxHitThreshold(orig.maxHitThreshold)
+		maxHitThreshold(orig.maxHitThreshold),
+		timeFind(orig.timeFind)
 		{ ENTER 
 			curHit = begin(hits, Rooted()) + (orig.curHit - begin(orig.hits, Rooted()));
 			endHit = end(hits, Rooted());
@@ -194,6 +201,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			hasShape = orig.hasShape;
 			shape = orig.shape;
 			maxHitThreshold = orig.maxHitThreshold;
+			timeFind = orig.timeFind;
             return *this;
         }
 		
@@ -333,10 +341,12 @@ namespace SEQAN_NAMESPACE_MAIN
 	find(
 		 Finder<THaystack,  QGramsLookup<TShape, TSpec> >		&finder,
 		 Pattern<TIndex,  QGramsLookup<TShape, TSpec> > const	&pattern
-	){ ENTER 
+	){ ENTER
+        SEQAN_PROTIMESTART(time_find);
 		typedef	typename Value<TShape>::Type				THashValue;
-		
+//		std::cout << "find entered\n";
 		if (empty(finder)){
+//			std::cout << "empty finder\n";
 			// init pattern
 			setPattern(finder, pattern);
 			
@@ -348,11 +358,13 @@ namespace SEQAN_NAMESPACE_MAIN
 			
 			if (!_firstNonRepeatRange(finder, pattern)) return false;
 			if (_seedMultiProcessQGram(finder, pattern, hash(finder.shape, hostIterator(hostIterator(finder))))) {
+				finder.timeFind += SEQAN_PROTIMEDIFF(time_find);
 				return true;
 			}
 			
 		} else {
 			if (++finder.curHit != finder.endHit) {
+				finder.timeFind += SEQAN_PROTIMEDIFF(time_find);
 				return true;
 			}
 		}
@@ -363,6 +375,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		// are we at the end of the text?
 		if (atEnd(finder) && finder.curRepeat == finder.endRepeat){
 			finder.curHit = finder.endHit;
+			finder.timeFind += SEQAN_PROTIMEDIFF(time_find);
 			return false;
 		}
 		
@@ -371,6 +384,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		do{
 			if (atEnd(++finder)){
 				if (!_nextNonRepeatRange(finder, pattern)){
+					finder.timeFind += SEQAN_PROTIMEDIFF(time_find);
 					return false;
 				}
 				hash(finder.shape, hostIterator(hostIterator(finder)));
@@ -380,6 +394,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 			
 			if (_seedMultiProcessQGram(finder, pattern, value(finder.shape))){
+				finder.timeFind += SEQAN_PROTIMEDIFF(time_find);
 				return true;
 			}
 			
@@ -457,7 +472,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename TFinder::TQGramHit							THit;
 		
 		TIndex const &index = host(pattern);
-		
+//		std::cout << "seed multi process qgram entered\n";
 		// create an iterator over the positions of the q-gram occurences in pattern
 		TSAIter saBegin = begin(indexSA(index), Standard());
 		TSAIter occ = saBegin + indexDir(index)[getBucket(index.bucketMap, hash)];

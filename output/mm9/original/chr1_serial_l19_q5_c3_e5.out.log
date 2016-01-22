@@ -47,33 +47,35 @@
 - duplicate cutoff : -1
 - filtering : qgrams
 - weight : 7
-- min. threshold specified: 5
-- min. threshold actual: 6
+- min. threshold specified: (qgramThreshold)5
+- min. threshold actual (minSeedsThreshold): 6
 *************************************************************
 *** Runtime mode:
 - OpenMP support : Yes
 - runtime mode : 0 = serial
 *************************************************************
 *** Log messages:
-[01/20/16 19:26:57] * Started checking duplex file
-[01/20/16 19:26:57] * Finished checking duplex file
-[01/20/16 19:26:57] * Started reading single-stranded file:/home/zbarni/code/triplexator-project/output/mm9/../../data/rna/CDP_merged.fa
-[01/20/16 19:26:57] * Finished reading single-stranded file (311 sequences read)
-[01/20/16 19:26:57] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
-[01/20/16 19:26:57] * Finished detecting TFOs within 0.352 seconds (215 TFOs detected)
-[01/20/16 19:26:57] * Started searching for triplexes
-[01/20/16 19:26:57] * Processing /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1.fa
-[01/20/16 19:26:57] - Started creating q-gram index for all TFOs
-[01/20/16 19:26:57] - Finised creating q-gram index for all TFOs
-[01/20/16 19:29:14] * Finished processing /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1.fa
+[01/22/16 19:06:04] * Started checking duplex file
+[01/22/16 19:06:04] * Finished checking duplex file
+[01/22/16 19:06:04] * Started reading single-stranded file:/home/zbarni/code/triplexator-project/output/mm9/../../data/rna/CDP_merged.fa
+[01/22/16 19:06:04] * Finished reading single-stranded file (311 sequences read)
+[01/22/16 19:06:04] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
+[01/22/16 19:06:04] * Finished detecting TFOs within 0.381 seconds (215 TFOs detected)
+[01/22/16 19:06:04] * Started searching for triplexes
+[01/22/16 19:06:04] * Processing /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1.fa
+[01/22/16 19:06:04] - Started creating q-gram index for all TFOs
+[01/22/16 19:06:04] - Finised creating q-gram index for all TFOs
+[01/22/16 19:08:27] * Finished processing /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1.fa
 
-[01/20/16 19:29:14] * Finished searching for triplexes  within 137.055 seconds (summed over all cpus)
-[01/20/16 19:29:14] * Time for triplex search only (search + verify - triplex.h) 28.685 seconds (summed over all cpus)
-[01/20/16 19:29:14] * Time for ds IO reading/processing only 107.529 seconds (summed over all cpus)
-[01/20/16 19:29:14] * Time for `find` function in qgram-Finder 3.131 seconds (summed over all cpus)
-[01/20/16 19:29:14] * Time for `collectSeeds` function in gardener 24.166 seconds (summed over all cpus)
-[01/20/16 19:29:14] * Time for `_find` function in gardener 25.981 seconds (summed over all cpus)
-[01/20/16 19:29:14] * Time for `verifyAndStore` function in triplex.h 2.442 seconds (summed over all cpus)
+[01/22/16 19:08:27] * Finished searching for triplexes  within 142.488 seconds (summed over all cpus)
+[01/22/16 19:08:27] * Time for triplex search only (search + verify - triplex.h) 30.996 seconds (summed over all cpus)
+[01/22/16 19:08:27] * Time for ds IO reading/processing only 110.661 seconds (summed over all cpus)
+[01/22/16 19:08:27] * Time for `verifyAndStore` function in triplex.h 2.438 seconds (summed over all cpus)
+[01/22/16 19:08:27] * Time for `find` function in qgram-Finder 3.152 seconds (summed over all cpus)
+[01/22/16 19:08:27] * Time for `_find` function in gardener 28.289 seconds (summed over all cpus)
+[01/22/16 19:08:27] * Time for `collectSeeds` function in gardener 26.470 seconds (summed over all cpus)
+[01/22/16 19:08:27] * Time for `collectSeeds LOOP` function in gardener 16.994 seconds (summed over all cpus)
+[01/22/16 19:08:27] * Time for `_putSeedsInMap` function in gardener 0.594 seconds (summed over all cpus)
 
-[01/20/16 19:29:14] * Exit without errors 
-[01/20/16 19:29:14] * Finished program within 137.409 seconds
+[01/22/16 19:08:27] * Exit without errors 
+[01/22/16 19:08:27] * Finished program within 142.871 seconds

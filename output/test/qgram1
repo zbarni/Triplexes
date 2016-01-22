@@ -1,0 +1,2 @@
+# Sequence-ID	TFO start	TFO end	Duplex-ID	TTS start	TTS end	Score	Error-rate	Errors	Motif	Strand	Orientation	Guanine-rate
+hg19_wgEncodeGencodeBasicV12_ENST00000424518.1	1	11	chr10:135178806-135179438	4	14	10	0		R	-	A	0.6
