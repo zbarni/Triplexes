@@ -2319,7 +2319,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		
 		bool reduceSet = true; // merge overlapping features
 		
-		if (options.forward && false){
+		if (options.forward){
 			TGardener gardener_forward;
 			TDuplexModSet ttsSet_forward;
 			// prefilter for putative TTSs
@@ -4201,7 +4201,7 @@ namespace SEQAN_NAMESPACE_MAIN
         options.timeCreateTtssIndex += SEQAN_PROTIMEDIFF(time_ds_index);
 
 #ifdef TRIPLEX_DEBUG
-        ::std::cerr << "printing all tts segments (forward)" << ::std::endl;
+        ::std::cerr << "printing all tts segments (forward + backward); total: " << length(ttsSet) << ::std::endl;
         for (TIterMotifSet itr=begin(ttsSet); itr != end(ttsSet);++itr) {
         	::std::cerr << "tts: " << ttsString(*itr) << " type: " << (*itr).motif << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << " " << ::std::endl;
         }
@@ -4329,6 +4329,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 		file.close();
         options.timeCollectSeedsLoop+= timeCollectSeedsLoop;
+        options.timeCSFreeSpace		+= timeCSFreeSpace;
+        options.cntCSFind			+= cntCSFind;
 		return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}
 	

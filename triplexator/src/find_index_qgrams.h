@@ -338,15 +338,13 @@ namespace SEQAN_NAMESPACE_MAIN
 	
 	template <typename THaystack, typename TIndex, typename TShape, typename TSpec>
 	inline bool 
-	find(
-		 Finder<THaystack,  QGramsLookup<TShape, TSpec> >		&finder,
+	find(Finder<THaystack,  QGramsLookup<TShape, TSpec> >		&finder,
 		 Pattern<TIndex,  QGramsLookup<TShape, TSpec> > const	&pattern
-	){ ENTER
+	){
         SEQAN_PROTIMESTART(time_find);
 		typedef	typename Value<TShape>::Type				THashValue;
-//		std::cout << "find entered\n";
+		// this is entered only once, at the beginning, when no hits are stored
 		if (empty(finder)){
-//			std::cout << "empty finder\n";
 			// init pattern
 			setPattern(finder, pattern);
 			
@@ -362,7 +360,8 @@ namespace SEQAN_NAMESPACE_MAIN
 				return true;
 			}
 			
-		} else {
+		}
+		else {
 			if (++finder.curHit != finder.endHit) {
 				finder.timeFind += SEQAN_PROTIMEDIFF(time_find);
 				return true;
@@ -380,7 +379,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 		
 		// find next hit
-		// @@@@@@@@@@@@@@@@@@@barni this is the important shit
 		do{
 			if (atEnd(++finder)){
 				if (!_nextNonRepeatRange(finder, pattern)){
@@ -455,6 +453,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		
 	//////////////////////////////////////////////////////////////////////
 	// @@@@@@@@barni This function finds all 
+	// returns TRUE if any hit was found
 	template <
 		typename TFinder,
 		typename TIndex,
@@ -489,7 +488,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			
 			// create a new hit and append it to the finders hit list
 			THit hit = {                //                              
-				finder.curPos,          // begin in haystack      
+				finder.curPos,          // begin in haystack
 				getSeqNo(ndlPos),       // needle seq. number            
 				getSeqOffset(ndlPos),	// needle position
 				diag					// the diagonal

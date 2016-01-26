@@ -730,9 +730,11 @@ namespace SEQAN_NAMESPACE_MAIN
 
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `find` function in qgram-Finder " << ::std::setprecision(3) << options.timeQgramFind << " seconds (summed over all cpus)" << ::std::endl;
 
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `_find` function in gardener " << ::std::setprecision(3) << options.timeGardenerFind << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds` function in gardener " << ::std::setprecision(3) << options.timeCollectSeeds << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds LOOP` function in gardener " << ::std::setprecision(3) << options.timeCollectSeedsLoop << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds FreeSpace` function in gardener " << ::std::setprecision(3) << options.timeCSFreeSpace << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds find loop cnt` function in gardener " << ::std::setprecision(3) << options.cntCSFind << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `_find` function in gardener " << ::std::setprecision(3) << options.timeGardenerFind << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `_putSeedsInMap` function in gardener " << ::std::setprecision(3) << options.timePutSeedsInMap << " seconds (summed over all cpus)" << ::std::endl;
 
             options.logFileHandle << std::endl;

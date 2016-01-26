@@ -71,7 +71,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	double timeGardenerFind 	= 0;
 	double timePutSeedsInMap 	= 0;
 	double timeCSFreeSpace		= 0;
-	long long cntCSFind = 0;
+	long long cntCSFind 		= 0;
 	long long cntCSNewNeedle	= 0;
 	long long cntCSExistingNeedle	= 0;
 
@@ -1031,8 +1031,8 @@ namespace SEQAN_NAMESPACE_MAIN
 			cntCSFind++;
 	        SEQAN_PROTIMESTART(time_collectseeds_loop);
 #ifdef TRIPLEX_DEBUG			
-			::std::cout << "Q:" << infix(finder) << ::std::endl; // The Infix of the match in the haystack.
-			::std::cout << "T:" << infix(pattern, *finder.curHit) << ::std::endl;
+			::std::cout << "Q (inv = tfo):" << infix(finder) << ::std::endl; // The Infix of the match in the haystack.
+			::std::cout << "T (inv = tts):" << infix(pattern, *finder.curHit) << ::std::endl;
 			::std::cout << "H:" << (*finder.curHit).hstkPos << "-N" << (*finder.curHit).ndlSeqNo << ":P" << (*finder.curHit).ndlPos << ":D" << (*finder.curHit).diag << ::std::endl;
             //TODO@barni remove
 			::std::cout << "needle itself@barni: " << getSequenceByNo((*finder.curHit).ndlSeqNo, needle(pattern)) << ::std::endl;
@@ -1102,7 +1102,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			delete diagmapPointer;
 		}
 		timeCSFreeSpace 	+= SEQAN_PROTIMEDIFF(time_delete);
-
 		timeCollectSeeds 	+= SEQAN_PROTIMEDIFF(time_collectseeds);
 	}
 
@@ -1347,15 +1346,16 @@ namespace SEQAN_NAMESPACE_MAIN
 		// serial processing
 		TId querylen = (TId)length(queries);
 		for (TId queryid=0; queryid<querylen; ++queryid){
+#ifdef TRIPLEX_DEBUG
+			::std::cout << "TTS (originally, now TFO) " << queryid << " : " << queries[queryid] << ::std::endl;
+			::std::cout << "TTS (originally, now TFO) as ttsString: " << queryid << " : " << ttsString(queries[queryid]) << ::std::endl;
+			_printHits(gardener, pattern, queries, queryid);
+#endif
+
 			THitSetPointer hitsPointer = new THitSet;
 			TFinder finder(queries[queryid]); 
 			_find(*hitsPointer, finder, pattern, errorRate, (TPos) minLength, minSeedsThreshold, xDrop, queryid );	
 			insert(gardener.hits, queryid, hitsPointer);
-
-#ifdef TRIPLEX_DEBUG
-			::std::cout << "TTS (originally, now TFO) " << queryid << " : " << queries[queryid] << ::std::endl;
-			_printHits(gardener, pattern, queries, queryid);
-#endif
 			gardener.timeQgramFind += finder.timeFind;
 		}		
 		gardener.timeCollectSeeds += timeCollectSeeds;
