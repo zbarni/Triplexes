@@ -1,0 +1,283 @@
+qgram-threshold:1 weight(qgram):5
+11111
+GAGAAGGGAGG
+10100111011
+00000000000
+01011000100
+
+011111111111
+001111111111
+000111111111
+000011111111
+000001111111
+000000111111
+000000011111
+000000001111
+000000000111
+000000000011
+000000000001
+Any hit: 1 11
+ filter:0.6 errors:0 orientation:-1
+ filter:0.636364 errors:0 orientation:-1
+add match:GAGAAGGGAGG
+len : 11
+err : 0
+gua : 0.363636
+ filter:0.6 errors:0 orientation:-1
+# Elements before merging:1
+# Elements final patterns:1
+GGGGAAGAGAG
+11110010101
+00000000000
+00001101010
+
+011111111111
+001111111111
+000111111111
+000011111111
+000001111111
+000000111111
+000000011111
+000000001111
+000000000111
+000000000011
+000000000001
+Any hit: 1 11
+ filter:0.6 errors:0 orientation:-1
+ filter:0.636364 errors:0 orientation:-1
+add match:GGGGAAGAGAG
+len : 11
+err : 0
+gua : 0.363636
+ filter:0.6 errors:0 orientation:-1
+# Elements before merging:1
+# Elements final patterns:2
+printing all tfo segments
+tfo: GGAGGGAAGAG type: R length: 11 position: 0 0
+tfo: GAGAGAAGGGG type: R length: 11 position: 0 0
+open ./tmp_chr1_serial_l10_q1_c1_e5.out
+Starting on duplex file qgram2ds.fasta
+pTTS:GAGAGAAGGGG
+GAGAGAAGGGG
+10101001111
+00000000000
+01010110000
+
+011111111111
+001111111111
+000111111111
+000011111111
+000001111111
+000000111111
+000000011111
+000000001111
+000000000111
+000000000011
+000000000001
+Any hit: 1 11
+ filter:0.6 errors:0 orientation:0
+ filter:0.636364 errors:0 orientation:0
+add match:GAGAGAAGGGG
+len : 11
+err : 0
+gua : 0.363636
+ filter:0.6 errors:0 orientation:0
+# Elements before merging:1
+# Elements final patterns:1
+
+
+Plant called ------------------------------ ==============================================
+min length: 10
+errors (k): 2
+weight (q-grams): 5
+TTS (originally, now TFO) 0 : GAGAGAAGGGG
+TTS (originally, now TFO) as ttsString0 : GAGAGAAGGGG
+No Hits found
+Q:GAGAG
+T:GAGAG
+H:0-N1:P6:D-6
+needle itself@barni: GGGGAAGAGAG
+tmpseqmanSize:0 ,KeyKnown:0
+seqmanSize:0 ,KeyKnown:0
+add new window:1-6 6
+Q:AGAGA
+T:AGAGA
+H:1-N1:P5:D-4
+needle itself@barni: GGGGAAGAGAG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+add new window:1-5 5
+Q:GAGAA
+T:GAGAA
+H:2-N0:P0:D2
+needle itself@barni: GAGAAGGGAGG
+tmpseqmanSize:1 ,KeyKnown:0
+seqmanSize:1 ,KeyKnown:0
+add new window:1-0 0
+Q:AGAAG
+T:AGAAG
+H:3-N0:P1:D2
+needle itself@barni: GAGAAGGGAGG
+tmpseqmanSize:2 ,KeyKnown:1
+seqmanSize:2 ,KeyKnown:1
+add new window:2-0 1
+extend? 2=2 3 4
+was: 2-3 0-1
+now: 2-4 0-2
+Q:GAAGG
+T:GAAGG
+H:4-N0:P2:D2
+needle itself@barni: GAGAAGGGAGG
+tmpseqmanSize:2 ,KeyKnown:1
+seqmanSize:2 ,KeyKnown:1
+add new window:3-0 2
+extend? 2=2 4 5
+was: 2-4 0-2
+now: 2-5 0-3
+Q:AAGGG
+T:AAGGG
+H:5-N0:P3:D2
+needle itself@barni: GAGAAGGGAGG
+tmpseqmanSize:2 ,KeyKnown:1
+seqmanSize:2 ,KeyKnown:1
+add new window:4-0 3
+extend? 2=2 5 6
+was: 2-5 0-3
+now: 2-6 0-4
+seed_1:2:6 0:4
+seed_2:2:6 0:4
+seed_3:2:10 0:8
+seed_1:0:1 6:7
+seed_2:0:1 6:7
+seed_3:0:5 6:11
+seed_1:1:2 5:6
+seed_2:1:2 5:6
+seed_3:1:6 5:10
+pTTS:CTCCCTTCTC
+GAGAAGGGAG
+1010011101
+0000000000
+0101100010
+
+01111111111
+00111111111
+00011111111
+00001111111
+00000111111
+00000011111
+00000001111
+00000000111
+00000000011
+00000000001
+Any hit: 1 10
+ filter:0.6 errors:0 orientation:0
+add match:GAGAAGGGAG
+len : 10
+err : 0
+gua : 0.4
+# Elements before merging:1
+# Elements final patterns:1
+
+
+Plant called ------------------------------ ==============================================
+min length: 10
+errors (k): 2
+weight (q-grams): 5
+TTS (originally, now TFO) 0 : GAGAAGGGAG
+TTS (originally, now TFO) as ttsString0 : GAGAAGGGAG
+No Hits found
+Q:GAGAA
+T:GAGAA
+H:0-N0:P0:D0
+needle itself@barni: GAGAAGGGAGG
+tmpseqmanSize:0 ,KeyKnown:0
+seqmanSize:0 ,KeyKnown:0
+add new window:1-0 0
+Q:AGAAG
+T:AGAAG
+H:1-N0:P1:D0
+needle itself@barni: GAGAAGGGAGG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+add new window:2-0 1
+extend? 0=0 1 2
+was: 0-1 0-1
+now: 0-2 0-2
+Q:GAAGG
+T:GAAGG
+H:2-N0:P2:D0
+needle itself@barni: GAGAAGGGAGG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+add new window:3-0 2
+extend? 0=0 2 3
+was: 0-2 0-2
+now: 0-3 0-3
+Q:AAGGG
+T:AAGGG
+H:3-N0:P3:D0
+needle itself@barni: GAGAAGGGAGG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+add new window:4-0 3
+extend? 0=0 3 4
+was: 0-3 0-3
+now: 0-4 0-4
+Q:AGGGA
+T:AGGGA
+H:4-N0:P4:D0
+needle itself@barni: GAGAAGGGAGG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+add new window:5-0 4
+extend? 0=0 4 5
+was: 0-4 0-4
+now: 0-5 0-5
+Q:GGGAG
+T:GGGAG
+H:5-N0:P5:D0
+needle itself@barni: GAGAAGGGAGG
+tmpseqmanSize:1 ,KeyKnown:1
+seqmanSize:1 ,KeyKnown:1
+add new window:6-0 5
+extend? 0=0 5 6
+was: 0-5 0-5
+now: 0-6 0-6
+seed_1:0:6 0:6
+seed_2:0:6 0:6
+seed_3:0:10 0:10
+newset:1 hitSet:0
+newset:0 hitSet:1
+transform: GAGAAGGGAG
+to       : GAGAAGGGAG
+pTriplex:GAGAAGGGAG
+GAGAAGGGAG
+1010011101
+0000000000
+0101100010
+
+01111111111
+00111111111
+00011111111
+00001111111
+00000111111
+00000011111
+00000001111
+00000000111
+00000000011
+00000000001
+Any hit: 1 10
+ filter:0.6 errors:0 orientation:0
+add match:GAGAAGGGAG
+len : 10
+err : 0
+gua : 0.4
+# Elements final patterns:1
+totalNumberOfMatches:1
+@zb triplex match original verify: ****
+Match:0 (1:11)	0 0 (0:10)	D:-1	R - A 10 6
+@zb **** END
+tts: GAGAAGGGAG length: 10 position: 0-10 GAGAAGGGAG
+tts: GAGAAGGGAG
+tfo: AGAAGGGAGG
+rename temorary file ./tmp_chr1_serial_l10_q1_c1_e5.out to ./chr1_serial_l10_q1_c1_e5.out
