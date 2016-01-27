@@ -4129,6 +4129,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
         // set containing all putative tts after filtering, used to build index & pattern
         TDuplexModSet ttsSet;
+//        TDuplexModSet ttsSetRev;
         TDuplexSet 	  ttsDuplexSet;
 		
 		// open duplex file
@@ -4184,6 +4185,7 @@ namespace SEQAN_NAMESPACE_MAIN
     			processDuplex(ttsSet, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
     		}
     		if (options.reverse) {
+//    			processDuplex(ttsSetRev, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
     			processDuplex(ttsSet, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
     		}
     		duplexSeqNames[duplexSeqNoWithinFile] = ::std::make_pair(duplexName, duplexSeq);
@@ -4194,10 +4196,15 @@ namespace SEQAN_NAMESPACE_MAIN
         //////////////////////////////////////////////////////////////////////////////
 		// create index
         SEQAN_PROTIMESTART(time_ds_index);
-        TQGramIndex index_qgram(ttsSet);
-        resize(indexShape(index_qgram), weight(shape));
+        TQGramIndex indexQgram(ttsSet);
+        resize(indexShape(indexQgram), weight(shape));
         // create pattern   
-        TPattern pattern(index_qgram,shape);
+        TPattern pattern(indexQgram,shape);
+
+//        TQGramIndex indexQgramRev(ttsSetRev);
+//        resize(indexShape(indexQgramRev), weight(shape));
+//        // create pattern
+//        TPattern patternRev(indexQgramRev,shape);
         options.timeCreateTtssIndex += SEQAN_PROTIMEDIFF(time_ds_index);
 
 #ifdef TRIPLEX_DEBUG
@@ -4208,20 +4215,32 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
         options.timeFindTriplexes = 0;
 
-        TMatches matches;
+        TMatches 	matches;
         TPotentials potentials;
-        TGardener gardener;
+        TGardener 	gardener;
+//        TGardener gardenerRev;
 
         SEQAN_PROTIMESTART(time_search);
+        // forward
         if (length(tfoMotifSet)>0) {
         	_filterTriplexInverted(gardener, pattern, tfoMotifSet, options);
         	_verifyAndStoreInverted(matches, potentials, gardener, pattern, tfoMotifSet, ttsDuplexSet, options);
+
+//        	_filterTriplexInverted(gardenerRev, patternRev, tfoMotifSet, options);
+//        	_verifyAndStoreInverted(matches, potentials, gardenerRev, patternRev, tfoMotifSet, ttsDuplexSet, options);
         }
         options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
+        // gardener forward
         options.timeQgramFind 		+= gardener.timeQgramFind;
         options.timeCollectSeeds	+= gardener.timeCollectSeeds;
         options.timeGardenerFind	+= gardener.timeGardenerFind;
         options.timePutSeedsInMap	+= gardener.timePutSeedsInMap;
+        // gardener backward
+//        options.timeQgramFind 		+= gardenerRev.timeQgramFind;
+//        options.timeCollectSeeds	+= gardenerRev.timeCollectSeeds;
+//        options.timeGardenerFind	+= gardenerRev.timeGardenerFind;
+//        options.timePutSeedsInMap	+= gardenerRev.timePutSeedsInMap;
+
         options.timeCollectSeedsLoop+= timeCollectSeedsLoop;
         options.timeCSFreeSpace		+= timeCSFreeSpace;
         options.cntCSFind			+= cntCSFind;

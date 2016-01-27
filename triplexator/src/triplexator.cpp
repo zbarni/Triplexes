@@ -33,7 +33,7 @@
 // ==========================================================================
 
 #define SEQAN_PROFILE                   // enable time measuring
-#define TRIPLEX_DEBUG                   // print verification regions
+//#define TRIPLEX_DEBUG                   // print verification regions
 
 //#ifndef SEQAN_ENABLE_PARALLELISM
 //#define SEQAN_ENABLE_PARALLELISM 1        // disable parallelism on default
