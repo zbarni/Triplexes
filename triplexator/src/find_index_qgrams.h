@@ -42,7 +42,8 @@
 namespace SEQAN_NAMESPACE_MAIN
 {
 	// TODO @barni remove
-	long long cntFIQ_seedMultiProcessQgram = 0;
+	long long 	cntFIQ_seedMultiProcessQgram = 0;
+	double 		time_seedMultiProcessQgram	 = 0;
 
 	template <typename TSpec, typename THstkPos, typename TDiag>
 	struct _QGramHit 
@@ -467,6 +468,7 @@ namespace SEQAN_NAMESPACE_MAIN
 									   THashValue hash)
 	{
 		++cntFIQ_seedMultiProcessQgram;
+		SEQAN_PROTIMESTART(time_seed);
 		typedef Pattern<TIndex,  QGramsLookup<TSpec>  >				TPattern;
 		typedef typename Size<TIndex>::Type							TSize;
 		typedef typename Fibre<TIndex, QGramSA>::Type				TSA;
@@ -506,7 +508,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		
 		finder.curHit = begin(finder.hits, Rooted());
 		finder.endHit = end(finder.hits, Rooted());
-		
+		time_seedMultiProcessQgram += SEQAN_PROTIMEDIFF(time_seed);
 		return !empty(finder.hits);
 	}
 	

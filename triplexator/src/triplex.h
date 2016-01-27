@@ -4226,6 +4226,7 @@ namespace SEQAN_NAMESPACE_MAIN
         options.timeCSFreeSpace		+= timeCSFreeSpace;
         options.cntCSFind			+= cntCSFind;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Function _seedMultiSeq was called " << ::std::setprecision(3) << cntFIQ_seedMultiProcessQgram << " times" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time spend in _seedMultiSeq  " << ::std::setprecision(3) << time_seedMultiProcessQgram << " seconds" << ::std::endl;
 
         eraseAll(gardener);
 
@@ -4333,6 +4334,7 @@ namespace SEQAN_NAMESPACE_MAIN
         options.timeCSFreeSpace		+= timeCSFreeSpace;
         options.cntCSFind			+= cntCSFind;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Function _seedMultiSeq was called " << ::std::setprecision(3) << cntFIQ_seedMultiProcessQgram << " times" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time spend in _seedMultiSeq  " << ::std::setprecision(3) << time_seedMultiProcessQgram << " seconds" << ::std::endl;
 		return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}
 	
