@@ -1030,7 +1030,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		while (find(finder, pattern)) {
 			cntCSFind++;
 	        SEQAN_PROTIMESTART(time_collectseeds_loop);
-#ifdef TRIPLEX_DEBUG			
+#ifdef TRIPLEX_DEBUG
+	        ::std::cout << "\n_collectSeeds(): new seed found: ******************************\n";
 			::std::cout << "Q (inv = tfo):" << infix(finder) << ::std::endl; // The Infix of the match in the haystack.
 			::std::cout << "T (inv = tts):" << infix(pattern, *finder.curHit) << ::std::endl;
 			::std::cout << "H:" << (*finder.curHit).hstkPos << "-N" << (*finder.curHit).ndlSeqNo << ":P" << (*finder.curHit).ndlPos << ":D" << (*finder.curHit).diag << ::std::endl;

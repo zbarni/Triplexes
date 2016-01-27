@@ -41,7 +41,9 @@
 
 namespace SEQAN_NAMESPACE_MAIN
 {
-	
+	// TODO @barni remove
+	long long cntFIQ_seedMultiProcessQgram = 0;
+
 	template <typename TSpec, typename THstkPos, typename TDiag>
 	struct _QGramHit 
 	{
@@ -339,8 +341,8 @@ namespace SEQAN_NAMESPACE_MAIN
 	template <typename THaystack, typename TIndex, typename TShape, typename TSpec>
 	inline bool 
 	find(Finder<THaystack,  QGramsLookup<TShape, TSpec> >		&finder,
-		 Pattern<TIndex,  QGramsLookup<TShape, TSpec> > const	&pattern
-	){
+		 Pattern<TIndex,  QGramsLookup<TShape, TSpec> > const	&pattern)
+	{
         SEQAN_PROTIMESTART(time_find);
 		typedef	typename Value<TShape>::Type				THashValue;
 		// this is entered only once, at the beginning, when no hits are stored
@@ -463,7 +465,8 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline bool _seedMultiProcessQGram(TFinder & finder,
 									   Pattern<TIndex, QGramsLookup<TSpec> > const & pattern,
 									   THashValue hash)
-	{ ENTER 
+	{
+		++cntFIQ_seedMultiProcessQgram;
 		typedef Pattern<TIndex,  QGramsLookup<TSpec>  >				TPattern;
 		typedef typename Size<TIndex>::Type							TSize;
 		typedef typename Fibre<TIndex, QGramSA>::Type				TSA;
