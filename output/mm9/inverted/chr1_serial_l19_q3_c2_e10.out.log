@@ -47,33 +47,37 @@
 - duplicate cutoff : -1
 - filtering : qgrams
 - weight : 5
-- min. threshold specified: 3
-- min. threshold actual: 5
+- min. threshold specified: (qgramThreshold)3
+- min. threshold actual (minSeedsThreshold): 5
 *************************************************************
 *** Runtime mode:
 - OpenMP support : Yes
 - runtime mode : 0 = serial
 *************************************************************
 *** Log messages:
-[01/20/16 17:42:50] * Started checking duplex file
-[01/20/16 17:42:50] * Finished checking duplex file
-[01/20/16 17:42:50] * Started reading single-stranded file:/home/zbarni/code/triplexator-project/output/mm9/../../data/rna/CDP_merged.fa
-[01/20/16 17:42:50] * Finished reading single-stranded file (311 sequences read)
-[01/20/16 17:42:50] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
-[01/20/16 17:42:50] * Finished detecting TFOs within 0.224 seconds (649 TFOs detected)
-[01/20/16 17:42:50] * Started searching for inverted triplexes
-[01/20/16 17:42:50] * Processing /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1.fa
-[01/20/16 17:42:50] - Skipping creating q-gram index for all TFOs. This will be done for the TTS instead.
-[01/20/16 18:04:00] * Finished processing /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1.fa
+[01/22/16 22:10:12] * Started checking duplex file
+[01/22/16 22:10:12] * Finished checking duplex file
+[01/22/16 22:10:12] * Started reading single-stranded file:/home/zbarni/code/triplexator-project/output/mm9/../../data/rna/CDP_merged.fa
+[01/22/16 22:10:12] * Finished reading single-stranded file (311 sequences read)
+[01/22/16 22:10:12] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
+[01/22/16 22:10:12] * Finished detecting TFOs within 0.202 seconds (649 TFOs detected)
+[01/22/16 22:10:12] * Started searching for inverted triplexes
+[01/22/16 22:10:12] * Processing /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1.fa
+[01/22/16 22:10:12] - Skipping creating q-gram index for all TFOs. This will be done for the TTS instead.
+[01/22/16 22:31:59] * Finished processing /home/zbarni/code/triplexator-project/output/mm9/../../data/dna/mm9/mm9.chr1.fa
 
-[01/20/16 18:04:00] * Finished searching (including IO) for triplexes  within 1269.688 seconds (summed over all cpus)
-[01/20/16 18:04:00] * Time for triplex search only (search + verify - triplex.h) 1196.966 seconds (summed over all cpus)
-[01/20/16 18:04:00] * Time for ds index creation only 0.197 seconds (summed over all cpus)
-[01/20/16 18:04:00] * Time for ds IO reading/processing only 67.999 seconds (summed over all cpus)
-[01/20/16 18:04:00] * Time for `find` function in qgram-Finder 75.309 seconds (summed over all cpus)
-[01/20/16 18:04:00] * Time for `collectSeeds` function in gardener 994.233 seconds (summed over all cpus)
-[01/20/16 18:04:00] * Time for `_find` function in gardener 1142.026 seconds (summed over all cpus)
-[01/20/16 18:04:00] * Time for `verifyAndStore` function in triplex.h 17.009 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Finished searching (including IO) for triplexes  within 1307.720 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for triplex search only (search + verify - triplex.h) 1235.319 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for ds index creation only 0.199 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for ds IO reading/processing only 67.607 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for `verifyAndStore` function in triplex.h 17.100 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for `find` function in qgram-Finder 74.920 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for `collectSeeds` function in gardener 1033.012 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for `collectSeeds LOOP` function in gardener 669.940 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for `collectSeeds FreeSpace` function in gardener 238.580 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for `collectSeeds find loop cnt` function in gardener 1165640275 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for `_find` function in gardener 1181.113 seconds (summed over all cpus)
+[01/22/16 22:31:59] * Time for `_putSeedsInMap` function in gardener 22.428 seconds (summed over all cpus)
 
-[01/20/16 18:04:00] * Exit without errors 
-[01/20/16 18:04:00] * Finished program within 1269.915 seconds
+[01/22/16 22:31:59] * Exit without errors 
+[01/22/16 22:31:59] * Finished program within 1307.925 seconds

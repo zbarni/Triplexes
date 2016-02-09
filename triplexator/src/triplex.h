@@ -4207,11 +4207,14 @@ namespace SEQAN_NAMESPACE_MAIN
 //        TPattern patternRev(indexQgramRev,shape);
         options.timeCreateTtssIndex += SEQAN_PROTIMEDIFF(time_ds_index);
 
-#ifdef TRIPLEX_DEBUG
-        ::std::cerr << "printing all tts segments (forward + backward); total: " << length(ttsSet) << ::std::endl;
+#ifndef TRIPLEX_DEBUG
+        ::std::cerr << "### printing all tts segments (forward + backward); total: " << length(ttsSet) << ::std::endl;
         for (TIterMotifSet itr=begin(ttsSet); itr != end(ttsSet);++itr) {
-        	::std::cerr << "tts: " << ttsString(*itr) << " type: " << (*itr).motif << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << " " << ::std::endl;
+//        	::std::cerr << "tts: " << ttsString(*itr) << " type: " << (*itr).motif << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << " " << ::std::endl;
+        	::std::cerr << ttsString(*itr) << ::std::endl;
         }
+        ::std::cerr << "###\n";
+        exit(0);
 #endif
         options.timeFindTriplexes = 0;
 

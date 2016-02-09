@@ -1,0 +1,3 @@
+open ./tmp_chr1_serial_l15_q2_c2_e5.out
+Starting on duplex file mm9.chr1.fa
+rename temorary file ./tmp_chr1_serial_l15_q2_c2_e5.out to ./chr1_serial_l15_q2_c2_e5.out
