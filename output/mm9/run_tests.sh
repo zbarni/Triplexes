@@ -13,10 +13,10 @@ ORIGINAL=false
 INVERTED=false
 qLow=2
 qHigh=2
-eLow=10
-eHigh=10
-cLow=2
-cHigh=2
+eLow=5
+eHigh=5
+cLow=1
+cHigh=1
 
 while getopts ":mdoil:c:" opt; do
     case ${opt} in
@@ -67,7 +67,8 @@ if [ "$INVERTED" = true ]; then
                         meta_bsub.sh bsub mm9 mm9_chr${chr}_l${l}_q${q}_c${c}_e${e} 6:00 16000 $EXEC_CMD -ss $RNA_FILE -ds $DNA_FILE -o $OUTPUT -i -v -l $l -fm 1 -t $q -c $c -e $e 
                     fi
                 fi
-                rm $OUTPUT ${OUTPUT}.summary
+                #rm $OUTPUT ${OUTPUT}.summary ${OUTPUT}.debug
+                rm ${OUTPUT}.debug
             done
         done
     done
@@ -99,7 +100,8 @@ if [ "$ORIGINAL" = true ]; then
                         meta_bsub.sh bsub mm9 mm9_chr${chr}_l${l}_q${q}_c${c}_e${e} 6:00 16000 $EXEC_CMD -ss $RNA_FILE -ds $DNA_FILE -o $OUTPUT -v -l $l -fm 1 -t $q -c $c -e $e 
                     fi
                 fi
-                rm $OUTPUT ${OUTPUT}.summary
+                #rm $OUTPUT ${OUTPUT}.summary
+                rm ${OUTPUT}.debug
             done
         done
     done

@@ -926,7 +926,7 @@ namespace SEQAN_NAMESPACE_MAIN
         options.timeFindTfos += SEQAN_PROTIMEDIFF(find_time);   
         options.logFileHandle << _getTimeStamp() << " * Finished detecting TFOs within " << ::std::setprecision(3)  << options.timeFindTfos << " seconds (" << length(tfoMotifSet) << " TFOs detected)" << ::std::endl;
         
-    #ifndef TRIPLEX_DEBUG
+    #ifdef TRIPLEX_DEBUG
         TIterMotifSet itr = begin(tfoMotifSet,Standard());
         TIterMotifSet itrEnd = end(tfoMotifSet,Standard());
         ::std::cout << "@@@ printing all tfo segments" << ::std::endl;

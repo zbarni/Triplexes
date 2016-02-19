@@ -4207,14 +4207,13 @@ namespace SEQAN_NAMESPACE_MAIN
 //        TPattern patternRev(indexQgramRev,shape);
         options.timeCreateTtssIndex += SEQAN_PROTIMEDIFF(time_ds_index);
 
-#ifndef TRIPLEX_DEBUG
+#ifdef TRIPLEX_DEBUG
         ::std::cerr << "### printing all tts segments (forward + backward); total: " << length(ttsSet) << ::std::endl;
         for (TIterMotifSet itr=begin(ttsSet); itr != end(ttsSet);++itr) {
 //        	::std::cerr << "tts: " << ttsString(*itr) << " type: " << (*itr).motif << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << " " << ::std::endl;
         	::std::cerr << ttsString(*itr) << ::std::endl;
         }
         ::std::cerr << "###\n";
-        exit(0);
 #endif
         options.timeFindTriplexes = 0;
 
@@ -4238,18 +4237,14 @@ namespace SEQAN_NAMESPACE_MAIN
         options.timeCollectSeeds	+= gardener.timeCollectSeeds;
         options.timeGardenerFind	+= gardener.timeGardenerFind;
         options.timePutSeedsInMap	+= gardener.timePutSeedsInMap;
-        // gardener backward
-//        options.timeQgramFind 		+= gardenerRev.timeQgramFind;
-//        options.timeCollectSeeds	+= gardenerRev.timeCollectSeeds;
-//        options.timeGardenerFind	+= gardenerRev.timeGardenerFind;
-//        options.timePutSeedsInMap	+= gardenerRev.timePutSeedsInMap;
 
         options.timeCollectSeedsLoop+= timeCollectSeedsLoop;
         options.timeCSFreeSpace		+= timeCSFreeSpace;
         options.cntCSFind			+= cntCSFind;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Function _seedMultiSeq was called " << ::std::setprecision(3) << cntFIQ_seedMultiProcessQgram << " times" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Function _seedMultiSeq pure qgram hit match " << ::std::setprecision(3) << cntFIQ_pureQgramMatches << " times" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time spend in _seedMultiSeq  " << ::std::setprecision(3) << time_seedMultiProcessQgram << " seconds" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time spent in _seedMultiSeq  " << ::std::setprecision(3) << time_seedMultiProcessQgram << " seconds" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time in _seedMultiSeq ONLY for index search " << ::std::setprecision(3) << time_seedMultiProcessQgramIndexSearch << " seconds" << ::std::endl;
 
         eraseAll(gardener);
 
@@ -4357,7 +4352,9 @@ namespace SEQAN_NAMESPACE_MAIN
         options.timeCSFreeSpace		+= timeCSFreeSpace;
         options.cntCSFind			+= cntCSFind;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Function _seedMultiSeq was called " << ::std::setprecision(3) << cntFIQ_seedMultiProcessQgram << " times" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time spend in _seedMultiSeq  " << ::std::setprecision(3) << time_seedMultiProcessQgram << " seconds" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Function _seedMultiSeq pure qgram hit match " << ::std::setprecision(3) << cntFIQ_pureQgramMatches << " times" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time spent in _seedMultiSeq  " << ::std::setprecision(3) << time_seedMultiProcessQgram << " seconds" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time in _seedMultiSeq ONLY for index search " << ::std::setprecision(3) << time_seedMultiProcessQgramIndexSearch << " seconds" << ::std::endl;
 		return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}
 	

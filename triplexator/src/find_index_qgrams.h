@@ -43,7 +43,9 @@ namespace SEQAN_NAMESPACE_MAIN
 {
 	// TODO @barni remove
 	long long 	cntFIQ_seedMultiProcessQgram = 0;
+	long long 	cntFIQ_pureQgramMatches		 = 0;
 	double 		time_seedMultiProcessQgram	 = 0;
+	double 		time_seedMultiProcessQgramIndexSearch = 0;
 
 	template <typename TSpec, typename THstkPos, typename TDiag>
 	struct _QGramHit 
@@ -476,16 +478,18 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename TFinder::TQGramHit							THit;
 		
 		TIndex const &index = host(pattern);
-//		std::cout << "seed multi process qgram entered\n";
 		// create an iterator over the positions of the q-gram occurences in pattern
+		SEQAN_PROTIMESTART(time_indexSearch);
 		TSAIter saBegin = begin(indexSA(index), Standard());
 		TSAIter occ = saBegin + indexDir(index)[getBucket(index.bucketMap, hash)];
 		TSAIter occEnd = saBegin + indexDir(index)[getBucket(index.bucketMap, hash) + 1];
+		time_seedMultiProcessQgramIndexSearch += SEQAN_PROTIMEDIFF(time_indexSearch);
 		Pair<unsigned> ndlPos;
 
 		// iterate over all q-gram occurences and do the processing
 		for(; occ != occEnd; ++occ)
 		{
+			cntFIQ_pureQgramMatches++;
 			posLocalize(ndlPos, *occ, stringSetLimits(index)); // get pair of SeqNo and Pos in needle
 			// begin position of the diagonal of q-gram occurence in haystack (possibly negative)
 			__int64 diag = finder.curPos;
