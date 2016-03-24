@@ -2,10 +2,14 @@
 
 #include <stdint.h>
 #include <cstdlib>
+#include <cstdio>
 #include <algorithm>
 #include <vector>
 #include <cstring>
 #include <cassert>
+#include <bitset>
+#include <iostream>
+//#define BITSET
 
 using namespace std;
 
@@ -13,6 +17,9 @@ typedef uint64_t Word;
 static const int WORD_SIZE = sizeof(Word) * 8; // Size of Word in bits
 static const Word WORD_1 = (Word)1;
 static const Word HIGH_BIT_MASK = WORD_1 << (WORD_SIZE - 1);  // 100..00
+int blockNr = 0;
+int tLength = 0;
+int matchingScores = 0;
 
 // Data needed to find alignment.
 struct AlignmentData {
@@ -81,6 +88,8 @@ int edlibCalcEditDistance(
         int* bestScore, int** endLocations, int** startLocations, int* numLocations,
         unsigned char** alignment, int* alignmentLength) {
 
+    //TODO @barni remove
+    tLength = targetLength;
     *alignment = NULL;
     /*--------------------- INITIALIZATION ------------------*/
     int maxNumBlocks = ceilDiv(queryLength, WORD_SIZE); // bmax in Myers
@@ -104,7 +113,7 @@ int edlibCalcEditDistance(
         k = WORD_SIZE; // Gives better results then smaller k.
     }
 
-    do {
+    do { // Barni: this is done only once in our case
         if (alignData) delete alignData;
         if (mode == EDLIB_MODE_HW || mode == EDLIB_MODE_SHW) {
             myersCalcEditDistanceSemiGlobal(blocks, Peq, W, maxNumBlocks,
@@ -118,8 +127,10 @@ int edlibCalcEditDistance(
                                     findAlignment, &alignData);
         }
         k *= 2;
-    } while(dynamicK && *bestScore == -1);
 
+    } while(dynamicK && *bestScore == -1);
+    
+    printf("Matching scores: %d\n", matchingScores);
     if (*bestScore >= 0) {  // If there is solution.
         // If NW mode, set end location explicitly.
         if (mode == EDLIB_MODE_NW) {
@@ -310,11 +321,12 @@ static inline int calculateBlock(Word Pv, Word Mv, Word Eq, const int hin,
     Word hinIsNeg = (Word)(hin >> 2) & WORD_1; // 00...001 if hin is -1, 00...000 if 0 or 1
 
     Word Xv = Eq | Mv;
+    
     // This is instruction below written using 'if': if (hin < 0) Eq |= (Word)1;
     Eq |= hinIsNeg;
     Word Xh = (((Eq & Pv) + Pv) ^ Pv) | Eq;
 
-    Word Ph = Mv | ~(Xh | Pv);
+    Word Ph = Mv | ~(Xh | Pv);//~Eq;//~(Xh | Pv);
     Word Mh = Pv & Xh;
 
     int hout = 0;
@@ -331,8 +343,25 @@ static inline int calculateBlock(Word Pv, Word Mv, Word Eq, const int hin,
     // This is instruction below written using 'if': if (hin > 0) Ph |= (Word)1;
     Ph |= (Word)((hin + 1) >> 1);
 
-    PvOut = Mh | ~(Xv | Ph);
+    PvOut = Mh | ~(Xv | Ph); // == Mh | (~Eq & ~Mv & ~Ph)
     MvOut = Ph & Xv;
+    //TODO remove @barni 
+#ifdef BITSET
+    if (blockNr < tLength) {
+        std::string bitPvOut = std::bitset<6>(PvOut).to_string();
+        std::string bitMvOut = std::bitset<6>(MvOut).to_string();
+        std::string bitEq = std::bitset<6>(Eq).to_string();
+        printf("Xv: %s\n", std::bitset<6>(Xv).to_string().c_str());
+        printf("Xh: %s\n", std::bitset<6>(Xh).to_string().c_str());
+        printf("Ph: %s\n", std::bitset<6>(Ph).to_string().c_str());
+        printf("Mh: %s\n", std::bitset<6>(Mh).to_string().c_str());
+        printf("hin: %s\n", std::bitset<64>(hin).to_string().c_str());
+        printf("hout: %s\n", std::bitset<64>(hout).to_string().c_str());
+        std::cout << "block PvOut#: " << ++blockNr << "\t" << bitPvOut  << std::endl;
+        std::cout << "block MvOut#: " << blockNr << "\t" << bitMvOut<< std::endl;
+        std::cout << "EQblk eq   #: " << blockNr << "\t" << bitEq<< std::endl << std::endl;
+    }
+#endif
 
     return hout;
 }
@@ -402,6 +431,7 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
     // lastBlock is 0-based index of last block in Ukkonen band.
     int firstBlock = 0;
     int lastBlock = min(ceilDiv(k + 1, WORD_SIZE), maxNumBlocks) - 1; // y in Myers
+    const int originalK = k;
     Block *bl; // Current block
 
     // For HW, solution will never be larger then queryLength.
@@ -511,16 +541,20 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
             }
         }
         //------------------------------------------------------------------//
-
+            
         targetChar++;
     }
-
 
     // Obtain results for last W columns from last column.
     if (lastBlock == maxNumBlocks - 1) {
         vector<int> blockScores = getBlockCellValues(bl);
         for (int i = 0; i < W; i++) {
             int colScore = blockScores[i + 1];
+
+            matchingScores += (colScore <= originalK) ? 1 : 0;
+//            if (colScore <= k) printf("okay\n");
+//            printf("col score: %d <= %d ; ? %d\n", colScore, k, (bool)(colScore <= k));
+
             if (colScore <= k && (bestScore == -1 || colScore <= bestScore)) {
                 if (colScore != bestScore) {
                     positions.clear();

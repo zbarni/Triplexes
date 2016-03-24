@@ -4,7 +4,6 @@
 #include <seqan/index.h>    
 #include <seqan/find.h>    
 #include <seqan/file.h>   // Required to print strings in tests.
-#include <seqan/seq_io.h>
 #include "myers/edlib.h"
 #include <cmath>
 
@@ -58,26 +57,127 @@ template<typename TMotifSet, typename TttsSet>
 void align(TMotifSet tfoSet, TttsSet ttsSet) {
 
     double t = sysTime();
-    typedef typename Value<TMotifSet>::Type         TTfo;
-    typedef typename Value<TttsSet>::Type           TTts;
+    typedef typename Value<TMotifSet>::Type             TTfo;
+    typedef typename Value<TttsSet>::Type               TTts;
+    typedef Shape<Dna5, UngappedShape<QGRAM> >          TShape;
+    typedef Index<TMotifSet, IndexQGram<UngappedShape<QGRAM>, OpenAddressing> > TQGramIndex;
+    typedef typename Value<TShape>::Type                TShapeValue;
+    typedef typename Fibre<TQGramIndex, QGramSA>::Type      TSA;
+    typedef typename Fibre<TQGramIndex, QGramSADir>::Type   TSADir;
+    typedef typename Value<TSADir>::Type                    TSADirValue;
+    typedef typename Value<TSA>::Type                       TSAValue;
+    typedef typename Iterator<TSA, Standard>::Type          TSAIter;
+    typedef typename Iterator<TSADir, Standard>::Type       TSADirIter;
 
-    char idxToLetter[4] = {'A', 'C', 'G', 'T'};
-    int score1, numLocations1;
-    int *endLocations1, *startLocations1;
-    unsigned char *alignment; int alignmentLength;
+    typedef typename Fibre<TQGramIndex, QGramCounts>::Type       TCounts;
+    typedef typename Fibre<TQGramIndex, QGramCountsDir>::Type    TCountsDir;
+    typedef typename Value<TCountsDir>::Type                TDirValue;
+    typedef typename Iterator<TCounts, Standard>::Type      TIterCounts;
+    typedef typename Iterator<TCountsDir, Standard>::Type   TIterCountsDir;
+    
+    TShape      shape;
+    TQGramIndex index(tfoSet);  
+    indexRequire(index, QGramCounts());
+    indexRequire(index, QGramSADir());
+    
+    int cnt = 0;
 
-    TTts tts = ttsSet[0];
+    // initialize distance matrix
+    int seqNum = countSequences(index);
+
+    TIterCountsDir itCountsDir      = begin(indexCountsDir(index), Standard());
+    TIterCountsDir itCountsDirEnd   = end(indexCountsDir(index), Standard());
+    TIterCounts itCountsBegin       = begin(indexCounts(index), Standard());
+
+    TSADirIter itSADir              = begin(indexDir(index), Standard());
+    TSADirIter itSADirEnd           = end(indexDir(index), Standard());
+    TSAIter saBegin                 = begin(indexSA(index), Standard());
+
+    // for each bucket count common q-grams for each sequence pair
+//    TDirValue bucketBegin = *itCountsDir;
+//    for (++itCountsDir; itCountsDir != itCountsDirEnd; ++itCountsDir)
+//    {
+//        TDirValue bucketEnd = *itCountsDir;
+//
+//        // q-gram must occur in at least 2 different sequences
+//        if (bucketBegin != bucketEnd)
+//        {
+//            TIterCounts itA = itCountsBegin + bucketBegin;
+//            TIterCounts itEnd = itCountsBegin + bucketEnd;
+//            for (; itA != itEnd; ++itA)
+//            {
+////                ;
+//                std::cout << *itA << std::endl;
+//                TSAIter occ = saBegin + indexDir(index)[bucketBegin];
+//                TSAIter occEnd = saBegin + indexDir(index)[bucketBegin + 1];
+//
+//                for(; occ != occEnd; ++occ)
+//                {
+//                    Pair<unsigned> ndlPos;
+//                    posLocalize(ndlPos, *occ, stringSetLimits(index));
+//                    std::cout << ndlPos << std::endl;
+//                    std::cout << "bucket: " << bucketBegin << std::endl;
+//                }
+//            }
+//        }
+//        bucketBegin = bucketEnd;
+//    }
+
+    TSADirValue bucketBegin = *itSADir;
+    for (++itSADir; itSADir != itSADirEnd; ++itSADir)
+    {
+        TSADirValue bucketEnd = *itSADir;
+        if (bucketBegin != bucketEnd)
+        {
+            TSAIter itA = saBegin + bucketBegin;
+            TSAIter itEnd = saBegin + bucketEnd;
+            std::cout << *itA << std::endl;
+            for (; itA != itEnd; ++itA)
+            {
+//                std::cout << *itA << std::endl;
+//                printf("shit\n");
+            }
+        }
+        bucketBegin = bucketEnd;
+    }
+
+//    for (unsigned i = 0; i < length(indexSA(index)); ++i)
+//    {
+//        unsigned textPos = (saAt(i, index).i2 == 0) ? length(index) - 1 : saAt(i, index).i2 - 1;
+//        std::cout << textAt(textPos, index) << "\t" << suffix(indexText(index), textPos) << std::endl;
+//        std::cout << infix(indexText(index), i, i + 3) << std::endl;
+//    }
+    
+exit(0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    char idxToLetter[4] = {'A', 'C', 'G', 'T'};
+    int score;
+    int numLocations;
+    int *endLocations;
+    int *startLocations;
+    int alignmentLength;
+    unsigned char *alignment; 
+
+    TTts tts = ttsSet[0]; // for now, only 1 row / sequence in tts
     unsigned char target[length(tts)];
     unsigned int targetLength = length(tts);
+    
     for (int i = 0; i < length(tts); ++i) {
         target[i] = static_cast<unsigned int>(tts[i]);
     }
-
-//    unsigned int charToIdx[128];
-//    charToIdx['A'] = 0;
-//    charToIdx['C'] = 1;
-//    charToIdx['T'] = 2;
-//    charToIdx['G'] = 3;
 
     // for each tfo in set
     for (int iter = 0; iter < length(tfoSet); ++iter) {
@@ -85,9 +185,8 @@ void align(TMotifSet tfoSet, TttsSet ttsSet) {
         unsigned char query[length(tfo)];
         unsigned int queryLength = length(tfo);
 
-        // transform query and target
+        // transform query 
         for (int i = 0; i < length(tfo); ++i) {
-//            query[i] = charToIdx[(unsigned int)(char)(tfo[i])];
             query[i] = static_cast<unsigned int>(tfo[i]);
         }
 
@@ -101,16 +200,17 @@ void align(TMotifSet tfoSet, TttsSet ttsSet) {
 //        }
 
         edlibCalcEditDistance(query, queryLength, target, targetLength, 4,
-                2, EDLIB_MODE_HW, true, true, &score1,
-                &endLocations1, &startLocations1, &numLocations1,
+                3, EDLIB_MODE_HW, true, true, &score,
+                &endLocations, &startLocations, &numLocations,
                 &alignment, &alignmentLength);
 
+//        if (alignment) {
 //        std::cout << "alignment length: " << alignmentLength << std::endl;
 //        std::cout << "query length: " << queryLength << std::endl;
-//        if (alignment) {
 //            printAlignment(query, length(tfo), target, length(target),
 //                    alignment, alignmentLength,
-//                    *(endLocations1), EDLIB_MODE_HW, idxToLetter);
+//                    *(endLocations), EDLIB_MODE_HW, idxToLetter);
+//            printf("Best score: %d\n", score);
 //        }
     }
     
@@ -119,14 +219,14 @@ void align(TMotifSet tfoSet, TttsSet ttsSet) {
 
 template<typename TMotifSet, typename TttsSet>
 void readFasta(std::string& fTfo, std::string& fTts, TMotifSet& tfoSet, TttsSet& ttsSet) {
-    StringSet<CharString> ids, tfoIds;
-
-    SeqFileIn seqFileIn(fTts.c_str());
-    SeqFileIn tfoFileIn(fTfo.c_str());
-
-    // Reads all remaining records.
-    readRecords(ids, ttsSet, seqFileIn);
-    readRecords(tfoIds, tfoSet, tfoFileIn);
+//    StringSet<CharString> ids, tfoIds;
+//
+//    SeqFileIn seqFileIn(fTts.c_str());
+//    SeqFileIn tfoFileIn(fTfo.c_str());
+//
+//    // Reads all remaining records.
+//    readRecords(ids, ttsSet, seqFileIn);
+//    readRecords(tfoIds, tfoSet, tfoFileIn);
 }
 
 int main(int argc, char *argv[])
@@ -149,7 +249,7 @@ int main(int argc, char *argv[])
 
     ////////////////////////////////////////////
     // read files
-//    readFasta(fTfo, fTts, tfoSet, ttsSet);
+    //    readFasta(fTfo, fTts, tfoSet, ttsSet);
     while (fTfo >> s) {
         rTFO = static_cast<Ttfo>(s);
         appendValue(tfoSet, rTFO);
