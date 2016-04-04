@@ -59,11 +59,11 @@ static int myersCalcEditDistanceSemiGlobal(Block* blocks, Word* Peq, int W, int 
                                            int alphabetLength, int k, int mode, int* bestScore,
                                            int** positions, int* numPositions);
 
-static int myersCalcEditDistanceNW(Block* blocks, Word* Peq, int W, int maxNumBlocks,
-                                   const unsigned char* query, int queryLength,
-                                   const unsigned char* target, int targetLength,
-                                   int alphabetLength, int k, int* bestScore, int* position,
-                                   bool findAlignment, AlignmentData** alignData);
+//static int myersCalcEditDistanceNW(Block* blocks, Word* Peq, int W, int maxNumBlocks,
+//                                   const unsigned char* query, int queryLength,
+//                                   const unsigned char* target, int targetLength,
+//                                   int alphabetLength, int k, int* bestScore, int* position,
+//                                   bool findAlignment, AlignmentData** alignData);
 
 static void obtainAlignment(int maxNumBlocks, int queryLength, int targetLength, int W, int bestScore,
                             int position, AlignmentData* alignData,
@@ -120,75 +120,69 @@ int edlibCalcEditDistance(
                                             query, queryLength, target, targetLength,
                                             alphabetLength, k, mode, bestScore,
                                             endLocations, numLocations);
-        } else {  // mode == EDLIB_MODE_NW
-            myersCalcEditDistanceNW(blocks, Peq, W, maxNumBlocks,
-                                    query, queryLength, target, targetLength,
-                                    alphabetLength, k, bestScore, &positionNW,
-                                    findAlignment, &alignData);
+        } 
+        else {  
+            assert(false);
         }
         k *= 2;
 
     } while(dynamicK && *bestScore == -1);
     
     printf("Matching scores: %d\n", matchingScores);
-    if (*bestScore >= 0) {  // If there is solution.
-        // If NW mode, set end location explicitly.
-        if (mode == EDLIB_MODE_NW) {
-            *endLocations = (int *) malloc(sizeof(int) * 1);
-            (*endLocations)[0] = targetLength - 1;
-            *numLocations = 1;
-        }
 
-        // Find starting locations.
-        if (findStartLocations || findAlignment) {
-            *startLocations = (int*) malloc((*numLocations) * sizeof(int));
-            if (mode == EDLIB_MODE_HW) {  // If HW, I need to calculate start locations.
-                const unsigned char* rTarget = createReverseCopy(target, targetLength);
-                const unsigned char* rQuery  = createReverseCopy(query, queryLength);
-                Word* rPeq = buildPeq(alphabetLength, rQuery, queryLength); // Peq for reversed query
-                for (int i = 0; i < *numLocations; i++) {
-                    int endLocation = (*endLocations)[i];
-                    int bestScoreSHW, numPositionsSHW;
-                    int* positionsSHW;
-                    myersCalcEditDistanceSemiGlobal(
-                            blocks, rPeq, W, maxNumBlocks,
-                            rQuery, queryLength, rTarget + targetLength - endLocation - 1, endLocation + 1,
-                            alphabetLength, *bestScore, EDLIB_MODE_SHW,
-                            &bestScoreSHW, &positionsSHW, &numPositionsSHW);
-                    // Taking last location as start ensures that alignment will not start with insertions
-                    // if it can start with mismatches instead.
-                    (*startLocations)[i] = endLocation - positionsSHW[numPositionsSHW - 1];
-                    delete[] positionsSHW;
-                }
-                delete[] rTarget;
-                delete[] rQuery;
-                delete[] rPeq;
-            } else {  // If mode is SHW or NW
-                for (int i = 0; i < *numLocations; i++) {
-                    (*startLocations)[i] = 0;
-                }
-            }
-        }
-
-        // Find alignment -> all comes down to finding alignment for NW.
-        // Currently we return alignment only for first pair of locations.
-        if (findAlignment) {
-            int alnStartLocation = (*startLocations)[0];
-            int alnEndLocation = (*endLocations)[0];
-            if (mode != EDLIB_MODE_NW) {  // Calculate align data.
-                int score_, endLocation_;  // Used only to call function.
-                myersCalcEditDistanceNW(blocks, Peq, W, maxNumBlocks, query, queryLength,
-                                        target + alnStartLocation, alnEndLocation - alnStartLocation + 1,
-                                        alphabetLength, *bestScore, &score_,
-                                        &endLocation_, true, &alignData);
-                assert(score_ == *bestScore);
-                assert(endLocation_ == alnEndLocation - alnStartLocation);
-            }
-            obtainAlignment(maxNumBlocks, queryLength, alnEndLocation - alnStartLocation + 1, W,
-                            *bestScore, alnEndLocation - alnStartLocation,
-                            alignData, alignment, alignmentLength);
-        }
-    }
+//    if (*bestScore >= 0) {  // If there is solution.
+//
+//        // Find starting locations.
+//        if (findStartLocations || findAlignment) {
+//            *startLocations = (int*) malloc((*numLocations) * sizeof(int));
+//            if (mode == EDLIB_MODE_HW) {  // If HW, I need to calculate start locations.
+//                const unsigned char* rTarget = createReverseCopy(target, targetLength);
+//                const unsigned char* rQuery  = createReverseCopy(query, queryLength);
+//                Word* rPeq = buildPeq(alphabetLength, rQuery, queryLength); // Peq for reversed query
+//                for (int i = 0; i < *numLocations; i++) {
+//                    int endLocation = (*endLocations)[i];
+//                    int bestScoreSHW, numPositionsSHW;
+//                    int* positionsSHW;
+//                    myersCalcEditDistanceSemiGlobal(
+//                            blocks, rPeq, W, maxNumBlocks,
+//                            rQuery, queryLength, rTarget + targetLength - endLocation - 1, endLocation + 1,
+//                            alphabetLength, *bestScore, EDLIB_MODE_SHW,
+//                            &bestScoreSHW, &positionsSHW, &numPositionsSHW);
+//                    // Taking last location as start ensures that alignment will not start with insertions
+//                    // if it can start with mismatches instead.
+//                    (*startLocations)[i] = endLocation - positionsSHW[numPositionsSHW - 1];
+//                    delete[] positionsSHW;
+//                }
+//                delete[] rTarget;
+//                delete[] rQuery;
+//                delete[] rPeq;
+//            } else {  // If mode is SHW or NW
+//                for (int i = 0; i < *numLocations; i++) {
+//                    (*startLocations)[i] = 0;
+//                }
+//            }
+//        }
+//
+//        // Find alignment -> all comes down to finding alignment for NW.
+//        // Currently we return alignment only for first pair of locations.
+//        if (findAlignment) {
+//            int alnStartLocation = (*startLocations)[0];
+//            int alnEndLocation = (*endLocations)[0];
+//
+//            if (mode != EDLIB_MODE_NW) {  // Calculate align data.
+//                int score_, endLocation_;  // Used only to call function.
+////                myersCalcEditDistanceNW(blocks, Peq, W, maxNumBlocks, query, queryLength,
+////                                        target + alnStartLocation, alnEndLocation - alnStartLocation + 1,
+////                                        alphabetLength, *bestScore, &score_,
+////                                        &endLocation_, true, &alignData);
+//                assert(score_ == *bestScore);
+//                assert(endLocation_ == alnEndLocation - alnStartLocation);
+//            }
+//            obtainAlignment(maxNumBlocks, queryLength, alnEndLocation - alnStartLocation + 1, W,
+//                            *bestScore, alnEndLocation - alnStartLocation,
+//                            alignData, alignment, alignmentLength);
+//        }
+//    }
     /*-------------------------------------------------------*/
 
     //--- Free memory ---//
@@ -196,59 +190,6 @@ int edlibCalcEditDistance(
     delete[] Peq;
     if (alignData) delete alignData;
     //-------------------//
-
-    return EDLIB_STATUS_OK;
-}
-
-
-int edlibAlignmentToCigar(unsigned char* alignment, int alignmentLength,
-                          int cigarFormat, char** cigar_) {
-    *cigar_ = NULL;
-    if (cigarFormat != EDLIB_CIGAR_EXTENDED && cigarFormat != EDLIB_CIGAR_STANDARD) {
-        return EDLIB_STATUS_ERROR;
-    }
-
-    // Maps move code from alignment to char in cigar.
-    //                        0    1    2    3
-    char moveCodeToChar[] = {'=', 'I', 'D', 'X'};
-    if (cigarFormat == EDLIB_CIGAR_STANDARD) {
-        moveCodeToChar[0] = moveCodeToChar[3] = 'M';
-    }
-
-    vector<char>* cigar = new vector<char>();
-    char lastMove = 0;  // Char of last move. 0 if there was no previous move.
-    int numOfSameMoves = 0;
-    for (int i = 0; i <= alignmentLength; i++) {
-        // if new sequence of same moves started
-        if (i == alignmentLength || (moveCodeToChar[alignment[i]] != lastMove && lastMove != 0)) {
-            // Write number of moves to cigar string.
-            int numDigits = 0;
-            for (; numOfSameMoves; numOfSameMoves /= 10) {
-                cigar->push_back('0' + numOfSameMoves % 10);
-                numDigits++;
-            }
-            reverse(cigar->end() - numDigits, cigar->end());
-            // Write code of move to cigar string.
-            cigar->push_back(lastMove);
-            // If not at the end, start new sequence of moves.
-            if (i < alignmentLength) {
-                // Check if alignment has valid values.
-                if (alignment[i] > 3) {
-                    delete cigar;
-                    return EDLIB_STATUS_ERROR;
-                }
-                numOfSameMoves = 0;
-            }
-        }
-        if (i < alignmentLength) {
-            lastMove = moveCodeToChar[alignment[i]];
-            numOfSameMoves++;
-        }
-    }
-    cigar->push_back(0);  // Null character termination.
-    *cigar_ = (char*) malloc(cigar->size() * sizeof(char));
-    memcpy(*cigar_, &(*cigar)[0], cigar->size() * sizeof(char));
-    delete cigar;
 
     return EDLIB_STATUS_OK;
 }
@@ -536,8 +477,11 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
                         // scores then the best found so far.
                         k = bestScore;
                     }
-                    positions.push_back(c - W);
+//                    positions.push_back(c - W);
                 }
+                // @barni moved push back here to keep all results
+                        printf("yeyy@\n\n\n");
+                positions.push_back(c - W);
             }
         }
         //------------------------------------------------------------------//
@@ -555,11 +499,13 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
 //            if (colScore <= k) printf("okay\n");
 //            printf("col score: %d <= %d ; ? %d\n", colScore, k, (bool)(colScore <= k));
 
-            if (colScore <= k && (bestScore == -1 || colScore <= bestScore)) {
+            if (colScore <= k) { //&& (bestScore == -1 || colScore <= bestScore)) { // @barni match if already <= k
                 if (colScore != bestScore) {
-                    positions.clear();
-                    k = bestScore = colScore;
+//                    positions.clear(); // @barni don't remove previous matches
+//                    k = bestScore = colScore; // @barni don't update k
+                    bestScore = colScore;
                 }
+//                printf("push_back : %d\n", targetLength - W + i);
                 positions.push_back(targetLength - W + i);
             }
         }
@@ -574,187 +520,6 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
 
     return EDLIB_STATUS_OK;
 }
-
-
-
-
-/**
- * @param alignData  Data generated during calculation, that is needed for reconstruction of alignment.
- *                   I it is allocated with new, so free it with delete.
- *                   Data is generated only if findAlignment is true.
- */
-static int myersCalcEditDistanceNW(Block* blocks, Word* Peq, int W, int maxNumBlocks,
-                                   const unsigned char* query, int queryLength,
-                                   const unsigned char* target, int targetLength,
-                                   int alphabetLength, int k, int* bestScore_, int* position_,
-                                   bool findAlignment, AlignmentData** alignData) {
-
-    // Each STRONG_REDUCE_NUM column is reduced in more expensive way.
-    const int STRONG_REDUCE_NUM = 2048; // TODO: Choose this number dinamically (based on query and target lengths?), so it does not affect speed of computation
-
-    if (k < abs(targetLength - queryLength)) {
-        *bestScore_ = *position_ = -1;
-        return EDLIB_STATUS_OK;
-    }
-
-    k = min(k, max(queryLength, targetLength));  // Upper bound for k
-
-    // firstBlock is 0-based index of first block in Ukkonen band.
-    // lastBlock is 0-based index of last block in Ukkonen band.
-    int firstBlock = 0;
-    // This is optimal now, by my formula.
-    int lastBlock = min(maxNumBlocks, ceilDiv(min(k, (k + queryLength - targetLength) / 2) + 1, WORD_SIZE)) - 1;
-    Block* bl; // Current block
-
-    // Initialize P, M and score
-    bl = blocks;
-    for (int b = 0; b <= lastBlock; b++) {
-        bl->score = (b + 1) * WORD_SIZE;
-        bl->P = (Word)-1; // All 1s
-        bl->M = (Word)0;
-        bl++;
-    }
-
-    // If we want to find alignment, we have to store needed data.
-    if (findAlignment)
-        *alignData = new AlignmentData(maxNumBlocks, targetLength);
-    else
-        *alignData = NULL;
-
-    const unsigned char* targetChar = target;
-    for (int c = 0; c < targetLength; c++) { // for each column
-        Word* Peq_c = Peq + *targetChar * maxNumBlocks;
-
-        //----------------------- Calculate column -------------------------//
-        int hout = 1;
-        bl = blocks + firstBlock;
-        for (int b = firstBlock; b <= lastBlock; b++) {
-            hout = calculateBlock(bl->P, bl->M, Peq_c[b], hout, bl->P, bl->M);
-            bl->score += hout;
-            bl++;
-        }
-        bl--;
-        //------------------------------------------------------------------//
-        // bl now points to last block
-
-        // Update k. I do it only on end of column because it would slow calculation too much otherwise.
-        // NOTICE: I add W when in last block because it is actually result from W cells to the left and W cells up.
-        k = min(k, bl->score
-                + max(targetLength - c - 1, queryLength - ((1 + lastBlock) * WORD_SIZE - 1) - 1)
-                + (lastBlock == maxNumBlocks - 1 ? W : 0));
-        
-        //---------- Adjust number of blocks according to Ukkonen ----------//
-        //--- Adjust last block ---//
-        // If block is not beneath band, calculate next block. Only next because others are certainly beneath band.
-        if (lastBlock + 1 < maxNumBlocks
-            && !(//score[lastBlock] >= k + WORD_SIZE ||  // NOTICE: this condition could be satisfied if above block also!
-                 ((lastBlock + 1) * WORD_SIZE - 1
-                  > k - bl->score + 2 * WORD_SIZE - 2 - targetLength + c + queryLength))) {
-            lastBlock++; bl++;
-            bl->P = (Word)-1; // All 1s
-            bl->M = (Word)0;
-            int newHout = calculateBlock(bl->P, bl->M, Peq_c[lastBlock], hout, bl->P, bl->M);
-            bl->score = (bl - 1)->score - hout + WORD_SIZE + newHout;
-            hout = newHout;
-        }
-
-        // While block is out of band, move one block up. - This is optimal now, by my formula.
-        // NOTICE: I added + W, and now it works! This has to be added because query is padded with W cells.
-        while (lastBlock >= firstBlock
-               && (bl->score >= k + WORD_SIZE
-                   || ((lastBlock + 1) * WORD_SIZE - 1 > 
-                       k - bl->score + 2 * WORD_SIZE - 2 - targetLength + c + queryLength + W))) {
-            lastBlock--; bl--;
-        }
-        //-------------------------//
-
-        //--- Adjust first block ---//
-        // While outside of band, advance block
-        while (firstBlock <= lastBlock
-               && (blocks[firstBlock].score >= k + WORD_SIZE
-                   || ((firstBlock + 1) * WORD_SIZE - 1 <
-                       blocks[firstBlock].score - k - targetLength + queryLength + c))) {
-            firstBlock++;
-        }
-        //--------------------------/
-
-        
-        // TODO: consider if this part is useful, it does not seem to help much
-        if (c % STRONG_REDUCE_NUM == 0) { // Every some columns do more expensive but more efficient reduction
-            while (lastBlock >= firstBlock) {
-                // If all cells outside of band, remove block
-                vector<int> scores = getBlockCellValues(bl);
-                int r = (lastBlock + 1) * WORD_SIZE - 1;
-                bool reduce = true;
-                for (int i = 0; i < WORD_SIZE; i++) {
-                    // TODO: Does not work if do not put +1! Why???
-                    if (scores[i] <= k && r <= k - scores[i] - targetLength + c + queryLength + W + 1) {
-                        reduce = false;
-                        break; 
-                    }
-                    r--;
-                }
-                if (!reduce) break;
-                lastBlock--; bl--;
-            }
-
-            while (firstBlock <= lastBlock) {
-                // If all cells outside of band, remove block
-                vector<int> scores = getBlockCellValues(blocks + firstBlock);
-                int r = (firstBlock + 1) * WORD_SIZE - 1;
-                bool reduce = true;
-                for (int i = 0; i < WORD_SIZE; i++) {
-                    if (scores[i] <= k && r >= scores[i] - k - targetLength + c + queryLength) {
-                        reduce = false;
-                        break;
-                    }
-                    r--;
-                }
-                if (!reduce) break;
-                firstBlock++;
-            }
-        }
-        
-
-        // If band stops to exist finish
-        if (lastBlock < firstBlock) {
-            *bestScore_ = *position_ = -1;
-            return EDLIB_STATUS_OK;
-        }
-        //------------------------------------------------------------------//
-        
-
-        //---- Save column so it can be used for reconstruction ----//
-        if (findAlignment && c < targetLength) {
-            bl = blocks + firstBlock;
-            for (int b = firstBlock; b <= lastBlock; b++) {
-                (*alignData)->Ps[maxNumBlocks * c + b] = bl->P;
-                (*alignData)->Ms[maxNumBlocks * c + b] = bl->M;
-                (*alignData)->scores[maxNumBlocks * c + b] = bl->score;
-                (*alignData)->firstBlocks[c] = firstBlock;
-                (*alignData)->lastBlocks[c] = lastBlock;
-                bl++;
-            }
-        }
-        //----------------------------------------------------------//
-
-        targetChar++;
-    }
-
-    if (lastBlock == maxNumBlocks - 1) { // If last block of last column was calculated
-        // Obtain best score from block -> it is complicated because query is padded with W cells
-        int bestScore = getBlockCellValues(blocks + lastBlock)[W];
-        if (bestScore <= k) {
-            *bestScore_ = bestScore;
-            *position_ = targetLength - 1;
-            return EDLIB_STATUS_OK;
-        }
-    }
-    
-    *bestScore_ = *position_ = -1;
-    return EDLIB_STATUS_OK;
-}
-
 
 /**
  * Finds one possible alignment that gives optimal score.

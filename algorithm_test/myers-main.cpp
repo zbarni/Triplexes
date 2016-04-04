@@ -8,47 +8,64 @@
 #include <cmath>
 
 #define QGRAM 3
+#define DEBUG
 
 using namespace seqan;
 
-void printAlignment(const unsigned char* query, const int queryLength,
-                    const unsigned char* target, const int targetLength,
-                    const unsigned char* alignment, const int alignmentLength,
-                    const int position, const int modeCode, const char* idxToLetter) {
-    int tIdx = -1;
-    int qIdx = -1;
-    if (modeCode == EDLIB_MODE_HW) {
-        tIdx = position;
-        for (int i = 0; i < alignmentLength; i++) {
-            if (alignment[i] != 1)
-                tIdx--;
+template<
+        typename TTts, 
+        typename TMotifSet,
+        typename TSuffix,
+        typename TSAIter>
+
+void verifyMatches(
+        TTts tts, 
+        TMotifSet tfoSet,
+        TSuffix suffix, 
+        const TSAIter itStartBucket,
+        const TSAIter itEndBucket,
+        int k,
+        int numLocations, 
+        int endLocations[]) {
+
+    int ePos;
+    int bPos;
+    int qPos;
+    int misM;
+    TSAIter itSB, itEB;
+
+    // iterate over all putative matches (end locations)
+    // and start searching from back to start
+    for (int loc = 0; loc < numLocations; loc++) {
+        ePos = endLocations[loc]; // end of current putative match
+        bPos = ePos - QGRAM;    // beginning of --||--
+        misM = 0;               // nr of mismatches
+        qPos = QGRAM - 1;
+
+        // reset SA iterators
+        itSB = itStartBucket;
+        itEB = itEndBucket;
+
+        for (int pos = ePos; pos > bPos && misM <= k; --pos) {
+            if (tts[pos] != suffix[qPos--]) {
+                ++misM;
+            }
         }
-    }
-    for (int start = 0; start < alignmentLength; start += 50) {
-        // target
-        printf("T: ");
-        int startTIdx;
-        for (int j = start; j < start + 50 && j < alignmentLength; j++) {
-            if (alignment[j] == 1)
-                printf("_");
-            else
-                printf("%c", idxToLetter[target[++tIdx]]);
-            if (j == start)
-                startTIdx = tIdx;
+
+        // invalid alignment
+        if (misM > k) {
+            continue;
         }
-        printf(" (%d - %d)\n", std::max(startTIdx, 0), tIdx);
-        // query
-        printf("Q: ");
-        int startQIdx = qIdx;
-        for (int j = start; j < start + 50 && j < alignmentLength; j++) {
-            if (alignment[j] == 2)
-                printf("_");
-            else
-                printf("%c", idxToLetter[query[++qIdx]]);
-            if (j == start)
-                startQIdx = qIdx;
+        
+        // found a valid match, extend for each tfo which had this suffix
+        printf("Suffixes for endPos #%d: %d\n", loc, ePos);
+        for (; itSB != itEB; ++itSB) {
+            unsigned seqId      = itSB->i1;
+            unsigned suffixPos  = itSB->i2;
+#ifdef DEBUG
+            printf("seqId: %d\tsuffix: %d - %d\n", seqId, suffixPos, suffixPos + QGRAM - 1);
+#endif
         }
-        printf(" (%d - %d)\n\n", std::max(startQIdx, 0), qIdx);
     }
 }
 
@@ -57,10 +74,10 @@ template<typename TMotifSet, typename TttsSet>
 void align(TMotifSet tfoSet, TttsSet ttsSet) {
 
     double t = sysTime();
-    typedef typename Value<TMotifSet>::Type             TTfo;
+    typedef Index<TMotifSet, IndexQGram<UngappedShape<QGRAM>, OpenAddressing> > TQGramIndex;
+//    typedef typename Value<TMotifSet>::Type             TTfo;
     typedef typename Value<TttsSet>::Type               TTts;
     typedef Shape<Dna5, UngappedShape<QGRAM> >          TShape;
-    typedef Index<TMotifSet, IndexQGram<UngappedShape<QGRAM>, OpenAddressing> > TQGramIndex;
 //    typedef typename Value<TShape>::Type                TShapeValue;
     typedef typename Fibre<TQGramIndex, QGramSA>::Type      TSA;
     typedef typename Fibre<TQGramIndex, QGramSADir>::Type   TSADir;
@@ -71,11 +88,11 @@ void align(TMotifSet tfoSet, TttsSet ttsSet) {
 
     typedef typename Fibre<TQGramIndex, QGramCounts>::Type       TCounts;
     typedef typename Fibre<TQGramIndex, QGramCountsDir>::Type    TCountsDir;
-    typedef typename Value<TCountsDir>::Type                TDirValue;
+//    typedef typename Value<TCountsDir>::Type                TDirValue;
     typedef typename Iterator<TCounts, Standard>::Type      TIterCounts;
     typedef typename Iterator<TCountsDir, Standard>::Type   TIterCountsDir;
+    typedef typename seqan::Suffix<seqan::String<Dna5 > >::Type TSuffix;
     
-    char idxToLetter[4] = {'A', 'C', 'G', 'T'};
     int score;
     int numLocations;
     int *endLocations;
@@ -99,8 +116,9 @@ void align(TMotifSet tfoSet, TttsSet ttsSet) {
     int cnt = 0;
 
     // initialize distance matrix
-    int seqNum = countSequences(index);
+//    int seqNum = countSequences(index);
 
+    // init SA iterators
     TIterCountsDir itCountsDir      = begin(indexCountsDir(index), Standard());
     TIterCountsDir itCountsDirEnd   = end(indexCountsDir(index), Standard());
     TIterCounts itCountsBegin       = begin(indexCounts(index), Standard());
@@ -109,19 +127,17 @@ void align(TMotifSet tfoSet, TttsSet ttsSet) {
     TSADirIter  itSADirEnd          = end(indexDir(index), Standard());
     TSAIter     saBegin             = begin(indexSA(index), Standard()); 
 
-
     TSADirValue bucketBegin = *itSADir;
     for (++itSADir; itSADir != itSADirEnd; ++itSADir)
     {
         TSADirValue bucketEnd = *itSADir; // end of this bucket == beginning of next one
         if (bucketBegin != bucketEnd)
         {
-            TSAIter itA = saBegin + bucketBegin;
-            TSAIter itEnd = saBegin + bucketEnd;
-//            std::cout << *itA << std::endl;
+            TSAIter itBucket    = saBegin + bucketBegin;
+            TSAIter itEndBucket = saBegin + bucketEnd;
             cnt ++;
     
-            seqan::Suffix<seqan::String<Dna5 > >::Type suf = suffix(indexText(index), *itA);
+            TSuffix suf = suffix(indexText(index), *itBucket);
 
             unsigned char query[QGRAM];
             unsigned int  queryLength = QGRAM;
@@ -131,29 +147,27 @@ void align(TMotifSet tfoSet, TttsSet ttsSet) {
                 query[i] = static_cast<unsigned int>(suf[i]);
             }
 
-//            // print query and target
-//            for (int k = 0; k < queryLength; ++k) { 
-//                printf("%d;%d  ", query[k], (unsigned int)(char)(suf[k]));
-//            }
-//            printf("\n");
-//            for (int k = 0; k < targetLength; ++k) { 
-//                printf("%d ", target[k]);
-//            }
+#ifdef DEBUG
+            // print query and target
+            printf("--------------------------\n");
+            for (int k = 0; k < queryLength; ++k) { 
+                printf("%d;%c  ", query[k], (char)suf[k]);//(unsigned int)(char)(suf[k]));
+            }
+            printf("\n");
+            for (int k = 0; k < targetLength; ++k) { 
+                printf("%d ", target[k]);
+            }
+            printf("\n");
+#endif
 
+            int k = 1;
             edlibCalcEditDistance(query, queryLength, target, targetLength, 4,
-                    1, EDLIB_MODE_HW, true, true, &score,
+                    k, EDLIB_MODE_HW, true, true, &score,
                     &endLocations, &startLocations, &numLocations,
                     &alignment, &alignmentLength);
 
-            if (alignment) {
-                std::cout << "--- NEW ALIGNMENT: " << std::endl;
-                std::cout << "alignment length: " << alignmentLength << std::endl;
-                std::cout << "query length: " << queryLength << std::endl;
-                printAlignment(query, queryLength, target, length(target),
-                        alignment, alignmentLength,
-                        *(endLocations), EDLIB_MODE_HW, idxToLetter);
-                printf("Best score: %d\n", score);
-            }
+            verifyMatches(tts, tfoSet, suf, itBucket, itEndBucket, 
+                    k, numLocations, endLocations);
         }
         bucketBegin = bucketEnd;
     }
