@@ -39,6 +39,7 @@
 #include "find_index_qgrams.h"
 #include "triplex_alphabet.h"
 #include "helper.h"
+#include "edlib.h"
 #include <seqan/seeds2.h>  // Include module under test.
 #include <seqan/sequence/adapt_std_list.h>
 #include <seqan/misc/priority_type_base.h>
@@ -58,8 +59,7 @@ _Pragma(STRINGIFY(code))
 #define SEQAN_PRAGMA_IF_PARALLEL(code)
 #endif // SEQAN_ENABLE_PARALLELISM
 #endif // SEQAN_PRAGMA_IF_PARALLEL
-#define ENTER //std::cout << "Entered [" << __FILE__ << ":" << __LINE__ << "]\t" << __func__ << std::endl;
-
+#define QGRAM 3
 using namespace seqan;
 namespace SEQAN_NAMESPACE_MAIN
 {    
@@ -1167,6 +1167,9 @@ namespace SEQAN_NAMESPACE_MAIN
 			TScore mismatch = (TScore)_max((TScore) (-1.0/(errorRate+0.00000001)) + 1, -(TScore)length(host(finder)));
 			Score<TScore> scoreMatrix(match, mismatch, std::numeric_limits<int>::max());
 			TScore scoreDropOff = (TScore) _max((TScore) xDrop * (-mismatch), minValue<TScore>()+1);
+			std::cout << "match: " << match << "; mismatch: " << mismatch << "; scoredropoff: " << scoreDropOff << std::endl;
+			std::cout << "tscore: " << (TScore)length(host(finder)) << std::endl;
+			exit(0);
 			// extend seeds
 			_extendSeedlings(hitSet, finder, pattern, seqmap, scoreMatrix, minLength, scoreDropOff, queriyid);
 			
@@ -1281,7 +1284,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename Position<TSequence>::Type									TPosition;
 		typedef typename Gardener<TId, TSpec>::THitSet								THits;
 		
-        std::cout << "foo\n";
 		// create index
 		TQGramIndex index_qgram(targets);
 		resize(indexShape(index_qgram), weight(shape));
@@ -1290,7 +1292,209 @@ namespace SEQAN_NAMESPACE_MAIN
 		Pattern<TQGramIndex, QGramsLookup< TShape, Standard_QGramsLookup> > pattern(index_qgram,shape);
 		plant(gardener, pattern, queries, errorRate, minLength, xDrop, TWORKER() );
 	}
-		
+
+	// TODO rename / rewrite
+	template<
+	typename THitSet,
+	typename TTts,
+	typename TMotifSet,
+	typename TSuffix,
+	typename TSAIter,
+	typename TSize,
+	typename TDrop
+	>
+	void verifyMatches(
+			THitSet 	   &hitSet,
+			TTts 			tts,
+			TMotifSet 		tfoSet,
+			TSuffix 		suffix,
+			const TSAIter 	itStartBucket,
+			const TSAIter 	itEndBucket,
+	        int 			k,
+	        int 			numLocations,
+	        int 			endLocations[],
+	        TSize const	   &minLength,
+	        TDrop const    &xDrop) {
+		typedef int											TScore;
+		typedef Seed<Simple, DefaultSeedConfig>				TSeed;
+
+	    int ePos;
+	    int bPos;
+	    int qPos;
+	    int misM;
+	    TSAIter itSB, itEB;
+
+	    // define a scoring scheme
+	    TScore match = 1;
+	    TScore mismatch = 0;//(TScore)_max((TScore) (-1.0/(errorRate+0.00000001)) + 1, -(TScore)length(tts));
+	    Score<TScore> scoreMatrix(match, mismatch, std::numeric_limits<int>::max());
+
+	    // iterate over all putative matches (end locations)
+	    // and start searching from back to start
+	    for (int loc = 0; loc < numLocations; loc++) {
+	        ePos = endLocations[loc]; // end of current putative match
+	        bPos = ePos - QGRAM;    // beginning of --||--
+	        misM = 0;               // nr of mismatches
+	        qPos = QGRAM - 1;
+
+	        // reset SA iterators
+	        itSB = itStartBucket;
+	        itEB = itEndBucket;
+
+	        for (int pos = ePos; pos > bPos && misM <= k; --pos) {
+	            if (tts[pos] != suffix[qPos--]) {
+	                ++misM;
+	            }
+	        }
+
+	        // invalid alignment
+	        if (misM > k) {
+	            continue;
+	        }
+
+	        // found a valid match, extend for each tfo which had this suffix
+	        printf("Suffixes for endPos #%d: %d\n", loc, ePos);
+	        for (; itSB != itEB; ++itSB) {
+	            unsigned seqId      = itSB->i1;
+	            unsigned suffixPos  = itSB->i2;
+	#ifdef DEBUG
+	            printf("seqId: %d\tsuffix: %d - %d\n", seqId, suffixPos, suffixPos + QGRAM - 1);
+	#endif
+	        }
+	    }
+	}
+
+	/**
+	 */
+	template<
+	typename THaystack,		// haystack spec
+	typename TQGramIndex,	// qgram index
+	typename TQuerySet,		// query set (needle)
+	typename TError,		// error rate
+	typename TSize,			// minimum hit size
+	typename TDrop,			// xdrop
+	typename TSpec,			// specialization
+	typename TId,			// sequence id
+	typename TWorker
+	>
+	void plantMyers(
+			Gardener<TId, TSpec>&gardener,
+			THaystack			&haystack, 	// TTS set
+			TQGramIndex			&index,
+			TQuerySet			&queries,	// TFO set
+			TError const		&errorRate,
+			TSize const			&minLength,
+			TDrop const			&xDrop,
+			TWorker
+	){
+	    double t = sysTime();
+		typedef typename Value<Gardener<TId, TSpec> >::Type		THitMap;
+		typedef typename Value<THitMap>::Type					THitMapEntry;
+		typedef typename Value<THitMapEntry,2>::Type			THitSetPointer;
+		typedef typename Value<THitSetPointer>::Type			THitSet;
+
+	    typedef typename Value<THaystack>::Type               	THaystackValue;
+	    typedef typename Fibre<TQGramIndex, QGramSA>::Type      TSA;
+	    typedef typename Fibre<TQGramIndex, QGramSADir>::Type   TSADir;
+	    typedef typename Value<TSADir>::Type                    TSADirValue;
+	    typedef typename Iterator<TSA, Standard>::Type          TSAIter;
+	    typedef typename Iterator<TSADir, Standard>::Type       TSADirIter;
+
+	    typedef typename Fibre<TQGramIndex, QGramCounts>::Type      TCounts;
+	    typedef typename Fibre<TQGramIndex, QGramCountsDir>::Type   TCountsDir;
+	    typedef typename Iterator<TCounts, Standard>::Type      	TIterCounts;
+	    typedef typename Iterator<TCountsDir, Standard>::Type   	TIterCountsDir;
+		typedef typename Suffix<typename GetSequenceByNo<TQGramIndex const>::Type >::Type	TSuffX;
+
+
+	    int score;
+	    int numLocations;
+	    int *endLocations;
+	    int *startLocations;
+	    int alignmentLength;
+	    unsigned char *alignment;
+
+	    THaystackValue 	tts;
+
+	    int cnt = 0;
+	    int k 	= ceil(errorRate * minLength);
+
+	    // init SA iterators
+	    TIterCountsDir itCountsDir      = begin(indexCountsDir(index), Standard());
+	    TIterCountsDir itCountsDirEnd   = end(indexCountsDir(index), Standard());
+	    TIterCounts itCountsBegin       = begin(indexCounts(index), Standard());
+
+	    TSADirIter  itSADir             = begin(indexDir(index), Standard());
+	    TSADirIter  itSADirEnd          = end(indexDir(index), Standard());
+	    TSAIter     saBegin             = begin(indexSA(index), Standard());
+
+	    TSADirValue bucketBegin = *itSADir;
+
+	    // iterate over each tts in the double string
+	    for (int i = 0; i < length(haystack); ++i) {
+	    	tts = haystack[i]; // next fibre in haystack
+	    	unsigned char  	target[length(tts)];
+	    	unsigned int   	targetLength = length(tts);
+
+	    	// rewrite double stranded seq (tts) in a proper form for Myers (char -> index)
+	    	for (int i = 0; i < length(tts); ++i) {
+	    		target[i] = static_cast<unsigned int>(tts[i]);
+	    	}
+
+	    	// iterate over each substring of length 'minLength'
+	    	for (++itSADir; itSADir != itSADirEnd; ++itSADir)
+	    	{
+	    		TSADirValue bucketEnd = *itSADir; // end of this bucket == beginning of next one
+	    		if (bucketBegin != bucketEnd)
+	    		{
+	    			unsigned char qgram[minLength];
+	    			THitSetPointer hitsPointer 	= new THitSet;
+	    			TSuffX suf;
+
+	    			TSAIter itBucket    = saBegin + bucketBegin;
+	    			TSAIter itEndBucket = saBegin + bucketEnd;
+	    			cnt ++;
+
+	    			suf = suffix(indexText(index), *itBucket);
+
+	    			// transform query into index for Myers
+	    			for (int i = 0; i < minLength; ++i) {
+	    				qgram[i] = static_cast<unsigned int>(suf[i]);
+	    			}
+
+#ifdef DEBUG
+	    			// print query and target
+	    			printf("--------------------------\n");
+	    			std::cout << "TSuffX suf: " << suf << std::endl;
+	    			for (int k = 0; k < queryLength; ++k) {
+	    				printf("%d;%c  ", qgram[k], (char)suf[k]);//(unsigned int)(char)(suf[k]));
+	    			}
+	    			printf("\n");
+	    			for (int k = 0; k < targetLength; ++k) {
+	    				printf("%d ", target[k]);
+	    			}
+	    			printf("\n");
+#endif
+
+	    			std::cout << "error rate: " << errorRate << "; k: " << k << std::endl;
+
+	    			edlibCalcEditDistance(qgram, minLength, target, targetLength, 4,
+	    					k, EDLIB_MODE_HW, true, true, &score,
+	    					&endLocations, &startLocations, &numLocations,
+	    					&alignment, &alignmentLength);
+
+	    			verifyMatches(*hitsPointer, tts, queries, suf, itBucket, itEndBucket,
+	    					k, numLocations, endLocations, minLength, xDrop);
+	    		}
+	    		bucketBegin = bucketEnd;
+	    	}
+	    }
+
+	    std::cout << cnt << std::endl;
+	    std::cout << "elapsed time: "<< sysTime() - t << " sec\n";
+	    exit(-1);
+	}
+
 	/** 
 	 * start gardening by planting
 	 * prepeare pattern beforehand for reuse

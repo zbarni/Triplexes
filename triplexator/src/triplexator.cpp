@@ -434,11 +434,20 @@ namespace SEQAN_NAMESPACE_MAIN
         
         //  optimizing shape/q-gram for threshold >= 2 
         if (options.filterMode == FILTERING_GRAMS && options.runmode==TRIPLEX_TRIPLEX_SEARCH){
-            int qgram = _calculateShape(options);
-            if (qgram <= 4 && (stop = true)){
-                ::std::cerr << "Error-rate, minimum length and qgram-threshold settings do not allow for efficient filtering with q-grams of weight >= 5 (currently " << qgram << ")." << ::std::endl;
-                ::std::cerr << "Consider disabling filtering-mode (brute-force approach)" << ::std::endl;
-            }
+        	if (!options.invertedPp) {
+        		int qgram = _calculateShape(options);
+        		if (qgram <= 4 && (stop = true)){
+        			::std::cerr << "Error-rate, minimum length and qgram-threshold settings do not allow for efficient filtering with q-grams of weight >= 5 (currently " << qgram << ")." << ::std::endl;
+        			::std::cerr << "Consider disabling filtering-mode (brute-force approach)" << ::std::endl;
+        		}
+        	}
+        	// when using Myers, qgram size is min length
+        	else {
+        		resize(options.shape, options.minLength);
+        		for (int i=0; i<options.minLength; ++i){
+        			options.shape[i]='1';
+        		}
+        	}
         }
         if ((options.minBlockRun > options.minLength - 2*options.tolError) && (stop = true)) {
             ::std::cerr << "Block match too large given minimum length constraint and error rate." << ::std::endl;
@@ -648,11 +657,11 @@ namespace SEQAN_NAMESPACE_MAIN
                      TShape const                   &shape)
     {
         typedef Index<TMotifSet, IndexQGram<TShape, OpenAddressing> >               TQGramIndex;
-        typedef Pattern<TQGramIndex, QGramsLookup< TShape, Standard_QGramsLookup > > TPattern;
-        typedef typename Iterator<TMotifSet, Standard>::Type    TIterMotifSet;
+        typedef Pattern<TQGramIndex, QGramsLookup< TShape, Standard_QGramsLookup > >TPattern;
+        typedef typename Iterator<TMotifSet, Standard>::Type    					TIterMotifSet;
         
-        typedef __int64                                                         TId;
-        typedef Gardener<TId, GardenerUngapped>                                 TGardener;
+        typedef __int64                            TId;
+        typedef Gardener<TId, GardenerUngapped>    TGardener;
         
         unsigned errorCode = TRIPLEX_NORMAL_PROGAM_EXIT;
         options.timeCreateTtssIndex = 0;
@@ -748,16 +757,15 @@ namespace SEQAN_NAMESPACE_MAIN
     typename TMotifSet,
     typename TFile,
     typename TShape>
-    int _findTriplexInverted(TMotifSet              &tfoMotifSet,
+    int _findTriplexMyers(TMotifSet              	&tfoMotifSet,
                      StringSet<CharString> const    &tfoNames,
                      TFile                          &outputfile,
                      Options                        &options,
                      TShape const                   &shape)
     {
-        typedef Index<TMotifSet, IndexQGram<TShape, OpenAddressing> >               TQGramIndex;
-        typedef Pattern<TQGramIndex, QGramsLookup< TShape, Standard_QGramsLookup > >TPattern;
-        typedef __int64                                                         	TId;
-        typedef Gardener<TId, GardenerUngapped>                                 	TGardener;
+        typedef Index<TMotifSet, IndexQGram<TShape, OpenAddressing> >   TQGramIndex;
+        typedef __int64                                                 TId;
+        typedef Gardener<TId, GardenerUngapped>                         TGardener;
         
         unsigned errorCode = TRIPLEX_NORMAL_PROGAM_EXIT;
         options.timeCreateTtssIndex = 0;
@@ -769,19 +777,14 @@ namespace SEQAN_NAMESPACE_MAIN
         options.logFileHandle << _getTimeStamp() << " * Processing " << options.duplexFileNames[0] << ::std::endl;
 
         if (options.filterMode == FILTERING_GRAMS){
-            options.logFileHandle << _getTimeStamp() <<  " - Skipping creating q-gram index for all TFOs. This will be done for the TTS instead." << ::std::endl;
-            // create reverse complement of tfo-s
-            TMotifSet revTfoMotifSet;              
-            for (unsigned i =0; i < length(tfoMotifSet); ++i) {
-                TOligoMotif motif = tfoMotifSet[i];
-                //reverseComplement(motif);
-                complement(motif);
-                appendValue(revTfoMotifSet, motif);
-//                ::std::cerr << "tfo pattern [" << i << "]: " << tfoString(tfoMotifSet[i]) << ", reverse complement: " << tfoString(revTfoMotifSet[i]) << ::std::endl;
-            }
-
-            errorCode = startTriplexSearchSerialInverted(tfoMotifSet, revTfoMotifSet, tfoNames, outputfile, shape, options, TGardener());
-        } else {
+            options.logFileHandle << _getTimeStamp() <<  " - Myers Qgram index creation." << ::std::endl;
+            TQGramIndex index_qgram(tfoMotifSet);
+            resize(indexShape(index_qgram), weight(shape));
+            indexRequire(index_qgram, QGramCounts());
+            indexRequire(index_qgram, QGramSADir());
+            errorCode = startTriplexSearchSerialMyers(tfoMotifSet, tfoNames, index_qgram, outputfile, shape, options, TGardener());
+        }
+        else {
             assert(false && "Should handle brute force inverted here. TODO");
         }   
         
@@ -816,7 +819,7 @@ namespace SEQAN_NAMESPACE_MAIN
     ////////////////////////////////////////////////////////////////////////////////
     //// Main inverted triplex mapper function
     template <typename TOligoSet, typename TMotifSet> // TTriplexSet, TMotifSet
-    int mapTriplexesInverted(Options &options)
+    int mapTriplexesMyers(Options &options)
     {
         typedef typename Iterator<TOligoSet, Standard>::Type    TOligoIter;
         typedef typename Iterator<TMotifSet, Standard>::Type    TIterMotifSet;
@@ -824,6 +827,7 @@ namespace SEQAN_NAMESPACE_MAIN
         TOligoSet               				oligoSequences;
         StringSet<CharString>   			  	oligoNames;     // tfo names, taken from the Fasta file
         String< Pair<CharString, unsigned> >  	ttsnoToFileMap;
+
         typedef Repeat<unsigned, unsigned>                      TRepeat;
         typedef String<TRepeat>                                 TRepeatString;
         typedef typename Iterator<TRepeatString, Rooted>::Type  TRepeatIterator;
@@ -948,11 +952,11 @@ namespace SEQAN_NAMESPACE_MAIN
         if (!empty(options.output) && options.outputFormat != 2){
             openOutputFile(filehandle, options);
             printTriplexHeader(filehandle, options);
-            errorCode = _findTriplexInverted(tfoMotifSet, oligoNames, filehandle, options, ungappedShape);
+            errorCode = _findTriplexMyers(tfoMotifSet, oligoNames, filehandle, options, ungappedShape);
             closeOutputFile(filehandle, options);
         } else {
             printTriplexHeader(::std::cout, options);
-            errorCode = _findTriplexInverted(tfoMotifSet, oligoNames, ::std::cout, options, ungappedShape);
+            errorCode = _findTriplexMyers(tfoMotifSet, oligoNames, ::std::cout, options, ungappedShape);
         }
 
         return errorCode;
@@ -1670,7 +1674,7 @@ namespace SEQAN_NAMESPACE_MAIN
         } else if (options.runmode == TRIPLEX_TFO_SEARCH){ // investigate TFO only
             result = investigateTFO<TTriplexSet, TMotifSet>(options);
         } else if (options.runmode == TRIPLEX_TRIPLEX_SEARCH){ // map TFO and TTSs
-            result = options.invertedPp ? mapTriplexesInverted<TTriplexSet, TMotifSet>(options) : mapTriplexes<TTriplexSet, TMotifSet>(options);
+            result = options.invertedPp ? mapTriplexesMyers<TTriplexSet, TMotifSet>(options) : mapTriplexes<TTriplexSet, TMotifSet>(options);
         } else {
             cerr << "Exiting ... invalid runmode" << endl;
             options.logFileHandle << "ERROR: Exit due to invalid options " << ::std::endl;  

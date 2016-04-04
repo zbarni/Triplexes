@@ -24,6 +24,7 @@ add_executable(triplexator triplexator.cpp
 				helper.h
 				find_index_qgrams.h
 				gardener.h
+				edlib.cpp edlib.h
 				triplex_alphabet.h
 				triplex_functors.h
 				triplex_pattern.h

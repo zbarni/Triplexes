@@ -2112,13 +2112,15 @@ namespace SEQAN_NAMESPACE_MAIN
 	template<
 	typename TId,
 	typename TGardenerSpec,
-	typename TPattern,
+	typename THaystack,
+	typename TQGramIndex,
 	typename TQuery
 	>
-	inline void _filterTriplexInverted(Gardener< TId, TGardenerSpec>	&gardener,
-									   TPattern	const					&pattern, // ttsSet (pattern of this' index)
-									   TQuery							&tfoSet,
-									   Options const					&options
+	inline void _filterTriplexMyers(Gardener< TId, TGardenerSpec>	&gardener,
+									   THaystack const				&haystack, // ttsSet
+									   TQGramIndex const			&index,
+									   TQuery						&tfoSet,
+									   Options const				&options
 									   ){
 
 		// adjust errorRate if maximalError is set and caps the errorRate setting wrt the minimum length constraint
@@ -2126,8 +2128,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		if (options.maximalError >= 0){
 			eR = min(options.errorRate, max(double(options.maximalError)/options.minLength, 0.0));
 		}
-		assert(tfoSet[0].isTFO);
-		plant(gardener, pattern, tfoSet, eR, options.minLength, options.maxInterruptions+1, SINGLE_WORKER() );
+//		assert(tfoSet[0].isTFO);
+		plantMyers(gardener, haystack, index, tfoSet, eR, options.minLength, options.maxInterruptions+1, SINGLE_WORKER() );
 	}
 	
 	
@@ -4093,15 +4095,16 @@ namespace SEQAN_NAMESPACE_MAIN
 	// by reading in all duplex sequences and storing the results on memory
 	template <
 	typename TMotifSet,
+	typename TQGramIndex,
 	typename TFile,
     typename TShape,
 	typename TId,
 	typename TGardenerSpec
 	>
-	int inline startTriplexSearchSerialInverted(
+	int inline startTriplexSearchSerialMyers(
                                         TMotifSet					&tfoMotifSet,
-                                        TMotifSet					&revTfoMotifSet,
 										StringSet<CharString> const	&tfoNames,
+							            TQGramIndex const			&index,
 										TFile						&outputfile,
                                         TShape const                &shape,
 										Options						&options,
@@ -4123,14 +4126,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef Repeat<unsigned, unsigned>							TRepeat;
 		typedef String<TRepeat>										TRepeatString; 
 		typedef typename Iterator<TRepeatString, Rooted>::Type		TRepeatIterator;
-
-        typedef Index<TDuplexModSet, IndexQGram<TShape, OpenAddressing> >            TQGramIndex;
-        typedef Pattern<TQGramIndex, QGramsLookup< TShape, Standard_QGramsLookup > > TPattern;
-
-        // set containing all putative tts after filtering, used to build index & pattern
-        TDuplexModSet ttsSet;
-//        TDuplexModSet ttsSetRev;
-        TDuplexSet 	  ttsDuplexSet;
 		
 		// open duplex file
 		::std::ifstream file;
@@ -4147,7 +4142,6 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		::std::string duplexName = duplexFile.substr(lastPos);
 		TId duplexSeqNoWithinFile = 0;
-		::std::map <TId, ::std::pair<CharString, TDuplex> > duplexSeqNames;
 		
 		if (options._debugLevel >= 1) {
 			::std::cerr << "Starting on duplex file " << duplexName << ::std::endl;
@@ -4156,7 +4150,9 @@ namespace SEQAN_NAMESPACE_MAIN
         bool reduceSet = true; // merge overlapping features
 		
         //////////////////////////////////////////////////////////////////////////////
-        // iterate over duplex sequences, and add them to ttsSet after processing
+        //////////////////////////////////////////////////////////////////////////////
+        // iterate over duplex sequences, and add them to ttsSet after processing ////
+        //////////////////////////////////////////////////////////////////////////////
         SEQAN_PROTIMESTART(time_tts_io);
 		for(; !_streamEOF(file); ++duplexSeqNoWithinFile) {
 			TDuplex	duplexSeq;
@@ -4166,7 +4162,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				::std::cerr << "Processing:\t" << duplexName << "\t(seq " << duplexSeqNoWithinFile << ")\r" << ::std::flush;
 			}
 			
-			read(file, duplexSeq, Fasta());			// read Fasta sequence
+			read(file, duplexSeq, Fasta());
 
 			// find low complexity regions and mask sequences if requested
 			if (options.filterRepeats){
@@ -4179,64 +4175,47 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 			}
 			
-			appendValue(ttsDuplexSet, duplexSeq);
+	        TDuplexModSet 	ttsSetForward;
+	        TDuplexModSet 	ttsSetReverse;
+	        TGardener 		gardenerForward;
+	        TGardener 		gardenerReverse;
+	        TMatches 		matches;
+	        TPotentials 	potentials;
+
             // prefilter for putative TTSs
     		if (options.forward) {
-    			processDuplex(ttsSet, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
+    			processDuplex(ttsSetForward, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
+    	        if (length(ttsSetForward)>0) {
+    	        	_filterTriplexMyers(gardenerForward, ttsSetForward, index, tfoMotifSet, options);
+//    	        	_verifyAndStoreInverted(matches, potentials, gardener, pattern, tfoMotifSet, ttsDuplexSet, options);
+    	        }
+    	        eraseAll(gardenerForward);
     		}
     		if (options.reverse) {
-//    			processDuplex(ttsSetRev, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
-    			processDuplex(ttsSet, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
+    			processDuplex(ttsSetReverse, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
+    			if (length(ttsSetReverse)>0) {
+    				_filterTriplexMyers(gardenerReverse, ttsSetReverse, index, tfoMotifSet, options);
+    			}
+    			eraseAll(gardenerReverse);
     		}
-    		duplexSeqNames[duplexSeqNoWithinFile] = ::std::make_pair(duplexName, duplexSeq);
+
+    		// output all entries
+//            printTriplexEntryInverted(matches, duplexSeqNames, tfoMotifSet, tfoNames, outputfile, options);
+//            dumpSummaryInverted(potentials,  duplexSeqNames, tfoNames, options, TPX());
+    		// clean up
+            clear(matches);
 		}
         options.timeIOReadingTts += SEQAN_PROTIMEDIFF(time_tts_io);
 		file.close();
 
-        //////////////////////////////////////////////////////////////////////////////
-		// create index
-        SEQAN_PROTIMESTART(time_ds_index);
-        TQGramIndex indexQgram(ttsSet);
-        resize(indexShape(indexQgram), weight(shape));
-        // create pattern   
-        TPattern pattern(indexQgram,shape);
-
-//        TQGramIndex indexQgramRev(ttsSetRev);
-//        resize(indexShape(indexQgramRev), weight(shape));
-//        // create pattern
-//        TPattern patternRev(indexQgramRev,shape);
-        options.timeCreateTtssIndex += SEQAN_PROTIMEDIFF(time_ds_index);
-
-#ifdef TRIPLEX_DEBUG
-        ::std::cerr << "### printing all tts segments (forward + backward); total: " << length(ttsSet) << ::std::endl;
-        for (TIterMotifSet itr=begin(ttsSet); itr != end(ttsSet);++itr) {
-//        	::std::cerr << "tts: " << ttsString(*itr) << " type: " << (*itr).motif << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << " " << ::std::endl;
-        	::std::cerr << ttsString(*itr) << ::std::endl;
-        }
-        ::std::cerr << "###\n";
-#endif
-        options.timeFindTriplexes = 0;
-
-        TMatches 	matches;
-        TPotentials potentials;
-        TGardener 	gardener;
-//        TGardener gardenerRev;
-
         SEQAN_PROTIMESTART(time_search);
-        // forward
-        if (length(tfoMotifSet)>0) {
-        	_filterTriplexInverted(gardener, pattern, tfoMotifSet, options);
-        	_verifyAndStoreInverted(matches, potentials, gardener, pattern, tfoMotifSet, ttsDuplexSet, options);
 
-//        	_filterTriplexInverted(gardenerRev, patternRev, tfoMotifSet, options);
-//        	_verifyAndStoreInverted(matches, potentials, gardenerRev, patternRev, tfoMotifSet, ttsDuplexSet, options);
-        }
         options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
-        // gardener forward
-        options.timeQgramFind 		+= gardener.timeQgramFind;
-        options.timeCollectSeeds	+= gardener.timeCollectSeeds;
-        options.timeGardenerFind	+= gardener.timeGardenerFind;
-        options.timePutSeedsInMap	+= gardener.timePutSeedsInMap;
+//        gardener forward
+//        options.timeQgramFind 		+= gardener.timeQgramFind;
+//        options.timeCollectSeeds	+= gardener.timeCollectSeeds;
+//        options.timeGardenerFind	+= gardener.timeGardenerFind;
+//        options.timePutSeedsInMap	+= gardener.timePutSeedsInMap;
 
         options.timeCollectSeedsLoop+= timeCollectSeedsLoop;
         options.timeCSFreeSpace		+= timeCSFreeSpace;
@@ -4246,14 +4225,6 @@ namespace SEQAN_NAMESPACE_MAIN
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time spent in _seedMultiSeq  " << ::std::setprecision(3) << time_seedMultiProcessQgram << " seconds" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time in _seedMultiSeq ONLY for index search " << ::std::setprecision(3) << time_seedMultiProcessQgramIndexSearch << " seconds" << ::std::endl;
 
-        eraseAll(gardener);
-
-        // output all entries
-        printTriplexEntryInverted(matches, duplexSeqNames, tfoMotifSet, tfoNames, outputfile, options);
-        dumpSummaryInverted(potentials,  duplexSeqNames, tfoNames, options, TPX());
-
-		// clean up
-        clear(matches);
         return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}
 
