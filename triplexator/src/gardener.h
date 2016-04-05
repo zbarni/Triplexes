@@ -1169,7 +1169,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TScore scoreDropOff = (TScore) _max((TScore) xDrop * (-mismatch), minValue<TScore>()+1);
 			std::cout << "match: " << match << "; mismatch: " << mismatch << "; scoredropoff: " << scoreDropOff << std::endl;
 			std::cout << "tscore: " << (TScore)length(host(finder)) << std::endl;
-			exit(0);
+//			exit(0);
 			// extend seeds
 			_extendSeedlings(hitSet, finder, pattern, seqmap, scoreMatrix, minLength, scoreDropOff, queriyid);
 			
@@ -1293,83 +1293,132 @@ namespace SEQAN_NAMESPACE_MAIN
 		plant(gardener, pattern, queries, errorRate, minLength, xDrop, TWORKER() );
 	}
 
-	// TODO rename / rewrite
+	/**
+	 *
+	 */
 	template<
 	typename THitSet,
 	typename TTts,
 	typename TMotifSet,
 	typename TSuffix,
 	typename TSAIter,
+	typename TError,
 	typename TSize,
 	typename TDrop
 	>
 	void verifyMatches(
 			THitSet 	   &hitSet,
-			TTts 			tts,
+			TTts 			ttsFiber,
 			TMotifSet 		tfoSet,
-			TSuffix 		suffix,
+			TSuffix 		suffixQGram,
 			const TSAIter 	itStartBucket,
 			const TSAIter 	itEndBucket,
-	        int 			k,
-	        int 			numLocations,
+			TError const   &errorRate,
+			int 		   &numLocations,
 	        int 			endLocations[],
 	        TSize const	   &minLength,
 	        TDrop const    &xDrop) {
-		typedef int											TScore;
-		typedef Seed<Simple, DefaultSeedConfig>				TSeed;
+		typedef int								TScore;
+		typedef Seed<Simple, DefaultSeedConfig>	TSeed;
 
 	    int ePos;
 	    int bPos;
 	    int qPos;
 	    int misM;
+	    int maxSeedLength, maxSeedEndPos;
+	    int k = ceil(errorRate * minLength);
 	    TSAIter itSB, itEB;
 
 	    // define a scoring scheme
-	    TScore match = 1;
-	    TScore mismatch = 0;//(TScore)_max((TScore) (-1.0/(errorRate+0.00000001)) + 1, -(TScore)length(tts));
+	    TScore match 	= 1;
+	    TScore mismatch = (TScore)_max((TScore) (-1.0/(errorRate+0.00000001)) + 1, -(TScore)length(ttsFiber));
 	    Score<TScore> scoreMatrix(match, mismatch, std::numeric_limits<int>::max());
+	    TScore scoreDropOff = (TScore) _max((TScore) xDrop * (-mismatch), minValue<TScore>()+1);
+//	    std::cout << "MYERS match: " << match << "; mismatch: " << mismatch << "; scoredropoff: " << scoreDropOff << std::endl;
 
-	    // iterate over all putative matches (end locations)
-	    // and start searching from back to start
+	    std::vector<std::pair<int, int> > seeds;
+
+	    // iterate over all putative matches (end locations), find max seed and then extend
 	    for (int loc = 0; loc < numLocations; loc++) {
 	        ePos = endLocations[loc]; // end of current putative match
-	        bPos = ePos - QGRAM;    // beginning of --||--
-	        misM = 0;               // nr of mismatches
-	        qPos = QGRAM - 1;
+	        bPos = ePos - minLength;  // beginning of --||--
+	        misM = 0;                 // nr of mismatches
+	        qPos = minLength - 1;
+	        maxSeedLength = 0;
+	        maxSeedEndPos = 0;
+
 
 	        // reset SA iterators
 	        itSB = itStartBucket;
 	        itEB = itEndBucket;
 
+	        /////////////////////////////
+	        // validate TODO check for # of consecutive mismatches
 	        for (int pos = ePos; pos > bPos && misM <= k; --pos) {
-	            if (tts[pos] != suffix[qPos--]) {
-	                ++misM;
-	            }
+	        	if (ttsFiber[pos] != suffixQGram[qPos--]) {
+	        		++misM;
+	        	}
 	        }
-
 	        // invalid alignment
 	        if (misM > k) {
-	            continue;
+	        	continue;
 	        }
+
+	        // TODO barni make this more efficient
+#ifndef DEBUG
+	        std::cout << "TTSFIBER substring:\n";
+	        for (int pos = bPos + 1; pos <= ePos; ++pos) {
+	        	std::cout << ttsFiber[pos];
+	        }
+	        std::cout << endl;
+	        std::cout << "TFOSUFFIX substring:\n";
+	        for (int pos = 0; pos < minLength; ++pos) {
+	        	std::cout << suffixQGram[pos];
+	        }
+	        std::cout << endl;
+#endif
+	        qPos = minLength - 1;
+	        for (int pos = ePos; pos > bPos && qPos >= 0; ) {
+	        	int matchLength = 0;
+
+	        	while (ttsFiber[pos--] == suffixQGram[qPos--]) {
+//	        		std::cout << ttsFiber[pos+1] << "--" << suffixQGram[qPos+1] << " ( "
+//	        				<< (bool)((char)ttsFiber[pos+1] == (char)suffixQGram[qPos+1]) << "); ";
+	        		matchLength++;
+	        	}
+
+	        	if (matchLength > maxSeedLength) {
+	        		maxSeedLength = matchLength;
+	        		maxSeedEndPos = pos + matchLength;
+	        	}
+	        }
+	        std::cout << endl;
+	        std::cout
+					<< "MaxSeedLength: " << maxSeedLength << std::endl
+					<< "MaxSeedEndPos: " << maxSeedEndPos << std::endl;
 
 	        // found a valid match, extend for each tfo which had this suffix
 	        printf("Suffixes for endPos #%d: %d\n", loc, ePos);
 	        for (; itSB != itEB; ++itSB) {
 	            unsigned seqId      = itSB->i1;
-	            unsigned suffixPos  = itSB->i2;
+	            unsigned suffixPos  = itSB->i2; // start position
 	#ifdef DEBUG
-	            printf("seqId: %d\tsuffix: %d - %d\n", seqId, suffixPos, suffixPos + QGRAM - 1);
+	            printf("seqId: %d\tsuffix: %d - %d\n", seqId, suffixPos, suffixPos + minLength - 1);
 	#endif
 	        }
 	    }
 	}
 
 	/**
+	 * One parameter is the q-gram index of the TFO set. This function iterates over each double
+	 * stranded sequence in the haystack, and for each of these sequences iterates over each substring
+	 * s of length minLength (== len(q-gram)). For each s we do Myers' approximate matching with maximal
+	 * k (# allowed errors), and then verify / extend these matches (seeds).
 	 */
 	template<
-	typename THaystack,		// haystack spec
-	typename TQGramIndex,	// qgram index
-	typename TQuerySet,		// query set (needle)
+	typename THaystack,		// haystack spec - double stranded sequences (tts)
+	typename TQGramIndex,	// q-gram index - (tfo)
+	typename TQuerySet,		// query set (needle) - single stranded sequences (tfo)
 	typename TError,		// error rate
 	typename TSize,			// minimum hit size
 	typename TDrop,			// xdrop
@@ -1404,7 +1453,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	    typedef typename Fibre<TQGramIndex, QGramCountsDir>::Type   TCountsDir;
 	    typedef typename Iterator<TCounts, Standard>::Type      	TIterCounts;
 	    typedef typename Iterator<TCountsDir, Standard>::Type   	TIterCountsDir;
-		typedef typename Suffix<typename GetSequenceByNo<TQGramIndex const>::Type >::Type	TSuffX;
+		typedef typename Suffix<typename GetSequenceByNo<TQGramIndex const>::Type >::Type	TSuffix;
 
 
 	    int score;
@@ -1414,77 +1463,82 @@ namespace SEQAN_NAMESPACE_MAIN
 	    int alignmentLength;
 	    unsigned char *alignment;
 
-	    THaystackValue 	tts;
-
 	    int cnt = 0;
 	    int k 	= ceil(errorRate * minLength);
 
-	    // init SA iterators
+	    // init SA iterators for the tfoSet SA index
 	    TIterCountsDir itCountsDir      = begin(indexCountsDir(index), Standard());
 	    TIterCountsDir itCountsDirEnd   = end(indexCountsDir(index), Standard());
-	    TIterCounts itCountsBegin       = begin(indexCounts(index), Standard());
+	    TIterCounts    itCountsBegin    = begin(indexCounts(index), Standard());
 
-	    TSADirIter  itSADir             = begin(indexDir(index), Standard());
-	    TSADirIter  itSADirEnd          = end(indexDir(index), Standard());
+	    TSADirIter  itBucketDir         = begin(indexDir(index), Standard());
+	    TSADirIter  itBucketDirEnd      = end(indexDir(index), Standard());
 	    TSAIter     saBegin             = begin(indexSA(index), Standard());
 
-	    TSADirValue bucketBegin = *itSADir;
+	    TSADirValue 	bucketBegin = *itBucketDir;	// ptr to each unique qgram in SA of tfoSet (each bucket
+	    											// may have several entries
+	    THaystackValue 	ttsFiber; 					// current item in haystack (tts)
+	    TSuffix 		suffixQGram;				// q-gram of appropriate length within suffix
+	    THitSetPointer 	hitsPointer;				//
 
-	    // iterate over each tts in the double string
+	    // iterate over each tts in the set of double stranded sequences (haystack)
 	    for (int i = 0; i < length(haystack); ++i) {
-	    	tts = haystack[i]; // next fibre in haystack
-	    	unsigned char  	target[length(tts)];
-	    	unsigned int   	targetLength = length(tts);
+	    	ttsFiber = haystack[i]; // next fiber in haystack
+	    	unsigned char  	bitTarget[length(ttsFiber)];
+	    	unsigned int   	targetLength = length(ttsFiber);
 
 	    	// rewrite double stranded seq (tts) in a proper form for Myers (char -> index)
-	    	for (int i = 0; i < length(tts); ++i) {
-	    		target[i] = static_cast<unsigned int>(tts[i]);
+	    	for (int i = 0; i < length(ttsFiber); ++i) {
+	    		bitTarget[i] = static_cast<unsigned int>(ttsFiber[i]);
 	    	}
 
-	    	// iterate over each substring of length 'minLength'
-	    	for (++itSADir; itSADir != itSADirEnd; ++itSADir)
+	    	// iterate over each substring of length 'minLength' == same as iterating over each
+	    	// bucket (unique q-gram) in the q-gram index
+	    	for (++itBucketDir; itBucketDir != itBucketDirEnd; ++itBucketDir)
 	    	{
-	    		TSADirValue bucketEnd = *itSADir; // end of this bucket == beginning of next one
+	    		TSADirValue bucketEnd = *itBucketDir; // end of this bucket == beginning of next one
 	    		if (bucketBegin != bucketEnd)
 	    		{
-	    			unsigned char qgram[minLength];
-	    			THitSetPointer hitsPointer 	= new THitSet;
-	    			TSuffX suf;
+	    			unsigned char bitQGram[minLength];
+	    			hitsPointer = new THitSet;
 
-	    			TSAIter itBucket    = saBegin + bucketBegin;
-	    			TSAIter itEndBucket = saBegin + bucketEnd;
+	    			TSAIter itBucketItem = saBegin + bucketBegin;
+	    			TSAIter itEndBucket  = saBegin + bucketEnd;
 	    			cnt ++;
 
-	    			suf = suffix(indexText(index), *itBucket);
+	    			suffixQGram = suffix(indexText(index), *itBucketItem);
 
 	    			// transform query into index for Myers
 	    			for (int i = 0; i < minLength; ++i) {
-	    				qgram[i] = static_cast<unsigned int>(suf[i]);
+	    				bitQGram[i] = static_cast<unsigned int>(suffixQGram[i]);
 	    			}
 
-#ifdef DEBUG
+#ifndef DEBUG
 	    			// print query and target
 	    			printf("--------------------------\n");
-	    			std::cout << "TSuffX suf: " << suf << std::endl;
-	    			for (int k = 0; k < queryLength; ++k) {
-	    				printf("%d;%c  ", qgram[k], (char)suf[k]);//(unsigned int)(char)(suf[k]));
+	    			std::cout << "Current suffix: " << suffixQGram << std::endl;
+	    			std::cout << "Tts fiber: " << ttsFiber << std::endl;
+	    			for (int i = 0; i < minLength; ++i) {
+//	    				printf("%d;%c  ", bitQGram[i], (char)suffixQGram[i]);//(unsigned int)(char)(suf[i]));
+	    				printf("%c",(char)suffixQGram[i]);//(unsigned int)(char)(suf[i]));
 	    			}
 	    			printf("\n");
-	    			for (int k = 0; k < targetLength; ++k) {
-	    				printf("%d ", target[k]);
-	    			}
-	    			printf("\n");
+//	    			for (int i = 0; i < targetLength; ++i) {
+//	    				printf("%c", (char)bitTarget[i]);
+//	    			}
+//	    			printf("\n");
 #endif
 
 	    			std::cout << "error rate: " << errorRate << "; k: " << k << std::endl;
 
-	    			edlibCalcEditDistance(qgram, minLength, target, targetLength, 4,
+	    			// calculate Myers distance - this yields putative matches in endLocations
+	    			edlibCalcEditDistance(bitQGram, minLength, bitTarget, targetLength, 4,
 	    					k, EDLIB_MODE_HW, true, true, &score,
 	    					&endLocations, &startLocations, &numLocations,
 	    					&alignment, &alignmentLength);
 
-	    			verifyMatches(*hitsPointer, tts, queries, suf, itBucket, itEndBucket,
-	    					k, numLocations, endLocations, minLength, xDrop);
+	    			verifyMatches(*hitsPointer, ttsFiber, queries, suffixQGram, itBucketItem, itEndBucket,
+	    					errorRate, numLocations, endLocations, minLength, xDrop);
 	    		}
 	    		bucketBegin = bucketEnd;
 	    	}

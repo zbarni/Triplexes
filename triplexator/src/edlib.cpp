@@ -128,7 +128,7 @@ int edlibCalcEditDistance(
 
     } while(dynamicK && *bestScore == -1);
     
-    printf("Matching scores: %d\n", matchingScores);
+//    printf("Matching scores: %d\n", matchingScores);
 
 //    if (*bestScore >= 0) {  // If there is solution.
 //
