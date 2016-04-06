@@ -480,7 +480,7 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
 //                    positions.push_back(c - W);
                 }
                 // @barni moved push back here to keep all results
-                        printf("yeyy@\n\n\n");
+//                        printf("yeyy@\n\n\n");
                 positions.push_back(c - W);
             }
         }

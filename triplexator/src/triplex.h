@@ -2320,7 +2320,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef Gardener<TId, TGardenerSpec>					TGardener;
 		
 		bool reduceSet = true; // merge overlapping features
-		
+
 		if (options.forward){
 			TGardener gardener_forward;
 			TDuplexModSet ttsSet_forward;
@@ -2328,7 +2328,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			SEQAN_PROTIMESTART(time_ds_io);
 			processDuplex(ttsSet_forward, duplexString, duplexId, true, reduceSet, options);
 			options.timeIOReadingTts += SEQAN_PROTIMEDIFF(time_ds_io);
-			
+
 	        SEQAN_PROTIMESTART(time_search);
 			if (length(ttsSet_forward)>0){
 				_filterTriplex(gardener_forward, pattern, ttsSet_forward, options);
@@ -4112,7 +4112,7 @@ namespace SEQAN_NAMESPACE_MAIN
 										) {
 		typedef TriplexString										TDuplex;
 		typedef StringSet<ModStringTriplex<TDuplex, TDuplex> >		TDuplexModSet;
-		typedef StringSet<TDuplex>									TDuplexSet;
+//		typedef StringSet<TDuplex>									TDuplexSet;
 		typedef typename Iterator<TDuplexModSet>::Type  			TIterMotifSet;
 
 		typedef Gardener<TId, TGardenerSpec>						TGardener;
@@ -4186,7 +4186,9 @@ namespace SEQAN_NAMESPACE_MAIN
     		if (options.forward) {
     			processDuplex(ttsSetForward, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
     	        if (length(ttsSetForward)>0) {
+    	        	SEQAN_PROTIMESTART(time_search);
     	        	_filterTriplexMyers(gardenerForward, ttsSetForward, index, tfoMotifSet, options);
+    	        	options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
 //    	        	_verifyAndStoreInverted(matches, potentials, gardener, pattern, tfoMotifSet, ttsDuplexSet, options);
     	        }
     	        eraseAll(gardenerForward);
@@ -4194,7 +4196,9 @@ namespace SEQAN_NAMESPACE_MAIN
     		if (options.reverse) {
     			processDuplex(ttsSetReverse, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
     			if (length(ttsSetReverse)>0) {
+    				SEQAN_PROTIMESTART(time_search);
     				_filterTriplexMyers(gardenerReverse, ttsSetReverse, index, tfoMotifSet, options);
+    				options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
     			}
     			eraseAll(gardenerReverse);
     		}
@@ -4207,15 +4211,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
         options.timeIOReadingTts += SEQAN_PROTIMEDIFF(time_tts_io);
 		file.close();
-
-        SEQAN_PROTIMESTART(time_search);
-
-        options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
-//        gardener forward
-//        options.timeQgramFind 		+= gardener.timeQgramFind;
-//        options.timeCollectSeeds	+= gardener.timeCollectSeeds;
-//        options.timeGardenerFind	+= gardener.timeGardenerFind;
-//        options.timePutSeedsInMap	+= gardener.timePutSeedsInMap;
 
         options.timeCollectSeedsLoop+= timeCollectSeedsLoop;
         options.timeCSFreeSpace		+= timeCSFreeSpace;
