@@ -1539,6 +1539,9 @@ namespace SEQAN_NAMESPACE_MAIN
 	    THitSetPointer 	hitsPointer;	//
 
 	    // merge duplex segments
+
+	    // TODO @next kell egy map amit ebben a fuggvenyben valtoztatsz hogy tartsd eszben
+	    // hol vannak a szegmentek elvalasztva.
 	    mergeTtsFibers(haystack, mergedTtsFibers, bitTarget, targetLength);
 
 	    // reset SA iterators to beginning of index
