@@ -1,0 +1,13 @@
+# Sequence-ID	TFO start	TFO end	Duplex-ID	TTS start	TTS end	Score	Error-rate	Errors	Motif	Strand	Orientation	Guanine-rate
+seqGA	3	13	seqI==tfo-comp	1	11	9	0.1	t3	R	-	A	0.6
+     5'- CTCTCCTCTC -3'
+TTS: 3'- GAGAGGAGAG -5'
+         |||*||||||
+TFO: 5'- GAGGGGAGAG -3'
+
+seqGA	0	15	seqI==tfo-comp	0	15	14	0.067	t7	R	-	A	0.67
+     5'- CCTCTCCTCTCTCCC -3'
+TTS: 3'- GGAGAGGAGAGAGGG -5'
+         |||||||*|||||||
+TFO: 5'- GGAGAGGGGAGAGGG -3'
+

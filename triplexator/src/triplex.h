@@ -4184,6 +4184,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
             // prefilter for putative TTSs
     		if (options.forward) {
+    			cout << "### Forward search" << endl << endl;
     			processDuplex(ttsSetForward, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
     	        if (length(ttsSetForward)>0) {
     	        	SEQAN_PROTIMESTART(time_search);
@@ -4194,6 +4195,7 @@ namespace SEQAN_NAMESPACE_MAIN
     	        eraseAll(gardenerForward);
     		}
     		if (options.reverse) {
+    			cout << "### Reverse search" << endl << endl;
     			processDuplex(ttsSetReverse, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
     			if (length(ttsSetReverse)>0) {
     				SEQAN_PROTIMESTART(time_search);

@@ -1,0 +1,200 @@
+### Forward search
+
+### Reverse search
+
+Merged haystack has length: 15
+seq no: 0 (len = 15): GGGAGAGAGGAGAGG
+Segment map / vector:	0 x 
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAGGGGAGA
+Iteration #0 =====================================
+getHaystackFiberSeqNo for bPos: 3
+m (return value): 0
+segmentMap size: 1
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 12)
+	bPos (merged): 3
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+AGAGAGGAGA	TTSFIBER substring
+AGAGGGGAGA	TFOSUFFIX substring
+
+Seed: 
+	GGAGA
+MaxSeed L: 5
+MaxSeed P (ttsFiber): 8 - 12
+tfo sequence id (indx): 0
+MaxSeed P (suffixQGram): 5 - 9
+MaxSeed P (global suffixQGram): 8 - 12
+q-gram position in tfo seq: 3 - 12
+Extended seed: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGAGGGGAG
+Iteration #0 =====================================
+getHaystackFiberSeqNo for bPos: 2
+m (return value): 0
+segmentMap size: 1
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 11)
+	bPos (merged): 2
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GAGAGAGGAG	TTSFIBER substring
+GAGAGGGGAG	TFOSUFFIX substring
+
+Seed: 
+	GAGAG
+MaxSeed L: 5
+MaxSeed P (ttsFiber): 2 - 6
+tfo sequence id (indx): 0
+MaxSeed P (suffixQGram): 0 - 4
+MaxSeed P (global suffixQGram): 2 - 6
+q-gram position in tfo seq: 2 - 11
+Extended seed: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+
+Iteration #1 =====================================
+getHaystackFiberSeqNo for bPos: 4
+m (return value): 0
+segmentMap size: 1
+
+--> Found valid match @ 
+	(#nr, merged ePos): (1, 13)
+	bPos (merged): 4
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GAGAGGAGAG	TTSFIBER substring
+GAGAGGGGAG	TFOSUFFIX substring
+
+Seed: 
+	GAGAGG
+MaxSeed L: 6
+MaxSeed P (ttsFiber): 4 - 9
+tfo sequence id (indx): 0
+MaxSeed P (suffixQGram): 0 - 5
+MaxSeed P (global suffixQGram): 2 - 7
+q-gram position in tfo seq: 2 - 11
+Extended seed: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGGGGAGAG
+Iteration #0 =====================================
+getHaystackFiberSeqNo for bPos: 4
+m (return value): 0
+segmentMap size: 1
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 13)
+	bPos (merged): 4
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GAGAGGAGAG	TTSFIBER substring
+GAGGGGAGAG	TFOSUFFIX substring
+
+Seed: 
+	GGAGAG
+MaxSeed L: 6
+MaxSeed P (ttsFiber): 8 - 13
+tfo sequence id (indx): 0
+MaxSeed P (suffixQGram): 4 - 9
+MaxSeed P (global suffixQGram): 8 - 13
+q-gram position in tfo seq: 4 - 13
+Extended seed: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGGGGAGAGG
+Iteration #0 =====================================
+getHaystackFiberSeqNo for bPos: 5
+m (return value): 0
+segmentMap size: 1
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 14)
+	bPos (merged): 5
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+AGAGGAGAGG	TTSFIBER substring
+AGGGGAGAGG	TFOSUFFIX substring
+
+Seed: 
+	GGAGAGG
+MaxSeed L: 7
+MaxSeed P (ttsFiber): 8 - 14
+tfo sequence id (indx): 0
+MaxSeed P (suffixQGram): 3 - 9
+MaxSeed P (global suffixQGram): 8 - 14
+q-gram position in tfo seq: 5 - 14
+Extended seed: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GGAGAGGGGA
+Iteration #0 =====================================
+getHaystackFiberSeqNo for bPos: 1
+m (return value): 0
+segmentMap size: 1
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 10)
+	bPos (merged): 1
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GGAGAGAGGA	TTSFIBER substring
+GGAGAGGGGA	TFOSUFFIX substring
+
+Seed: 
+	GGAGAG
+MaxSeed L: 6
+MaxSeed P (ttsFiber): 1 - 6
+tfo sequence id (indx): 0
+MaxSeed P (suffixQGram): 0 - 5
+MaxSeed P (global suffixQGram): 1 - 6
+q-gram position in tfo seq: 1 - 10
+Extended seed: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GGGAGAGGGG
+Iteration #0 =====================================
+getHaystackFiberSeqNo for bPos: 0
+m (return value): 0
+segmentMap size: 1
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 9)
+	bPos (merged): 0
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GGGAGAGAGG	TTSFIBER substring
+GGGAGAGGGG	TFOSUFFIX substring
+
+Seed: 
+	GGGAGAG
+MaxSeed L: 7
+MaxSeed P (ttsFiber): 0 - 6
+tfo sequence id (indx): 0
+MaxSeed P (suffixQGram): 0 - 6
+MaxSeed P (global suffixQGram): 0 - 6
+q-gram position in tfo seq: 0 - 9
+Extended seed: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+6
+elapsed time: 0.000291909 sec

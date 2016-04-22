@@ -59,7 +59,7 @@ _Pragma(STRINGIFY(code))
 #define SEQAN_PRAGMA_IF_PARALLEL(code)
 #endif // SEQAN_ENABLE_PARALLELISM
 #endif // SEQAN_PRAGMA_IF_PARALLEL
-//#define DEBUG
+#define DEBUG
 using namespace seqan;
 
 namespace SEQAN_NAMESPACE_MAIN
@@ -1173,9 +1173,11 @@ namespace SEQAN_NAMESPACE_MAIN
 			TScore mismatch = (TScore)_max((TScore) (-1.0/(errorRate+0.00000001)) + 1, -(TScore)length(host(finder)));
 			Score<TScore> scoreMatrix(match, mismatch, std::numeric_limits<int>::max());
 			TScore scoreDropOff = (TScore) _max((TScore) xDrop * (-mismatch), minValue<TScore>()+1);
-			std::cout << "match: " << match << "; mismatch: " << mismatch << "; scoredropoff: " << scoreDropOff << std::endl;
+			std::cout << "match: " << match << "; mismatch: " << mismatch << "; scoredropoff: " << scoreDropOff
+					<< "; -1.0 / errorRate" << (TScore) (-1.0/(errorRate+0.00000001))
+					<< "; errorRate" << errorRate
+					<< std::endl;
 			std::cout << "tscore: " << (TScore)length(host(finder)) << std::endl;
-//			exit(0);
 			// extend seeds
 			_extendSeedlings(hitSet, finder, pattern, seqmap, scoreMatrix, minLength, scoreDropOff, queriyid);
 			
@@ -1300,11 +1302,172 @@ namespace SEQAN_NAMESPACE_MAIN
 	}
 
 	/**
+	 * Binary search in sorted haystack segment map / vector.
+	 * Returns the index (sequence number) of a duplex fiber in the haystack, given its starting
+	 * position (bPos) in the merged haystack.
+	 */
+	template< typename TSegment	>
+	int getHaystackFiberSeqNo(int bPos, TSegment segmentMap) {
+		int l = 0;
+		int r = segmentMap.size() - 1;
+		int m;
+
+		while (l <= r) {
+			m = (l + r) / 2;
+			if (bPos == segmentMap[m]) {
+				break;
+			}
+			if (bPos < segmentMap[m]) {
+				r = m - 1;
+			}
+			else {
+				l = m + 1;
+			}
+		}
+
+		if (segmentMap[m] > bPos) {
+			m--;
+		}
+
+#ifdef DEBUG
+		cout 	<< "getHaystackFiberSeqNo for bPos: " << bPos << endl
+				<< "m (return value): " << m << endl
+				<< "segmentMap size: " << segmentMap.size() << endl;
+#endif
+		return m;
+	}
+
+//	template<
+//	typename THaystack,
+//	typename TScoreMatrixMap,
+//	typename TError,
+//	typename TDrop
+//	>
+//	void precomputeScoreMatrices(
+//			THaystack const &haystack,
+//			TScoreMatrixMap &scoreMatrices,
+//			TError 	const   &errorRate,
+//			TDrop 	const   &xDrop
+//			)
+//	{
+//		typedef int TScore;
+//#ifdef DEBUG
+//		cout << "Precomputing score matrices...:" << endl;
+//#endif
+//		// define a scoring scheme
+//		TScore match 		= 1;
+//		for (int i = 0; i < length(haystack); ++i) {
+//			TScore mismatch 	= (TScore)_max((TScore) (-1.0/(errorRate+0.00000001)) + 1, -(TScore)length(haystack[i]));
+//			TScore scoreDropOff = (TScore) _max((TScore) xDrop * (-mismatch), minValue<TScore>()+1);
+//#ifdef DEBUG
+//			cout 	<< "#fiber: " << i << endl
+//					<< "\tmatch: " << match << endl
+//					<<" \tmismatch: " << mismatch << endl
+//					<< "\tscoredropoff: " << scoreDropOff << endl;
+//#endif
+//			Score<TScore> scoreMatrix(match, mismatch, std::numeric_limits<int>::max());
+//			scoreMatrices[i] = std::make_pair(scoreMatrix, scoreDropOff);
+//		}
+//	}
+
+	template<
+	typename TSeed,
+	typename THaystackFiber,
+	typename TQuery>
+	void extendSimpleSeed(
+			TSeed 				  &seed,
+			THaystackFiber 	const &fiber,
+			TQuery 			const &query,
+			int 			const &k) {
+		int posFiber;
+		int posQuery;
+		int mismatch;
+
+		// keep list of where mismatches occur, left and right from seed
+		std::vector<int> mismatchOffsetLeft;
+		std::vector<int> mismatchOffsetRight;
+
+		// go left
+		mismatch = 0;
+		posFiber = getBeginDim0(seed);
+		posQuery = getBeginDim1(seed);
+		while (posFiber >= 0 && posQuery >= 0 && mismatch < k) {
+			if (fiber[posFiber] != query[posQuery]) {
+				mismatchOffsetLeft.push_back(getBeginDim0(seed) - posFiber);
+				mismatch++;
+			}
+			posFiber--;
+			posQuery--;
+		}
+
+		// go right
+		mismatch = 0;
+		posFiber = getEndDim0(seed);
+		posQuery = getEndDim1(seed);
+		int endFiber = length(fiber);
+		int endQuery = length(query);
+		while (posFiber < endFiber && posQuery < endQuery && mismatch <= k) {
+			if (fiber[posFiber] != query[posQuery]) {
+				mismatchOffsetRight.push_back(posFiber - getEndDim0(seed));
+				mismatch++;
+			}
+			posFiber++;
+			posQuery++;
+		}
+
+		// find maximal extension
+		int maxDiagonal = 0;
+		int diagonal;
+		int r = 0;
+		int rightMismatches = mismatchOffsetRight.size();
+		int l = mismatchOffsetLeft.size();
+
+		// III if #mismatches less than k, whole segments match
+		if (l + rightMismatches <= k) {
+			// update left position
+			setBeginDim0(seed, max(0, getBeginDim0(seed) - getBeginDim1(seed)));
+			setBeginDim1(seed, max(0, getBeginDim1(seed) - getBeginDim0(seed)));
+			// update right positions
+			setEndDim0(seed, min(length(fiber) - 1, getEndDim0(seed) + length(query) - getEndDim1(seed) - 1));
+			setEndDim1(seed, min(length(query)) - 1, getEndDim1(seed) + length(fiber) - getEndDim0(seed) - 1);
+			return;
+		}
+
+		for (; l >= 0 && r < rightMismatches; --l) {
+			diagonal = mismatchOffsetRight[r] - mismatchOffsetLeft[l];
+			if (diagonal > maxDiagonal) {
+				maxDiagonal = diagonal;
+				// check if limits are contained in maxed seed
+				if (l + r >= k) {
+					// update left position
+					setBeginDim0(seed, getBeginDim0(seed) - mismatchOffsetLeft[l] + 1);
+					setBeginDim1(seed, getBeginDim1(seed) - mismatchOffsetLeft[l] + 1);
+					// update right positions
+					setEndDim0(seed, getEndDim0(seed) + mismatchOffsetRight[r] - 1);
+					setEndDim1(seed, getEndDim1(seed) + mismatchOffsetRight[r] - 1);
+				}
+				else if (l + r ){
+					// update left position
+					setBeginDim0(seed, getBeginDim0(seed) - mismatchOffsetLeft[l] + 1);
+					setBeginDim1(seed, getBeginDim1(seed) - mismatchOffsetLeft[l] + 1);
+					// update right positions
+					setEndDim0(seed, getEndDim0(seed) + mismatchOffsetRight[r] - 1);
+					setEndDim1(seed, getEndDim1(seed) + mismatchOffsetRight[r] - 1);
+				}
+			}
+			r++;
+
+		}
+	}
+
+	/**
 	 *
 	 */
 	template<
 	typename THitSet,
-	typename TTts,
+	typename THaystack,
+	typename TMergedHaystack,
+	typename TSegment,
 	typename TMotifSet,
 	typename TSuffix,
 	typename TSAIter,
@@ -1313,49 +1476,59 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TDrop
 	>
 	void verifyMatches(
-			THitSet 	   &hitSet,
-			TTts 			ttsFiber,
-			TMotifSet 		tfoSet,
-			TSuffix 		suffixQGram,
-			TSAIter const	itStartBucket,
-			TSAIter const	itEndBucket,
-			TError const   &errorRate,
-			int 		   &numLocations,
-	        int 			endLocations[],
-	        TSize const	   &minLength,
-	        TDrop const    &xDrop) {
+			THitSet 	   			&hitSet,
+			THaystack 		const 	&haystack,
+			TMergedHaystack const 	&mergedHaystack,
+			TSegment 		const 	&fiberStartPos,
+			TMotifSet 				tfoSet,
+			TSuffix 		const	suffixQGram,
+			TSAIter 		const	itStartBucket,
+			TSAIter 		const	itEndBucket,
+			TError 			const   &errorRate,
+			int 		   			&numLocations,
+	        int 					endLocations[],
+	        TSize 			const	&minLength,
+	        TDrop 			const   &xDrop)
+	{
 		typedef int								TScore;
 		typedef Seed<Simple, DefaultSeedConfig>	TSeed;
 		typedef Dequeue<TSeed>					TSeedList;
 		typedef std::map<int, TSeedList>		T;
+		typedef std::map<int, std::pair<Score<TScore>, TScore> >	TScoreMatrixMap;
 
 	    int ePos;
 	    int bPos;
 	    int qPos;
 	    int misM;
+	    int haystackFiberSeqNo;
 	    int maxSeedLength;
 	    int maxSeedEndPos, maxSeedBeginPos; // global position of maximum seed
 	    int maxSeedQGramEndPos;
 	    int k = ceil(errorRate * minLength);
 	    TSAIter itSB, itEB;
+	    TScoreMatrixMap scoreMatrices;
 
-	    // define a scoring scheme
-	    TScore match 		= 1;
-	    TScore mismatch 	= (TScore)_max((TScore) (-1.0/(errorRate+0.00000001)) + 1, -(TScore)length(ttsFiber));
-	    TScore scoreDropOff = (TScore) _max((TScore) xDrop * (-mismatch), minValue<TScore>()+1);
-
-	    Score<TScore> scoreMatrix(match, mismatch, std::numeric_limits<int>::max());
-//	    std::cout << "MYERS match: " << match << "; mismatch: " << mismatch << "; scoredropoff: " << scoreDropOff << std::endl;
+//	    // precompute scoring schemes for each fibre in haystack
+//	    precomputeScoreMatrices(haystack, scoreMatrices, errorRate, xDrop);
 
 	    // iterate over all putative matches (end locations), find max seed and then extend
 	    for (int loc = 0; loc < numLocations; loc++) {
-	        ePos = endLocations[loc]; // end of current putative match
-	        bPos = ePos - minLength;  // beginning of --||--
-	        misM = 0;                 // nr of mismatches
+#ifdef DEBUG
+	    	cout << endl << "Iteration #" << loc << " =====================================" << endl;
+#endif
+	        ePos = endLocations[loc]; 	 // end of current putative match in duplex (mergedHaystack)
+	        bPos = ePos - minLength + 1; // beginning of --||--
+	        misM = 0;                 	 // nr of mismatches
 	        qPos = minLength - 1;
-	        maxSeedLength = 0;
-	        maxSeedEndPos = 0;
-	        maxSeedQGramEndPos = 0;
+	        maxSeedLength 		= 0;
+	        maxSeedEndPos 		= 0;
+	        maxSeedQGramEndPos 	= 0;
+	        haystackFiberSeqNo 	= getHaystackFiberSeqNo(bPos, fiberStartPos);
+	        // make sure the found match doesn't span 2 different fibers in the original haystack
+	        if ((bPos - fiberStartPos[haystackFiberSeqNo]) + minLength >
+	    		length(haystack[haystackFiberSeqNo])) {
+	        	continue;
+	        }
 
 	        // reset SA iterators
 	        itSB = itStartBucket;
@@ -1364,7 +1537,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	        /////////////////////////////
 	        // validate TODO check for # of consecutive mismatches
 	        for (int pos = ePos; pos > bPos && misM <= k; --pos) {
-	        	if (ttsFiber[pos] != suffixQGram[qPos--]) {
+	        	if (mergedHaystack[pos] != suffixQGram[qPos--]) {
 	        		++misM;
 	        	}
 	        }
@@ -1374,9 +1547,13 @@ namespace SEQAN_NAMESPACE_MAIN
 	        }
 
 #ifdef DEBUG
-	        cout << "> Found valid match @ (#nr, position): (" << loc << ", " << ePos << ")" << endl;
-	        for (int pos = bPos + 1; pos <= ePos; ++pos) {
-	        	std::cout << ttsFiber[pos];
+	        cout 	<< endl << "--> Found valid match @ " << endl
+	        		<< "\t(#nr, merged ePos): (" << loc << ", " << ePos << ")" << endl
+	        		<< "\tbPos (merged): " << bPos << endl
+					<< "\tmismatches: " << misM << endl;
+	        cout << "haystackFiberSeqNo (in original haystack): " << haystackFiberSeqNo << endl;
+	        for (int pos = bPos; pos <= ePos; ++pos) {
+	        	std::cout << mergedHaystack[pos];
 	        }
 	        std::cout << "\tTTSFIBER substring" << endl;
 	        for (int pos = 0; pos < minLength; ++pos) {
@@ -1390,7 +1567,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	        for (int pos = ePos; pos > bPos && qPos >= 0; --pos, --qPos) {
 	        	int matchLength = 0;
 
-	        	while (qPos >= 0 && ttsFiber[pos] == suffixQGram[qPos]) {
+	        	while (qPos >= 0 && mergedHaystack[pos] == suffixQGram[qPos]) {
 	        		matchLength++;
 	        		--pos;
 	        		--qPos;
@@ -1407,68 +1584,103 @@ namespace SEQAN_NAMESPACE_MAIN
 #ifdef DEBUG
 	        cout << endl << "Seed: " << endl << "\t";
 	        for (int pos = maxSeedEndPos - maxSeedLength + 1; pos <= maxSeedEndPos; ++pos) {
-	        	cout << ttsFiber[pos];
+	        	cout << mergedHaystack[pos];
 	        }
-	        cout << endl << "MaxSeed L: " << maxSeedLength << std::endl << "MaxSeed P (ttsFiber): " << maxSeedEndPos - maxSeedLength + 1 << " - " << maxSeedEndPos << std::endl;
+	        cout 	<< endl << "MaxSeed Length: \t\t\t\t" << maxSeedLength << std::endl
+	        		<< "MaxSeed Position (ttsFiber): \t" << maxSeedBeginPos //maxSeedEndPos - maxSeedLength + 1
+					<< " - " << maxSeedEndPos << std::endl;
 #endif
 
 	        // found a valid match, extend for each tfo which had this q-gram suffix
 	        for (; itSB != itEB; ++itSB) {
-	            unsigned seqId      	= itSB->i1;
+	            unsigned tfoSeqId      	= itSB->i1;
 	            unsigned qGramOffset  	= itSB->i2; // start position / offset of q-gram in tfo
 	            unsigned qGramSeedBegin = maxSeedQGramEndPos - maxSeedLength + 1 + qGramOffset;
 	            unsigned qGramSeedEnd 	= maxSeedQGramEndPos + qGramOffset;
 
 	            TSeed seed(maxSeedBeginPos, qGramSeedBegin, maxSeedEndPos, qGramSeedEnd);
-	            extendSeed(seed, ttsFiber, tfoSet[seqId], EXTEND_BOTH, scoreMatrix, scoreDropOff, UnGappedXDrop());
+	            std::cout << "original seed\n"
+	            		<< seed << endl
+	            		<< "seedH: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(seed), getEndDim0(seed)) << "\n"
+						<< "seedV: " << infix(tfoSet[tfoSeqId], getBeginDim1(seed), getEndDim1(seed)) << "\n";
+	            extendSimpleSeed(seed, haystack[haystackFiberSeqNo], tfoSet[tfoSeqId], k);
 	            // for sure we must get an extension that is >= than minlength (Myers + q-gram length)
 	            assert(getEndDim0(seed)-getBeginDim0(seed) >= (TPos)minLength);
 
 #ifdef DEBUG
-				cout << "MaxSeed P (suffixQGram): " << maxSeedQGramEndPos - maxSeedLength + 1 << " - " << maxSeedQGramEndPos << std::endl;
-				cout << "MaxSeed P (global suffixQGram): " << qGramSeedBegin << " - " << qGramSeedEnd << std::endl;
-				cout << "q-gram position in tfo seq: " << qGramOffset << " - " 	<< qGramOffset + (int)minLength - 1 << endl;
-	            cout << "Extended seed: " << seed << endl;
-	#endif
-//	            if (!empty(newset) && isOverlapping(seed, back(newset))){
-//	            	setBeginDim0(seed, min(getBeginDim0(seed),getBeginDim0(back(newset))));
-//	            	setBeginDim1(seed, min(getBeginDim1(seed),getBeginDim1(back(newset))));
-//	            	setEndDim0(seed, max(getEndDim0(seed),getEndDim0(back(newset))));
-//	            	setEndDim1(seed, max(getEndDim1(seed),getEndDim1(back(newset))));
-//	            } else {
-//	            	pushBack(newset,seed);
-//	            }
+	            std::cout << "seed after extension\n"
+	            		<< seed << endl
+	            		<< "seedH: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(seed), getEndDim0(seed)) << "\n"
+						<< "seedV: " << infix(tfoSet[tfoSeqId], getBeginDim1(seed), getEndDim1(seed)) << "\n";
+	            cout << "tfo: \t\t\t" << tfoSet[tfoSeqId] << endl;
+	            cout << "suffix itself: \t" << suffixQGram << endl;
+	            cout << "q-gram pos in tfo: \t" << qGramOffset << " - " 	<< qGramOffset + (int)minLength - 1 << endl;
+	            cout << "tfo sequence id (indx): \t\t" << tfoSeqId << endl;
+	            cout << "MaxSeed P (local  suffixQGram): " << maxSeedQGramEndPos - maxSeedLength + 1 << " - " << maxSeedQGramEndPos << std::endl;
+	            cout << "MaxSeed P (global suffixQGram): " << qGramSeedBegin << " - " << qGramSeedEnd << std::endl;
+#endif
 	        }
 	    }
 	}
 
+	/**
+	 *
+	 */
 	template<
 	typename THaystack,		// haystack spec - double stranded sequences (tts)
-	typename TMergedHaystack
+	typename TMergedHaystack,
+	typename TSegmentMap
 	>
 	void mergeTtsFibers(
-			THaystack const &haystack,
-			TMergedHaystack &mergedHaystack,
-			unsigned char  *&bitTarget,
-			unsigned int 	&targetLength
+			THaystack const 	&haystack,
+			TMergedHaystack 	&mergedHaystack,
+			TSegmentMap  		&segmentMap,
+			unsigned char  	   *&bitTarget,
+			unsigned int 		&totalLength
 			) {
+		assert(length(mergedHaystack) == 0);
 
+		// calculate total length of segments in haystack
 		for (int i = 0; i < length(haystack); ++i) {
-			targetLength += length(haystack[i]);
+			totalLength += length(haystack[i]);
 		}
 
-		resize(mergedHaystack, targetLength, Exact());
-		bitTarget = new unsigned char[targetLength];
-		targetLength = 0;
+#ifdef DEBUG
+		assert(totalLength == length(mergedHaystack));
+		std::cout 	<< "Merged haystack has length: " << totalLength << std::endl;
+#endif
+
+		// resize merged haystack to totalLength
+		resize(mergedHaystack, totalLength, Exact());
+		bitTarget = new unsigned char[totalLength];
+		totalLength = 0;
 
 		for (int i = 0; i < length(haystack); ++i) {
+			// add starting position in mergedHaystack for current fiber
+			segmentMap.push_back(totalLength);
+
+#ifdef DEBUG
+			std::cout 	<< "seq no: " << i << " (len = " << length(haystack[i]) << "): ";
+#endif
+			// fill mergedHaystack and Myers vector
 			for (int j = 0; j < length(haystack[i]); ++j) {
-				mergedHaystack[targetLength + j] = haystack[i][j];
+				mergedHaystack[totalLength + j] = haystack[i][j];
 				// rewrite double stranded seq (tts) in a proper form for Myers (char -> index)
-				bitTarget[targetLength + j] = static_cast<unsigned int>(haystack[i][j]);
+				bitTarget[totalLength + j] = static_cast<unsigned int>(haystack[i][j]);
 			}
-			targetLength += length(haystack[i]);
+			totalLength += length(haystack[i]);
+#ifdef DEBUG
+			std::cout 	<< haystack[i] << std::endl;
+#endif
 		}
+
+#ifdef DEBUG
+		std::cout << "Segment map / vector:\t";
+		for (unsigned i = 0; i < segmentMap.size(); ++i) {
+			cout << segmentMap[i] << " x ";
+		}
+		cout << endl;
+#endif
 	}
 
 	/**
@@ -1479,24 +1691,24 @@ namespace SEQAN_NAMESPACE_MAIN
 	 * TODO assume we have only one duplex sequence
 	 */
 	template<
-	typename THaystack,		// haystack spec - double stranded sequences (tts)
-	typename TQGramIndex,	// q-gram index - (tfo)
-	typename TQuerySet,		// query set (needle) - single stranded sequences (tfo)
-	typename TError,		// error rate
-	typename TSize,			// minimum hit size
-	typename TDrop,			// xdrop
-	typename TSpec,			// specialization
-	typename TId,			// sequence id
+	typename THaystack,		 // haystack spec - double stranded sequences (tts)
+	typename TQGramIndex,	 // q-gram index - (tfo)
+	typename TQuerySet,		 // query set (needle) - single stranded sequences (tfo)
+	typename TError,		 // error rate
+	typename TSize,			 // minimum hit size
+	typename TDrop,			 // xdrop
+	typename TSpec,			 // specialization
+	typename TId,			 // sequence id
 	typename TWorker
 	>
 	void plantMyers(
-			Gardener<TId, TSpec>&gardener,
-			THaystack			&haystack, 	// TTS set
-			TQGramIndex			&index,
-			TQuerySet			&queries,	// TFO set
-			TError const		&errorRate,
-			TSize const			&minLength,
-			TDrop const			&xDrop,
+			Gardener<TId, TSpec>	&gardener,
+			THaystack const			&haystack, 			// TTS set
+			TQGramIndex				&index,
+			TQuerySet				&queries,			// TFO set
+			TError const			&errorRate,
+			TSize const				&minLength,
+			TDrop const				&xDrop,
 			TWorker
 	){
 	    double t = sysTime();
@@ -1512,9 +1724,9 @@ namespace SEQAN_NAMESPACE_MAIN
 	    typedef typename Iterator<TSA, Standard>::Type          TSAIter;
 	    typedef typename Iterator<TSADir, Standard>::Type       TSADirIter;
 
-		typedef typename Suffix<typename GetSequenceByNo<TQGramIndex const>::Type >::Type	TSuffix;
 		typedef 		 std::vector<int>						TSegments;
 		typedef  		 String<char> 							TMyString;
+		typedef typename Suffix<typename GetSequenceByNo<TQGramIndex const>::Type >::Type	TSuffix;
 
 	    int score;
 	    int numLocations;
@@ -1535,14 +1747,13 @@ namespace SEQAN_NAMESPACE_MAIN
 	    TSADirValue 	bucketBegin;	// ptr to each unique qgram in SA of tfoSet (each bucket
 	    								// may have several entries
 	    TMyString 		mergedTtsFibers;// current item in haystack (tts)
-	    TSuffix 		suffixQGram;	// q-gram of appropriate length within suffix
+	    TSuffix 		suffixQGram;	// q-gram of appropriate (minimum) length within suffix
 	    THitSetPointer 	hitsPointer;	//
+	    TSegments		segmentMap; 	// for duplex each segment, the map stores its starting
+	    								// position in the merged haystack; sorted --> binary search
 
 	    // merge duplex segments
-
-	    // TODO @next kell egy map amit ebben a fuggvenyben valtoztatsz hogy tartsd eszben
-	    // hol vannak a szegmentek elvalasztva.
-	    mergeTtsFibers(haystack, mergedTtsFibers, bitTarget, targetLength);
+	    mergeTtsFibers(haystack, mergedTtsFibers, segmentMap, bitTarget, targetLength);
 
 	    // reset SA iterators to beginning of index
 	    itBucketDir         = begin(indexDir(index), Standard());
@@ -1572,9 +1783,12 @@ namespace SEQAN_NAMESPACE_MAIN
 
 #ifdef DEBUG
 	    		// print query and target
-	    		printf("--------------------------\n");
-	    		std::cout << "Tts fiber: " << mergedTtsFibers << std::endl;
-	    		std::cout << "Current suffix (length " << minLength << "): ";
+	    		cout 	<< endl << endl
+	    				<< "----------------------------------------" << endl
+	    				<< "----------- NEW QGRAM-SUFFIX -----------" << endl
+	    				<< "----------------------------------------" << endl;
+//	    		std::cout << "tts fiber: " << mergedTtsFibers << std::endl;
+	    		std::cout << "current suffix (length == " << minLength << "): ";
 	    		for (int i = 0; i < minLength; ++i) {
 	    			printf("%c",(char)suffixQGram[i]);//(unsigned int)(char)(suf[i]));
 	    		}
@@ -1582,7 +1796,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	    		//	    			for (int i = 0; i < targetLength; ++i) {
 	    		//	    				printf("%c", (char)bitTarget[i]);
 	    		//	    			}
-	    		//	    			printf("\n");
+	    		cout << endl;
 #endif
 	    		//	    			std::cout << "error rate: " << errorRate << "; k: " << k << std::endl;
 
@@ -1592,8 +1806,11 @@ namespace SEQAN_NAMESPACE_MAIN
 						&endLocations, &startLocations, &numLocations,
 						&alignment, &alignmentLength);
 
-	    		//	    			verifyMatches(*hitsPointer, ttsFiber, queries, suffixQGram, itBucketItem, itEndBucket,
-	    		//	    					errorRate, numLocations, endLocations, minLength, xDrop);
+	    		verifyMatches(*hitsPointer, haystack, mergedTtsFibers, segmentMap, queries,
+	    				suffixQGram, itBucketItem, itEndBucket, errorRate, numLocations,
+						endLocations, minLength, xDrop);
+	    		//					errorRate, numLocations, endLocations, minLength, xDrop);
+	    		delete hitsPointer;
 	    	}
 	    	bucketBegin = bucketEnd;
 	    }
@@ -1718,7 +1935,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		// w+1−(k+1)q | w=minimum length, k=errors, q=weight(q-grams)
 		TPos minSeedsThreshold = static_cast<TPos>(minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape));
 #ifdef TRIPLEX_DEBUG
-        std::cout << "qux\n";
 		::std::cout << "minLength:" << minLength << " errorRate:" << errorRate << " qgram:" << weight(pattern.shape) << ::std::endl;
 		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
 #endif								

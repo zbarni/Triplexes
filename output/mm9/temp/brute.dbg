@@ -1,0 +1,611 @@
+11111
+GGGAGAGGGGAGAGG
+111010111101011
+000000000000000
+000101000010100
+
+0111111111111111
+0011111111111111
+0001111111111111
+0000111111111111
+0000011111111111
+0000001111111111
+0000000111111111
+0000000011111111
+0000000001111111
+0000000000111111
+0000000000011111
+0000000000001111
+0000000000000111
+0000000000000011
+0000000000000001
+Any hit: 1 15
+ filter:0.8 errors:0 orientation:-1
+add match:GGGAGAGGGG
+len : 10
+err : 0
+gua : 0.2
+ filter:0.727273 errors:0 orientation:-1
+add match:GGGAGAGGGGA
+len : 11
+err : 0
+gua : 0.272727
+ filter:0.75 errors:0 orientation:-1
+add match:GGGAGAGGGGAG
+len : 12
+err : 0
+gua : 0.25
+ filter:0.692308 errors:0 orientation:-1
+add match:GGGAGAGGGGAGA
+len : 13
+err : 0
+gua : 0.307692
+ filter:0.714286 errors:0 orientation:-1
+add match:GGGAGAGGGGAGAG
+len : 14
+err : 0
+gua : 0.285714
+ filter:0.733333 errors:0 orientation:-1
+add match:GGGAGAGGGGAGAGG
+len : 15
+err : 0
+gua : 0.266667
+ filter:0.7 errors:0 orientation:-1
+add match:GGAGAGGGGA
+len : 10
+err : 0
+gua : 0.3
+ filter:0.727273 errors:0 orientation:-1
+add match:GGAGAGGGGAG
+len : 11
+err : 0
+gua : 0.272727
+ filter:0.666667 errors:0 orientation:-1
+add match:GGAGAGGGGAGA
+len : 12
+err : 0
+gua : 0.333333
+ filter:0.692308 errors:0 orientation:-1
+add match:GGAGAGGGGAGAG
+len : 13
+err : 0
+gua : 0.307692
+ filter:0.714286 errors:0 orientation:-1
+add match:GGAGAGGGGAGAGG
+len : 14
+err : 0
+gua : 0.285714
+ filter:0.7 errors:0 orientation:-1
+add match:GAGAGGGGAG
+len : 10
+err : 0
+gua : 0.3
+ filter:0.636364 errors:0 orientation:-1
+add match:GAGAGGGGAGA
+len : 11
+err : 0
+gua : 0.363636
+ filter:0.666667 errors:0 orientation:-1
+add match:GAGAGGGGAGAG
+len : 12
+err : 0
+gua : 0.333333
+ filter:0.692308 errors:0 orientation:-1
+add match:GAGAGGGGAGAGG
+len : 13
+err : 0
+gua : 0.307692
+ filter:0.6 errors:0 orientation:-1
+add match:AGAGGGGAGA
+len : 10
+err : 0
+gua : 0.4
+ filter:0.636364 errors:0 orientation:-1
+add match:AGAGGGGAGAG
+len : 11
+err : 0
+gua : 0.363636
+ filter:0.666667 errors:0 orientation:-1
+add match:AGAGGGGAGAGG
+len : 12
+err : 0
+gua : 0.333333
+ filter:0.7 errors:0 orientation:-1
+add match:GAGGGGAGAG
+len : 10
+err : 0
+gua : 0.3
+ filter:0.727273 errors:0 orientation:-1
+add match:GAGGGGAGAGG
+len : 11
+err : 0
+gua : 0.272727
+ filter:0.7 errors:0 orientation:-1
+add match:AGGGGAGAGG
+len : 10
+err : 0
+gua : 0.3
+# Elements before merging:21
+# Elements final patterns:1
+processing:GGAGAGGGGAGAGGG
+GGNGNGGGGNGNGGG
+110101111010111
+001010000101000
+001010000101000
+
+0111111111111111
+0011111111111111
+0000111111111111
+0000111111111111
+0000001111111111
+0000001111111111
+0000000111111111
+0000000011111111
+0000000001111111
+0000000000011111
+0000000000011111
+0000000000000111
+0000000000000111
+0000000000000011
+0000000000000001
+Any hit: 1 15
+# Elements before merging:0
+# Elements final patterns:1
+GGGNGNGGGGNGNGG
+111010111101011
+000101000010100
+000101000010100
+
+0111111111111111
+0011111111111111
+0001111111111111
+0000011111111111
+0000011111111111
+0000000111111111
+0000000111111111
+0000000011111111
+0000000001111111
+0000000000111111
+0000000000001111
+0000000000001111
+0000000000000011
+0000000000000011
+0000000000000001
+Any hit: 1 15
+# Elements before merging:0
+# Elements final patterns:1
+printing all tfo segments
+tfo: GGAGAGGGGAGAGGG type: R length: 15 position: 0 0
+pTTS:CCTCTCCTCTCTCCC
+GGGAGAGAGGAGAGG
+111010101101011
+000000000000000
+000101010010100
+
+0111111111111111
+0011111111111111
+0001111111111111
+0000111111111111
+0000011111111111
+0000001111111111
+0000000111111111
+0000000011111111
+0000000001111111
+0000000000111111
+0000000000011111
+0000000000001111
+0000000000000111
+0000000000000011
+0000000000000001
+Any hit: 1 15
+ filter:0.7 errors:0 orientation:0
+add match:GGGAGAGAGG
+len : 10
+err : 0
+gua : 0.3
+ filter:0.636364 errors:0 orientation:0
+add match:GGGAGAGAGGA
+len : 11
+err : 0
+gua : 0.363636
+ filter:0.666667 errors:0 orientation:0
+add match:GGGAGAGAGGAG
+len : 12
+err : 0
+gua : 0.333333
+ filter:0.615385 errors:0 orientation:0
+add match:GGGAGAGAGGAGA
+len : 13
+err : 0
+gua : 0.384615
+ filter:0.642857 errors:0 orientation:0
+add match:GGGAGAGAGGAGAG
+len : 14
+err : 0
+gua : 0.357143
+ filter:0.666667 errors:0 orientation:0
+add match:GGGAGAGAGGAGAGG
+len : 15
+err : 0
+gua : 0.333333
+ filter:0.6 errors:0 orientation:0
+add match:GGAGAGAGGA
+len : 10
+err : 0
+gua : 0.4
+ filter:0.636364 errors:0 orientation:0
+add match:GGAGAGAGGAG
+len : 11
+err : 0
+gua : 0.363636
+ filter:0.583333 errors:0 orientation:0
+add match:GGAGAGAGGAGA
+len : 12
+err : 0
+gua : 0.416667
+ filter:0.615385 errors:0 orientation:0
+add match:GGAGAGAGGAGAG
+len : 13
+err : 0
+gua : 0.384615
+ filter:0.642857 errors:0 orientation:0
+add match:GGAGAGAGGAGAGG
+len : 14
+err : 0
+gua : 0.357143
+ filter:0.6 errors:0 orientation:0
+add match:GAGAGAGGAG
+len : 10
+err : 0
+gua : 0.4
+ filter:0.545455 errors:0 orientation:0
+add match:GAGAGAGGAGA
+len : 11
+err : 0
+gua : 0.454545
+ filter:0.583333 errors:0 orientation:0
+add match:GAGAGAGGAGAG
+len : 12
+err : 0
+gua : 0.416667
+ filter:0.615385 errors:0 orientation:0
+add match:GAGAGAGGAGAGG
+len : 13
+err : 0
+gua : 0.384615
+ filter:0.5 errors:0 orientation:0
+add match:AGAGAGGAGA
+len : 10
+err : 0
+gua : 0.5
+ filter:0.545455 errors:0 orientation:0
+add match:AGAGAGGAGAG
+len : 11
+err : 0
+gua : 0.454545
+ filter:0.583333 errors:0 orientation:0
+add match:AGAGAGGAGAGG
+len : 12
+err : 0
+gua : 0.416667
+ filter:0.6 errors:0 orientation:0
+add match:GAGAGGAGAG
+len : 10
+err : 0
+gua : 0.4
+ filter:0.636364 errors:0 orientation:0
+add match:GAGAGGAGAGG
+len : 11
+err : 0
+gua : 0.363636
+ filter:0.6 errors:0 orientation:0
+add match:AGAGGAGAGG
+len : 10
+err : 0
+gua : 0.4
+# Elements before merging:21
+# Elements final patterns:1
+printing all tts segments
+tts: GGGAGAGAGGAGAGG type: - length: 15 position: 0 
+tfo candidate: GGGAGAGGGGAGAGG
+--- candidate: GGAGAGGGGAGAGGG R 0
+tts candidate: GGGAGAGAGGAGAGG
+tts: AGAGGAGAGG
+tfo: GGGAGAGGGG
+tts: NGNNGAGNGG discarded
+tts: GAGAGGAGAGG
+tfo: GGGAGAGGGGA
+tts: GNGAGNNGNGN discarded
+tts: AGAGAGGAGAGG
+tfo: GGGAGAGGGGAG
+tts: NGNNNNGNGNNG discarded
+tts: GAGAGAGGAGAGG
+tfo: GGGAGAGGGGAGA
+tts: GNGAGAGGNGAGN to verify
+pTriplex:GNGAGAGGNGAGN
+GYGAGAGGYGAGY
+1010101101010
+0100000010001
+0101010010101
+
+01111111111111
+00011111111111
+00011111111111
+00001111111111
+00000111111111
+00000011111111
+00000001111111
+00000000111111
+00000000001111
+00000000001111
+00000000000111
+00000000000011
+00000000000000
+Any hit: 1 13
+ filter:0.6 errors:0.1 orientation:0
+add match:GAGAGGYGAG
+len : 10
+err : 0.1
+gua : 0.4
+# Elements final patterns:1
+totalNumberOfMatches:1
+tts: GAGAGGYGAG length: 10 position: 2-12 GAGAGGNGAG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CTCTCCTCTC
+tfo: GAGGGGAGAG
+tts: GGAGAGAGGAGAGG
+tfo: GGGAGAGGGGAGAG
+tts: GGNNNNNGGNNNNG discarded
+tts: GGGAGAGAGGAGAGG
+tfo: GGGAGAGGGGAGAGG
+tts: GGGAGAGNGGAGAGG to verify
+pTriplex:GGGAGAGNGGAGAGG
+GGGAGAGYGGAGAGG
+111010101101011
+000000010000000
+000101010010100
+
+0111111111111111
+0011111111111111
+0001111111111111
+0000111111111111
+0000011111111111
+0000001111111111
+0000000111111111
+0000000001111111
+0000000001111111
+0000000000111111
+0000000000011111
+0000000000001111
+0000000000000111
+0000000000000011
+0000000000000001
+Any hit: 1 15
+ filter:0.7 errors:0.1 orientation:0
+add match:GGGAGAGYGG
+len : 10
+err : 0.1
+gua : 0.3
+ filter:0.636364 errors:0.0909091 orientation:0
+add match:GGGAGAGYGGA
+len : 11
+err : 0.0909091
+gua : 0.363636
+ filter:0.666667 errors:0.0833333 orientation:0
+add match:GGGAGAGYGGAG
+len : 12
+err : 0.0833333
+gua : 0.333333
+ filter:0.615385 errors:0.0769231 orientation:0
+add match:GGGAGAGYGGAGA
+len : 13
+err : 0.0769231
+gua : 0.384615
+ filter:0.642857 errors:0.0714286 orientation:0
+add match:GGGAGAGYGGAGAG
+len : 14
+err : 0.0714286
+gua : 0.357143
+ filter:0.666667 errors:0.0666667 orientation:0
+add match:GGGAGAGYGGAGAGG
+len : 15
+err : 0.0666667
+gua : 0.333333
+ filter:0.6 errors:0.1 orientation:0
+add match:GGAGAGYGGA
+len : 10
+err : 0.1
+gua : 0.4
+ filter:0.636364 errors:0.0909091 orientation:0
+add match:GGAGAGYGGAG
+len : 11
+err : 0.0909091
+gua : 0.363636
+ filter:0.583333 errors:0.0833333 orientation:0
+add match:GGAGAGYGGAGA
+len : 12
+err : 0.0833333
+gua : 0.416667
+ filter:0.615385 errors:0.0769231 orientation:0
+add match:GGAGAGYGGAGAG
+len : 13
+err : 0.0769231
+gua : 0.384615
+ filter:0.642857 errors:0.0714286 orientation:0
+add match:GGAGAGYGGAGAGG
+len : 14
+err : 0.0714286
+gua : 0.357143
+ filter:0.6 errors:0.1 orientation:0
+add match:GAGAGYGGAG
+len : 10
+err : 0.1
+gua : 0.4
+ filter:0.545455 errors:0.0909091 orientation:0
+add match:GAGAGYGGAGA
+len : 11
+err : 0.0909091
+gua : 0.454545
+ filter:0.583333 errors:0.0833333 orientation:0
+add match:GAGAGYGGAGAG
+len : 12
+err : 0.0833333
+gua : 0.416667
+ filter:0.615385 errors:0.0769231 orientation:0
+add match:GAGAGYGGAGAGG
+len : 13
+err : 0.0769231
+gua : 0.384615
+ filter:0.5 errors:0.1 orientation:0
+add match:AGAGYGGAGA
+len : 10
+err : 0.1
+gua : 0.5
+ filter:0.545455 errors:0.0909091 orientation:0
+add match:AGAGYGGAGAG
+len : 11
+err : 0.0909091
+gua : 0.454545
+ filter:0.583333 errors:0.0833333 orientation:0
+add match:AGAGYGGAGAGG
+len : 12
+err : 0.0833333
+gua : 0.416667
+ filter:0.6 errors:0.1 orientation:0
+add match:GAGYGGAGAG
+len : 10
+err : 0.1
+gua : 0.4
+ filter:0.636364 errors:0.0909091 orientation:0
+add match:GAGYGGAGAGG
+len : 11
+err : 0.0909091
+gua : 0.363636
+ filter:0.6 errors:0.1 orientation:0
+add match:AGYGGAGAGG
+len : 10
+err : 0.1
+gua : 0.4
+# Elements final patterns:21
+totalNumberOfMatches:21
+tts: GGGAGAGYGG length: 10 position: 0-10 GGGAGAGNGG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CCTCTCTCCC
+tfo: GGGGAGAGGG
+tts: GGGAGAGYGGA length: 11 position: 0-11 GGGAGAGNGGA
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: TCCTCTCTCCC
+tfo: AGGGGAGAGGG
+tts: GGGAGAGYGGAG length: 12 position: 0-12 GGGAGAGNGGAG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CTCCTCTCTCCC
+tfo: GAGGGGAGAGGG
+tts: GGGAGAGYGGAGA length: 13 position: 0-13 GGGAGAGNGGAGA
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: TCTCCTCTCTCCC
+tfo: AGAGGGGAGAGGG
+tts: GGGAGAGYGGAGAG length: 14 position: 0-14 GGGAGAGNGGAGAG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CTCTCCTCTCTCCC
+tfo: GAGAGGGGAGAGGG
+tts: GGGAGAGYGGAGAGG length: 15 position: 0-15 GGGAGAGNGGAGAGG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CCTCTCCTCTCTCCC
+tfo: GGAGAGGGGAGAGGG
+tts: GGAGAGYGGA length: 10 position: 1-11 GGAGAGNGGA
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: TCCTCTCTCC
+tfo: AGGGGAGAGG
+tts: GGAGAGYGGAG length: 11 position: 1-12 GGAGAGNGGAG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CTCCTCTCTCC
+tfo: GAGGGGAGAGG
+tts: GGAGAGYGGAGA length: 12 position: 1-13 GGAGAGNGGAGA
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: TCTCCTCTCTCC
+tfo: AGAGGGGAGAGG
+tts: GGAGAGYGGAGAG length: 13 position: 1-14 GGAGAGNGGAGAG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CTCTCCTCTCTCC
+tfo: GAGAGGGGAGAGG
+tts: GGAGAGYGGAGAGG length: 14 position: 1-15 GGAGAGNGGAGAGG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CCTCTCCTCTCTCC
+tfo: GGAGAGGGGAGAGG
+tts: GAGAGYGGAG length: 10 position: 2-12 GAGAGNGGAG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CTCCTCTCTC
+tfo: GAGGGGAGAG
+tts: GAGAGYGGAGA length: 11 position: 2-13 GAGAGNGGAGA
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: TCTCCTCTCTC
+tfo: AGAGGGGAGAG
+tts: GAGAGYGGAGAG length: 12 position: 2-14 GAGAGNGGAGAG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CTCTCCTCTCTC
+tfo: GAGAGGGGAGAG
+tts: GAGAGYGGAGAGG length: 13 position: 2-15 GAGAGNGGAGAGG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CCTCTCCTCTCTC
+tfo: GGAGAGGGGAGAG
+tts: AGAGYGGAGA length: 10 position: 3-13 AGAGNGGAGA
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: TCTCCTCTCT
+tfo: AGAGGGGAGA
+tts: AGAGYGGAGAG length: 11 position: 3-14 AGAGNGGAGAG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CTCTCCTCTCT
+tfo: GAGAGGGGAGA
+tts: AGAGYGGAGAGG length: 12 position: 3-15 AGAGNGGAGAGG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CCTCTCCTCTCT
+tfo: GGAGAGGGGAGA
+tts: GAGYGGAGAG length: 10 position: 4-14 GAGNGGAGAG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CTCTCCTCTC
+tfo: GAGAGGGGAG
+tts: GAGYGGAGAGG length: 11 position: 4-15 GAGNGGAGAGG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CCTCTCCTCTC
+tfo: GGAGAGGGGAG
+tts: AGYGGAGAGG length: 10 position: 5-15 AGNGGAGAGG
+ttsC: GGGAGAGGGGAGAGG
+tfoC: GGGAGAGGGGAGAGG
+tts: CCTCTCCTCT
+tfo: GGAGAGGGGA
+tts: GGGAGAGAGGAGAG
+tfo: GGAGAGGGGAGAGG
+tts: GGNNNNGNGNNNNG discarded
+tts: GGGAGAGAGGAGA
+tfo: GAGAGGGGAGAGG
+tts: GNGAGNGNNGAGN discarded
+tts: GGGAGAGAGGAG
+tfo: AGAGGGGAGAGG
+tts: NGNNGNGAGNNG discarded
+tts: GGGAGAGAGGA
+tfo: GAGGGGAGAGG
+tts: GNGNGNNNNGN discarded
+tts: GGGAGAGAGG
+tfo: AGGGGAGAGG
+tts: NGGNGAGAGG discarded

@@ -33,3 +33,58 @@ A  5       5        5       4       3       3       3       4       2       4
 C  6       6        6       5       6       4       3       3       5       2     
 
 X_mj = X_(m-1)(j-1) + (1? or 0?) 
+
+
+
+========================================================================================================
+tfo
+3' - GGGAGAGGGGAGAGG - 5'
+5' - GGAGAGGGGAGAGGG - 3'
+========================================================================================================
+   
+reverse 2 0 14 12
+
+3' - CCCT CTCTCCTCTC C - 5'
+          4    9    13
+     GGGA GAGAGG AGAG  G
+          @seed@
+3' -   GG GAGAGG GGAG  AGG - 5'
+          2    7    11
+
+
+### ha 0 - 12 a tfo-ra vonatkozik
+3' - CCCTCTCTCCTCTC C - 5'
+          
+     GG GAGAGAGGAGAGG
+          @seed@
+3'      GGGAGAGGGGAGA GG - 5'
+          2    7    11
+
+### helyes
+     GG GAGAGAGG AGAGG
+         *
+3'      GGGAGAGG GGAGA GG - 5'
+
+
+### helyes a diff one
+          4    9    
+     GGGA GAGAGG AGAG G
+                 *         
+3'     GG GAGAGG GGAG AGG - 5'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
