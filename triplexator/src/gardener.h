@@ -1387,77 +1387,102 @@ namespace SEQAN_NAMESPACE_MAIN
 		std::vector<int> mismatchOffsetLeft;
 		std::vector<int> mismatchOffsetRight;
 
-		// go left
-		mismatch = 0;
-		posFiber = getBeginDim0(seed);
-		posQuery = getBeginDim1(seed);
-		while (posFiber >= 0 && posQuery >= 0 && mismatch < k) {
-			if (fiber[posFiber] != query[posQuery]) {
-				mismatchOffsetLeft.push_back(getBeginDim0(seed) - posFiber);
-				mismatch++;
-			}
-			posFiber--;
-			posQuery--;
-		}
+        // go left
+        mismatch = 0;
+        posFiber = getBeginDim0(seed);
+        posQuery = getBeginDim1(seed);
+        while (posFiber >= 0 && posQuery >= 0 && mismatch <= k) {
+            if (fiber[posFiber] != query[posQuery]) {
+                mismatchOffsetLeft.push_back(getBeginDim0(seed) - posFiber);
+                mismatch++;
+            }
+            posFiber--;
+            posQuery--;
+        }
 
-		// go right
-		mismatch = 0;
-		posFiber = getEndDim0(seed);
-		posQuery = getEndDim1(seed);
-		int endFiber = length(fiber);
-		int endQuery = length(query);
-		while (posFiber < endFiber && posQuery < endQuery && mismatch <= k) {
-			if (fiber[posFiber] != query[posQuery]) {
-				mismatchOffsetRight.push_back(posFiber - getEndDim0(seed));
-				mismatch++;
-			}
-			posFiber++;
-			posQuery++;
-		}
+        // go right
+        mismatch = 0;
+        posFiber = getEndDim0(seed);
+        posQuery = getEndDim1(seed);
+        int endFiber = length(fiber);
+        int endQuery = length(query);
+        while (posFiber < endFiber && posQuery < endQuery && mismatch <= k + 1) {
+            if (fiber[posFiber] != query[posQuery]) {
+                mismatchOffsetRight.push_back(posFiber - getEndDim0(seed));
+                mismatch++;
+            }
+            posFiber++;
+            posQuery++;
+        }
 
-		// find maximal extension
-		int maxDiagonal = 0;
-		int diagonal;
-		int r = 0;
-		int rightMismatches = mismatchOffsetRight.size();
-		int l = mismatchOffsetLeft.size();
+        // find maximal extension
+        int leftMismatches  = mismatchOffsetLeft.size();
+        int rightMismatches = mismatchOffsetRight.size();
 
-		// III if #mismatches less than k, whole segments match
-		if (l + rightMismatches <= k) {
-			// update left position
-			setBeginDim0(seed, max(0, getBeginDim0(seed) - getBeginDim1(seed)));
-			setBeginDim1(seed, max(0, getBeginDim1(seed) - getBeginDim0(seed)));
-			// update right positions
-			setEndDim0(seed, min(length(fiber) - 1, getEndDim0(seed) + length(query) - getEndDim1(seed) - 1));
-			setEndDim1(seed, min(length(query)) - 1, getEndDim1(seed) + length(fiber) - getEndDim0(seed) - 1);
-			return;
-		}
+        // III if #mismatches less than k, whole segments match
+        if (leftMismatches + rightMismatches <= k) {
+            // update left position
+            int bH = getBeginDim0(seed);
+            setBeginDim0(seed, std::max(0, (int)(getBeginDim0(seed) - getBeginDim1(seed))));
+            setBeginDim1(seed, std::max(0, (int)(getBeginDim1(seed) - bH)));
 
-		for (; l >= 0 && r < rightMismatches; --l) {
-			diagonal = mismatchOffsetRight[r] - mismatchOffsetLeft[l];
-			if (diagonal > maxDiagonal) {
-				maxDiagonal = diagonal;
-				// check if limits are contained in maxed seed
-				if (l + r >= k) {
-					// update left position
-					setBeginDim0(seed, getBeginDim0(seed) - mismatchOffsetLeft[l] + 1);
-					setBeginDim1(seed, getBeginDim1(seed) - mismatchOffsetLeft[l] + 1);
-					// update right positions
-					setEndDim0(seed, getEndDim0(seed) + mismatchOffsetRight[r] - 1);
-					setEndDim1(seed, getEndDim1(seed) + mismatchOffsetRight[r] - 1);
-				}
-				else if (l + r ){
-					// update left position
-					setBeginDim0(seed, getBeginDim0(seed) - mismatchOffsetLeft[l] + 1);
-					setBeginDim1(seed, getBeginDim1(seed) - mismatchOffsetLeft[l] + 1);
-					// update right positions
-					setEndDim0(seed, getEndDim0(seed) + mismatchOffsetRight[r] - 1);
-					setEndDim1(seed, getEndDim1(seed) + mismatchOffsetRight[r] - 1);
-				}
-			}
-			r++;
+            // update right positions
+            int eH = getEndDim0(seed);
+            setEndDim0(seed, std::min((int)(length(fiber)), (int)(getEndDim0(seed) + length(query) - getEndDim1(seed))));
+            setEndDim1(seed, std::min((int)(length(query)), (int)(getEndDim1(seed) + length(fiber) - eH)));
+            return;
+        }
 
-		}
+        int limitL          = -1;
+        int limitR          = -1;
+
+        // add corresponding end points if required
+        if (leftMismatches <= k) {
+            mismatchOffsetLeft.push_back(std::min((int)(getBeginDim0(seed)),(int)(getBeginDim1(seed))));
+            limitL = leftMismatches;
+            ++leftMismatches;
+        }
+        if (rightMismatches <= k) {
+            mismatchOffsetRight.push_back(std::min((int)(length(query) - getEndDim1(seed) - 1),
+                    (int)(length(fiber) - getEndDim0(seed) - 1)));
+            limitR = rightMismatches;
+            ++rightMismatches;
+        }
+
+        int diagonal;           // size of matching segment between fiber and query
+        int maxDiagonal  = 0;
+        int seedDiagonal = getEndDim0(seed) - getBeginDim0(seed);
+        int l, r;
+        int lAdd, rAdd;
+        const TSeed tempSeed = seed;
+
+        // init left and right pointers
+        l = leftMismatches - 1;
+        r = (leftMismatches <= k) ? k - leftMismatches + 1 : 0;
+
+        for (; l >= 0 && r < rightMismatches; --l) {
+            assert(abs(l - r) <= k);
+            diagonal = mismatchOffsetRight[r] + mismatchOffsetLeft[l] + seedDiagonal;
+            // if none of the extremeties are included, the diagonal is actually smaller by one
+            if (l != limitL && r != limitR) {
+                --diagonal;
+            }
+
+            if (diagonal > maxDiagonal) {
+                maxDiagonal = diagonal;
+                lAdd = (l == limitL) ? 0 : 1;
+                rAdd = (r == limitR) ? -1 : 0; // -1 only because the right end of seeds in seqan have an offset of 1
+                // update left position
+                setBeginDim0(seed, getBeginDim0(tempSeed) - mismatchOffsetLeft[l] + lAdd);
+                setBeginDim1(seed, getBeginDim1(tempSeed) - mismatchOffsetLeft[l] + lAdd);
+                // update right positions
+                setEndDim0(seed, getEndDim0(tempSeed) + mismatchOffsetRight[r] - rAdd);
+                setEndDim1(seed, getEndDim1(tempSeed) + mismatchOffsetRight[r] - rAdd);
+            }
+            r++;
+        }
+#ifdef DEBUG
+#endif
 	}
 
 	/**
@@ -1507,9 +1532,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	    int k = ceil(errorRate * minLength);
 	    TSAIter itSB, itEB;
 	    TScoreMatrixMap scoreMatrices;
-
-//	    // precompute scoring schemes for each fibre in haystack
-//	    precomputeScoreMatrices(haystack, scoreMatrices, errorRate, xDrop);
 
 	    // iterate over all putative matches (end locations), find max seed and then extend
 	    for (int loc = 0; loc < numLocations; loc++) {

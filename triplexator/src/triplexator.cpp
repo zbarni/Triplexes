@@ -33,7 +33,7 @@
 // ==========================================================================
 
 #define SEQAN_PROFILE                   // enable time measuring
-#define TRIPLEX_DEBUG                   // print verification regions
+//#define TRIPLEX_DEBUG                   // print verification regions
 
 //#ifndef SEQAN_ENABLE_PARALLELISM
 //#define SEQAN_ENABLE_PARALLELISM 1        // disable parallelism on default
@@ -773,7 +773,7 @@ namespace SEQAN_NAMESPACE_MAIN
         options.timeIOReadingTts 	= 0;
         
         SEQAN_PROTIMESTART(find_time);
-        options.logFileHandle << _getTimeStamp() << " * Started searching for inverted triplexes" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << " * Started searching for triplexes (Myers)" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << " * Processing " << options.duplexFileNames[0] << ::std::endl;
 
         if (options.filterMode == FILTERING_GRAMS){

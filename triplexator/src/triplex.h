@@ -4126,7 +4126,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef Repeat<unsigned, unsigned>							TRepeat;
 		typedef String<TRepeat>										TRepeatString; 
 		typedef typename Iterator<TRepeatString, Rooted>::Type		TRepeatIterator;
-		
+
 		// open duplex file
 		::std::ifstream file;
 		file.open(toCString(options.duplexFileNames[0]), ::std::ios_base::in | ::std::ios_base::binary);
