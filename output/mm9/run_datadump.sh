@@ -2,7 +2,7 @@
 # IMPORTANT: must be run from output/mm9 or similar
 
 mem=false   #memory profiling
-l=19
+l=25
 chr=1
 DATA_DIR="${PWD}/../../data"
 ROOT_DIR=$PWD
@@ -11,12 +11,12 @@ LOCAL=true
 DEBUG=false
 ORIGINAL=false
 INVERTED=false
-qLow=2
-qHigh=7
-eLow=5
-eHigh=10
+qLow=1
+qHigh=2
+eLow=15
+eHigh=15
 cLow=1
-cHigh=2
+cHigh=3
 
 while getopts ":mdoil:c:" opt; do
     case ${opt} in

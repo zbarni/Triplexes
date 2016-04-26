@@ -1,10 +1,11 @@
 CC=g++
 CFLAGS=-c -Wall -g -O0
 
-SOURCES=myers-main.cpp myers/edlib.cpp
+SOURCES=myers-main.cpp 
 LDFLAGS=
-INCLUDES=-I/home/barni/code/rwth/bioinformatics/git/triplexator/ 
-#INCLUDES=-I/home/zbarni/code/triplexator-project/seqan/seqan-library-1.4.0/include/
+#INCLUDES=-I/home/barni/code/rwth/bioinformatics/git/triplexator/ 
+INCLUDES=-I/home/zbarni/code/triplexator-project/seqan/seqan-library-1.4.0/include/
+#INCLUDES=-I/home/zbarni/code/triplexator-project/triplexator/src/
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=m
 

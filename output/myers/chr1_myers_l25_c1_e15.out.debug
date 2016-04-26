@@ -1,7 +1,0 @@
-open ./tmp_chr1_myers_l25_c1_e15.out
-Starting on duplex file mm9.chr1.fa
-3615
-elapsed time: 125.377 sec
-3615
-elapsed time: 123.932 sec
-rename temorary file ./tmp_chr1_myers_l25_c1_e15.out to ./chr1_myers_l25_c1_e15.out

@@ -2,7 +2,7 @@
 # IMPORTANT: must be run from output/mm9 or similar
 
 mem=false   #memory profiling
-l=19
+l=25
 chr=1
 DATA_DIR="${PWD}/../../data"
 ROOT_DIR=$PWD
@@ -16,7 +16,7 @@ qHigh=2
 eLow=5
 eHigh=5
 cLow=1
-cHigh=1
+cHigh=3
 
 while getopts ":mdoil:c:" opt; do
     case ${opt} in
@@ -95,6 +95,7 @@ if [ "$ORIGINAL" = true ]; then
                 else
                     echo "Running l: ${l}, q: ${q}, c: ${c}, e: ${e}"
                     if [ "$LOCAL" = true ]; then
+                        echo "$EXEC_CMD -ss $RNA_FILE -ds $DNA_FILE -o $OUTPUT -v -l $l -fm 1 -t $q -c $c -e $e &> ${OUTPUT}.debug"
                         $EXEC_CMD -ss $RNA_FILE -ds $DNA_FILE -o $OUTPUT -v -l $l -fm 1 -t $q -c $c -e $e &> ${OUTPUT}.debug
                     else
                         meta_bsub.sh bsub mm9 mm9_chr${chr}_l${l}_q${q}_c${c}_e${e} 6:00 16000 $EXEC_CMD -ss $RNA_FILE -ds $DNA_FILE -o $OUTPUT -v -l $l -fm 1 -t $q -c $c -e $e 

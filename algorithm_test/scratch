@@ -42,7 +42,7 @@ tfo
 5' - GGAGAGGGGAGAGGG - 3'
 ========================================================================================================
    
-reverse 2 0 14 12
+reverse 4 2 14 12
 
 3' - CCCT CTCTCCTCTC C - 5'
           4    9    13
@@ -52,13 +52,6 @@ reverse 2 0 14 12
           2    7    11
 
 
-### ha 0 - 12 a tfo-ra vonatkozik
-3' - CCCTCTCTCCTCTC C - 5'
-          
-     GG GAGAGAGGAGAGG
-          @seed@
-3'      GGGAGAGGGGAGA GG - 5'
-          2    7    11
 
 ### helyes
      GG GAGAGAGG AGAGG

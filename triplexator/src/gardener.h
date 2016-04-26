@@ -846,6 +846,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					
 					// add all now non-overlapping windows to hitlist
 					while(!empty(newset)){
+//						std::cout << "Diagonal: " << diag << std::endl;
 						// create a new hit and append it to the gardeners hit list
 						THit hit(queryid,
 								 seqno,					// needle seq. number            
@@ -856,7 +857,7 @@ namespace SEQAN_NAMESPACE_MAIN
 								 getEndDim0(front(newset))-getBeginDim0(front(newset))
 								 );
 
-#ifdef TRIPLEX_DEBUG
+#ifndef TRIPLEX_DEBUG
 						::std::cout << "newset:" << length(newset) << " hitSet:" << length(hitSet) << ::std::endl;
 #endif
 						
@@ -1337,39 +1338,10 @@ namespace SEQAN_NAMESPACE_MAIN
 		return m;
 	}
 
-//	template<
-//	typename THaystack,
-//	typename TScoreMatrixMap,
-//	typename TError,
-//	typename TDrop
-//	>
-//	void precomputeScoreMatrices(
-//			THaystack const &haystack,
-//			TScoreMatrixMap &scoreMatrices,
-//			TError 	const   &errorRate,
-//			TDrop 	const   &xDrop
-//			)
-//	{
-//		typedef int TScore;
-//#ifdef DEBUG
-//		cout << "Precomputing score matrices...:" << endl;
-//#endif
-//		// define a scoring scheme
-//		TScore match 		= 1;
-//		for (int i = 0; i < length(haystack); ++i) {
-//			TScore mismatch 	= (TScore)_max((TScore) (-1.0/(errorRate+0.00000001)) + 1, -(TScore)length(haystack[i]));
-//			TScore scoreDropOff = (TScore) _max((TScore) xDrop * (-mismatch), minValue<TScore>()+1);
-//#ifdef DEBUG
-//			cout 	<< "#fiber: " << i << endl
-//					<< "\tmatch: " << match << endl
-//					<<" \tmismatch: " << mismatch << endl
-//					<< "\tscoredropoff: " << scoreDropOff << endl;
-//#endif
-//			Score<TScore> scoreMatrix(match, mismatch, std::numeric_limits<int>::max());
-//			scoreMatrices[i] = std::make_pair(scoreMatrix, scoreDropOff);
-//		}
-//	}
-
+	/**
+	 * Given a maximum seed match between fiber and query, this function returns a maximally
+	 * extended seed, in both directions, w.r.t. to k and maximum lengths of the segments.
+	 */
 	template<
 	typename TSeed,
 	typename THaystackFiber,
@@ -1481,8 +1453,50 @@ namespace SEQAN_NAMESPACE_MAIN
             }
             r++;
         }
+	}
+
+	/**
+	 * If seed is new, add it to seedMap and return True, False otherwise.
+	 */
+	template<
+	typename TId,
+	typename TSeed,
+	typename TSeedMap
+	>
+	bool addIfNewSeed(
+			TId const 		&haystackFiberSeqNo,
+			TId const 		&tfoSeqNo,
+			TSeed  			&seed,
+			TSeedMap 		&seedMap) {
+		int hash = getBeginDim0(seed) * getEndDim1(seed) - getBeginDim1(seed) * getEndDim0(seed);
+
+		if (seedMap.count(tfoSeqNo)) {
+			if ((seedMap.find(tfoSeqNo))->second.count(haystackFiberSeqNo)) {
+				if (seedMap[tfoSeqNo][haystackFiberSeqNo].find(hash)
+						== seedMap[tfoSeqNo][haystackFiberSeqNo].end()) {
+					seedMap[tfoSeqNo][haystackFiberSeqNo].insert(hash);
+				}
+				else {
+					return false;
+				}
+			}
+			else {
+				seedMap[tfoSeqNo][haystackFiberSeqNo] = std::set<int>();
+				seedMap[tfoSeqNo][haystackFiberSeqNo].insert(hash);
+			}
+		}
+		else {
+			seedMap[tfoSeqNo] = std::map<int, std::set<int> >();
+			seedMap[tfoSeqNo][haystackFiberSeqNo] = std::set<int>();
+			seedMap[tfoSeqNo][haystackFiberSeqNo].insert(hash);
+		}
 #ifdef DEBUG
+		std::cout << "New seed is added to map: " << seed << std::endl
+				<< "hash: " << hash << std::endl
+				<< "tfoSeqNo: " << tfoSeqNo << std::endl
+				<< "haystackFiberSeqNo: " << haystackFiberSeqNo << std::endl;
 #endif
+		return true;
 	}
 
 	/**
@@ -1517,9 +1531,8 @@ namespace SEQAN_NAMESPACE_MAIN
 	{
 		typedef int								TScore;
 		typedef Seed<Simple, DefaultSeedConfig>	TSeed;
-		typedef Dequeue<TSeed>					TSeedList;
-		typedef std::map<int, TSeedList>		T;
-		typedef std::map<int, std::pair<Score<TScore>, TScore> >	TScoreMatrixMap;
+		typedef typename Value<THitSet>::Type	THit;
+		typedef std::map<int, std::map<int, std::set<int> > > TSeedMap;
 
 	    int ePos;
 	    int bPos;
@@ -1531,7 +1544,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	    int maxSeedQGramEndPos;
 	    int k = ceil(errorRate * minLength);
 	    TSAIter itSB, itEB;
-	    TScoreMatrixMap scoreMatrices;
+	    TSeedMap seedMap;
 
 	    // iterate over all putative matches (end locations), find max seed and then extend
 	    for (int loc = 0; loc < numLocations; loc++) {
@@ -1615,29 +1628,44 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	        // found a valid match, extend for each tfo which had this q-gram suffix
 	        for (; itSB != itEB; ++itSB) {
-	            unsigned tfoSeqId      	= itSB->i1;
-	            unsigned qGramOffset  	= itSB->i2; // start position / offset of q-gram in tfo
-	            unsigned qGramSeedBegin = maxSeedQGramEndPos - maxSeedLength + 1 + qGramOffset;
-	            unsigned qGramSeedEnd 	= maxSeedQGramEndPos + qGramOffset;
+	            int tfoSeqNo      	= itSB->i1;
+	            int qGramOffset  	= itSB->i2; // start position / offset of q-gram in tfo
+	            int qGramSeedBegin  = maxSeedQGramEndPos - maxSeedLength + 1 + qGramOffset;
+	            int qGramSeedEnd 	= maxSeedQGramEndPos + qGramOffset;
 
 	            TSeed seed(maxSeedBeginPos, qGramSeedBegin, maxSeedEndPos, qGramSeedEnd);
+#ifdef DEBUG
+
 	            std::cout << "original seed\n"
 	            		<< seed << endl
 	            		<< "seedH: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(seed), getEndDim0(seed)) << "\n"
-						<< "seedV: " << infix(tfoSet[tfoSeqId], getBeginDim1(seed), getEndDim1(seed)) << "\n";
-	            extendSimpleSeed(seed, haystack[haystackFiberSeqNo], tfoSet[tfoSeqId], k);
+						<< "seedV: " << infix(tfoSet[tfoSeqNo], getBeginDim1(seed), getEndDim1(seed)) << "\n";
+#endif
+	            extendSimpleSeed(seed, haystack[haystackFiberSeqNo], tfoSet[tfoSeqNo], k);
 	            // for sure we must get an extension that is >= than minlength (Myers + q-gram length)
 	            assert(getEndDim0(seed)-getBeginDim0(seed) >= (TPos)minLength);
-
+	            // if new seed, add to seedMap and to hitSet
+	            if (addIfNewSeed(haystackFiberSeqNo, tfoSeqNo, seed, seedMap)) {
+	            	// TODO @next add to hitset
+	            	// check if dim0 / dim1 is haystack / tfoseq
+//	            	THit hit(tfoSeqNo,
+//	            			haystackFiberSeqNo,		// needle seq. number
+//							getBeginDim0(seed),     // begin in haystack
+//							getBeginDim1(seed),		// needle position
+//							diag,					// the diagonal
+//							0,
+//							getEndDim0(seed)-getBeginDim0(seed)
+//	            	);
+	            }
 #ifdef DEBUG
 	            std::cout << "seed after extension\n"
 	            		<< seed << endl
 	            		<< "seedH: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(seed), getEndDim0(seed)) << "\n"
-						<< "seedV: " << infix(tfoSet[tfoSeqId], getBeginDim1(seed), getEndDim1(seed)) << "\n";
-	            cout << "tfo: \t\t\t" << tfoSet[tfoSeqId] << endl;
+						<< "seedV: " << infix(tfoSet[tfoSeqNo], getBeginDim1(seed), getEndDim1(seed)) << "\n";
+	            cout << "tfo: \t\t\t" << tfoSet[tfoSeqNo] << endl;
 	            cout << "suffix itself: \t" << suffixQGram << endl;
 	            cout << "q-gram pos in tfo: \t" << qGramOffset << " - " 	<< qGramOffset + (int)minLength - 1 << endl;
-	            cout << "tfo sequence id (indx): \t\t" << tfoSeqId << endl;
+	            cout << "tfo sequence id (indx): \t\t" << tfoSeqNo << endl;
 	            cout << "MaxSeed P (local  suffixQGram): " << maxSeedQGramEndPos - maxSeedLength + 1 << " - " << maxSeedQGramEndPos << std::endl;
 	            cout << "MaxSeed P (global suffixQGram): " << qGramSeedBegin << " - " << qGramSeedEnd << std::endl;
 #endif

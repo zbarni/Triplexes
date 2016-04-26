@@ -7,7 +7,7 @@ ROOT_DIR=$PWD
 EXEC_CMD="./qgram"
 TTS_DIR="${DATA_DIR}/tts"
 TFO_DIR="${DATA_DIR}/tfo"
-OUTPUT_DIR="${PWD}/../output/algorithm_test"
+OUTPUT_DIR="${PWD}/../output/myers"
 LABEL=""
 
 
