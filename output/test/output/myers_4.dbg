@@ -1,0 +1,175 @@
+### Forward search
+
+### Reverse search
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++hit.getNdlSeqNo() 0
+hit.getNdlPos() 1
+hit.getHitLength() dim0:  14
+hit.getHitLength() dim1:  14
+hit.getHstId() 0
+hit.getHstkPos() 0
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GGAGAGGAGAGAGGGAGAG
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++hit.getNdlSeqNo() 0
+hit.getNdlPos() 4
+hit.getHitLength() dim0:  10
+hit.getHitLength() dim1:  10
+hit.getHstId() 0
+hit.getHstkPos() 1
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GGAGAGGAGAGAGGGAGAG
+q12 foo 
+bar 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 1
+hit.getHitLength() 14
+hit.getHstId() 0
+hit.getHstkPos() 0
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GGAGAGGAGAGAGGGAGAG
+qux 
+asd 
+qwe 
+fuck 
+rty 
+qqq 
+ohyes of course dammit bar 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 4
+hit.getHitLength() 10
+hit.getHstId() 0
+hit.getHstkPos() 1
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GGAGAGGAGAGAGGGAGAG
+qux 
+asd 
+qwe 
+fuck 
+rty 
+qqq 
+ohyes of course dammit q21 ### Forward search
+
+### Reverse search
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++hit.getNdlSeqNo() 0
+hit.getNdlPos() 0
+hit.getHitLength() dim0:  15
+hit.getHitLength() dim1:  15
+hit.getHstId() 0
+hit.getHstkPos() 4
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GAGAGGGAGAGAGGAGAGG
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++hit.getNdlSeqNo() 0
+hit.getNdlPos() 2
+hit.getHitLength() dim0:  10
+hit.getHitLength() dim1:  10
+hit.getHstId() 0
+hit.getHstkPos() 8
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GAGAGGGAGAGAGGAGAGG
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++hit.getNdlSeqNo() 0
+hit.getNdlPos() 6
+hit.getHitLength() dim0:  9
+hit.getHitLength() dim1:  9
+hit.getHstId() 0
+hit.getHstkPos() 5
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GAGAGGGAGAGAGGAGAGG
+q12 foo 
+bar 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 0
+hit.getHitLength() 15
+hit.getHstId() 0
+hit.getHstkPos() 4
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GAGAGGGAGAGAGGAGAGG
+qux 
+asd 
+qwe 
+fuck 
+rty 
+qqq 
+ohyes of course dammit bar 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 6
+hit.getHitLength() 9
+hit.getHstId() 0
+hit.getHstkPos() 5
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GAGAGGGAGAGAGGAGAGG
+qux 
+asd 
+qwe 
+fuck 
+rty 
+bar 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 2
+hit.getHitLength() 10
+hit.getHstId() 0
+hit.getHstkPos() 8
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GAGAGGGAGAGAGGAGAGG
+qux 
+asd 
+qwe 
+fuck 
+rty 
+qqq 
+ohyes of course dammit q21 ### Forward search
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++hit.getNdlSeqNo() 0
+hit.getNdlPos() 5
+hit.getHitLength() dim0:  10
+hit.getHitLength() dim1:  10
+hit.getHstId() 0
+hit.getHstkPos() 12
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GAGGAGGAGAAAAGAGGAGAGGAGGGAGGGGGG
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++hit.getNdlSeqNo() 0
+hit.getNdlPos() 0
+hit.getHitLength() dim0:  10
+hit.getHitLength() dim1:  10
+hit.getHstId() 0
+hit.getHstkPos() 23
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GAGGAGGAGAAAAGAGGAGAGGAGGGAGGGGGG
+bte foo 
+bar 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 5
+hit.getHitLength() 10
+hit.getHstId() 0
+hit.getHstkPos() 12
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GAGGAGGAGAAAAGAGGAGAGGAGGGAGGGGGG
+qux 
+asd 
+qwe 
+fuck 
+rty 
+qqq 
+ohyes of course dammit bar 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 0
+hit.getHitLength() 10
+hit.getHstId() 0
+hit.getHstkPos() 23
+tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
+value(ttsSet,hit.getHstId()): GAGGAGGAGAAAAGAGGAGAGGAGGGAGGGGGG
+qux 
+asd 
+qwe 
+fuck 
+rty 
+qqq 
+ohyes of course dammit yyu ### Reverse search
+

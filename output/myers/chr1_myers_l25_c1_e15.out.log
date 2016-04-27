@@ -55,33 +55,33 @@
 - runtime mode : 0 = serial
 *************************************************************
 *** Log messages:
-[04/25/16 18:10:13] * Started checking duplex file
-[04/25/16 18:10:13] * Finished checking duplex file
-[04/25/16 18:10:13] * Started reading single-stranded file:/home/zbarni/code/triplexator-project/output/myers/../../data/rna/CDP_merged.fa
-[04/25/16 18:10:13] * Finished reading single-stranded file (311 sequences read)
-[04/25/16 18:10:13] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
-[04/25/16 18:10:13] * Finished detecting TFOs within 0.143 seconds (356 TFOs detected)
-[04/25/16 18:10:13] * Started searching for triplexes (Myers)
-[04/25/16 18:10:13] * Processing /home/zbarni/code/triplexator-project/output/myers/../../data/dna/mm9/mm9.chr1.fa
-[04/25/16 18:10:13] - Myers Qgram index creation.
-[04/25/16 18:15:05] @earlybird Function _seedMultiSeq was called 0 times
-[04/25/16 18:15:05] @earlybird Function _seedMultiSeq pure qgram hit match 0 times
-[04/25/16 18:15:05] @earlybird Time spent in _seedMultiSeq  0.000 seconds
-[04/25/16 18:15:05] @earlybird Time in _seedMultiSeq ONLY for index search 0.000 seconds
-[04/25/16 18:15:05] * Finished processing /home/zbarni/code/triplexator-project/output/myers/../../data/dna/mm9/mm9.chr1.fa
+[04/27/16 17:34:12] * Started checking duplex file
+[04/27/16 17:34:12] * Finished checking duplex file
+[04/27/16 17:34:12] * Started reading single-stranded file:/home/zbarni/code/triplexator-project/output/myers/../../data/rna/CDP_merged.fa
+[04/27/16 17:34:12] * Finished reading single-stranded file (311 sequences read)
+[04/27/16 17:34:12] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
+[04/27/16 17:34:12] * Finished detecting TFOs within 0.0879 seconds (356 TFOs detected)
+[04/27/16 17:34:12] * Started searching for triplexes (Myers)
+[04/27/16 17:34:12] * Processing /home/zbarni/code/triplexator-project/output/myers/../../data/dna/mm9/mm9.chr1.fa
+[04/27/16 17:34:12] - Myers Qgram index creation.
+[04/27/16 17:39:04] @earlybird Function _seedMultiSeq was called 0 times
+[04/27/16 17:39:04] @earlybird Function _seedMultiSeq pure qgram hit match 0 times
+[04/27/16 17:39:04] @earlybird Time spent in _seedMultiSeq  0.000 seconds
+[04/27/16 17:39:04] @earlybird Time in _seedMultiSeq ONLY for index search 0.000 seconds
+[04/27/16 17:39:04] * Finished processing /home/zbarni/code/triplexator-project/output/myers/../../data/dna/mm9/mm9.chr1.fa
 
-[04/25/16 18:15:05] * Finished searching (including IO) for triplexes  within 291.757 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for triplex search only (search + verify - triplex.h) 250.095 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for ds index creation only 0.000 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for ds IO reading/processing only 291.755 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for `verifyAndStore` function in triplex.h 0.000 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for `find` function in qgram-Finder 0.000 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for `collectSeeds` function in gardener 0.000 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for `collectSeeds LOOP` function in gardener 0.000 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for `collectSeeds FreeSpace` function in gardener 0.000 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for `collectSeeds find loop cnt` function in gardener 0 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for `_find` function in gardener 0.000 seconds (summed over all cpus)
-[04/25/16 18:15:05] * Time for `_putSeedsInMap` function in gardener 0.000 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Finished searching (including IO) for triplexes  within 291.524 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for triplex search only (search + verify - triplex.h) 249.227 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for ds index creation only 0.000 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for ds IO reading/processing only 291.522 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for `verifyAndStore` function in triplex.h 0.065 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for `find` function in qgram-Finder 0.000 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for `collectSeeds` function in gardener 0.000 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for `collectSeeds LOOP` function in gardener 0.000 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for `collectSeeds FreeSpace` function in gardener 0.000 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for `collectSeeds find loop cnt` function in gardener 0 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for `_find` function in gardener 0.000 seconds (summed over all cpus)
+[04/27/16 17:39:04] * Time for `_putSeedsInMap` function in gardener 0.000 seconds (summed over all cpus)
 
-[04/25/16 18:15:05] * Exit without errors 
-[04/25/16 18:15:05] * Finished program within 291.903 seconds
+[04/27/16 17:39:04] * Exit without errors 
+[04/27/16 17:39:04] * Finished program within 291.614 seconds

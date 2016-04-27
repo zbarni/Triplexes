@@ -1,0 +1,54 @@
+### Forward search
+
+### Reverse search
+
+Merged haystack has length: 15
+seq no: 0 (len = 15): GGGAGAGAGGAGAGG
+Segment map / vector:	0 x 
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 15): GGGAGAGGGGAGAGG
+
+Iteration #0 =====================================
+epos: 13
+
+Iteration #1 =====================================
+epos: 14
+getHaystackFiberSeqNo for bPos: 0
+m (return value): 0
+segmentMap size: 1
+
+--> Found valid match @ 
+	(#nr, merged ePos): (1, 14)
+	bPos (merged): 0
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GGGAGAGAGGAGAGG	TTSFIBER substring
+GGGAGAGGGGAGAGG	TFOSUFFIX substring
+
+Seed: 
+	GGAGAGG
+MaxSeed Length: 				7
+MaxSeed Position (ttsFiber): 	8 - 14
+original seedSeed<Simple, TConfig>(8, 8, 14, 14, lower diag = 0, upper diag = 0)
+seedFiber: GGAGAG
+seedQuery: GGAGAG
+===>>> New seed is added to map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+	hash: 144
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+seed after extension
+Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+seedFiber: GGGAGAGAGGAGAGG
+seedQuery: GGGAGAGGGGAGAGG
+needle (tfo): 			GGGAGAGGGGAGAGG
+suffix itself: 	GGGAGAGGGGAGAGG
+q-gram pos in tfo: 	0 - 14
+tfo sequence id (index): 		0
+MaxSeed P (local  suffixQGram): 8 - 14
+MaxSeed P (global suffixQGram): 8 - 14
+1
+elapsed time: 0.000156878 sec

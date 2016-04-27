@@ -3828,8 +3828,10 @@ namespace SEQAN_NAMESPACE_MAIN
 						 TPotentials					&potentials,
 						 Gardener<TId, TGardenerSpec>	&gardener,
 //						 TPattern	const				&pattern,
-						 TStringSet	const				&tfoSet,
-						 TDuplexSet	const				&ttsSet,
+						 TStringSet	const				&tfoSet,		// needles
+						 TDuplexSet	const				&ttsSet,		// haystack
+						 TId		const				&duplexId,
+						 bool		const				plusstrand,
 						 Options						&options
 						 ){
 		SEQAN_PROTIMESTART(time_verify);
@@ -3857,7 +3859,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename Cargo<TPotValue>::Type				TPotCargo;
 
 		// check all queries for hits
-		for (TId queryid=0; queryid<(TId)length(tfoSet); ++queryid){
+		for (TId queryid=0; queryid<(TId)length(ttsSet); ++queryid){
+        	cout << "foo " << endl << std::flush;
+
 			for (TIter it = harvestBegin(gardener,queryid); it != harvestEnd(gardener, queryid); ++it){
 				THit hit = *it;
 				TPos tfoStart;
@@ -3865,25 +3869,32 @@ namespace SEQAN_NAMESPACE_MAIN
 				TPos ttsStart;
 				TPos ttsEnd;
 				char strand;
+				cout << "bar " << endl << std::flush;
+				cout << "hit.getNdlSeqNo() " << hit.getNdlSeqNo() << endl
+						<< "hit.getNdlPos() " << hit.getNdlPos() << endl
+						<< "hit.getHitLength() " << hit.getHitLength() << endl
+						<< "hit.getHstId() " << hit.getHstId() << endl
+						<< "hit.getHstkPos() " << hit.getHstkPos() << endl << std::flush;
+				cout << "tfoSet[hit.getNdlSeqNo()]: " << tfoSet[hit.getNdlSeqNo()] << endl <<
+						"value(ttsSet,hit.getHstId()): " << value(ttsSet,hit.getHstId()) << endl << std::flush;
+				THost tfo = infix(ttsString(tfoSet[hit.getNdlSeqNo()]), hit.getNdlPos(), hit.getNdlPos() + hit.getHitLength());
+				THost triplex(infix(ttsString(value(ttsSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
 
-				THost tts = infix(ttsString(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))), hit.getNdlPos(), hit.getNdlPos() + hit.getHitLength());
-				THost triplex(infix(ttsString(value(tfoSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
-				ModStringTriplex<TDuplex, TDuplex> ttsDuplex(getSequenceByNo(hit.getNdlSeqNo(), needle(pattern)));
-
+				cout << "qux " << endl << std::flush;
 #ifdef TRIPLEX_DEBUG
 				::std::cerr << "transform (triplex): " << triplex << :: std::endl;
 				::std::cerr << "transform (tts): " << tts << :: std::endl;
 #endif
-				THostIter itTFO=begin(triplex);
-				for (THostIter itTTS=begin(tts); itTTS!=end(tts); ++itTFO,++itTTS){
+				THostIter itTTS=begin(triplex);
+				for (THostIter itTFO=begin(tfo); itTFO!=end(tfo); ++itTFO,++itTTS){
 					if (*itTFO!=*itTTS){
-						*itTFO = 'N';
+						*itTTS = 'N';
 					}
 				}
 #ifdef TRIPLEX_DEBUG
 				::std::cerr << "to       : " << triplex << :: std::endl;
 #endif
-
+				cout << "asd " << endl << std::flush;
 				// run through TTS parser
  				TStringSet triplexSet;
 				// create parser once
@@ -3892,12 +3903,12 @@ namespace SEQAN_NAMESPACE_MAIN
 					THost invalid("TCYN");	// the interrupting characters
 					_makeParser(options.triplexParser, valid, invalid, options);
 				}
-
+				cout << "qwe " << endl << std::flush;
 				// split duplex into valid parts
 				TSegString seqString;	// target segment container
 				_parse(seqString, options.triplexParser, triplex, options);
 				unsigned totalNumberOfMatches = 0;
-
+				cout << "fuck " << endl << std::flush;
 				// process one segment at a time
 				for (TSegStringIter it = begin(seqString, Standard()); it != end(seqString, Standard()); ++it){
 #ifdef TRIPLEX_DEBUG
@@ -3907,6 +3918,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					bool reduceSet = false; // don't merge overlapping triplexes
 					totalNumberOfMatches += _filterWithGuanineAndErrorRate(triplexSet, ttsfilter, 'G', 'Y', reduceSet, TRIPLEX_ORIENTATION_BOTH, options, TTS());
 				}
+				cout << "rty " << endl << std::flush;
 #ifdef TRIPLEX_DEBUG
 				::std::cerr << "totalNumberOfMatches:" << totalNumberOfMatches << ::std::endl;
 #endif
@@ -3914,7 +3926,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				if (totalNumberOfMatches == 0){
 					continue;
 				}
-
+				cout << "qqq " << endl << std::flush;
 				for (TStringIter itr=begin(triplexSet); itr!=end(triplexSet); ++itr){
 					// compute score = matching positions, which can be found in the triplex string (number of N's within the interval found)
 					int score=0;
@@ -3927,36 +3939,36 @@ namespace SEQAN_NAMESPACE_MAIN
 					}
 
 					// calculate tts positions according to strand in the duplex
-					if (ttsDuplex.motif == '+') {
-						ttsStart = hit.getNdlPos() + beginPosition(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern)))+beginPosition(*itr);
+					if (plusstrand) {
+						ttsStart = hit.getHstkPos() + beginPosition(value(ttsSet,hit.getHstId()))+ beginPosition(*itr);
 						ttsEnd 	 = ttsStart + length(*itr);
 						strand   = '+';
 					} else {
-						ttsEnd 	 = endPosition(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))) - (hit.getNdlPos() + beginPosition(*itr));
+						ttsEnd = endPosition(value(ttsSet,hit.getHstId())) - (hit.getHstkPos() + beginPosition(*itr));
 						ttsStart = ttsEnd - length(*itr);
 						strand 	 = '-';
 					}
 
 					// calculate tfo positions according to binding orientation
 					if (isParallel(tfoSet[queryid])) {
-						tfoStart = hit.getHstkPos() + beginPosition(value(tfoSet,hit.getHstId()))+ beginPosition(*itr);
-						tfoEnd 	 = tfoStart + length(*itr);
+						tfoStart = hit.getNdlPos() + beginPosition(value(tfoSet, hit.getNdlSeqNo()))+beginPosition(*itr);
+						tfoEnd = tfoStart + length(*itr);
 					} else {
-						tfoEnd   = endPosition(value(tfoSet,hit.getHstId())) - (hit.getHstkPos() + beginPosition(*itr));
+						tfoEnd = endPosition(value(tfoSet, hit.getNdlSeqNo())) - (hit.getNdlPos() + beginPosition(*itr));
 						tfoStart = tfoEnd - length(*itr);
 					}
 
 					// save the corresponding triplex match
-					TMatch match(hit.getHstId(), // was getNdlSeqNo
+					TMatch match(hit.getNdlSeqNo(),
 								 tfoStart,
 								 tfoEnd,
-								 ttsDuplex.seqNo,
-								 -2,//queryid,
+								 duplexId,
+								 queryid,
 								 ttsStart,
 								 ttsEnd,
 								 score,
-								 isParallel(tfoSet[queryid]),
-								 getMotif(tfoSet[queryid]),
+								 isParallel(tfoSet[hit.getNdlSeqNo()]),
+								 getMotif(tfoSet[hit.getNdlSeqNo()]),
 								 strand,
 								 guanines
 								 );
@@ -3968,20 +3980,22 @@ namespace SEQAN_NAMESPACE_MAIN
 					::std::cout << "@zb **** END\n";
 #endif
 				}
-
+				cout << "ohyes " << std::flush;
 				// save potential
-				TPotKey pkey(getSequenceNo(value(tfoSet,hit.getHstId())), ttsDuplex.seqNo);
+				TPotKey pkey(getSequenceNo(value(tfoSet,hit.getNdlSeqNo())), getSequenceNo(value(ttsSet,hit.getHstId())));
+				cout << "of course " << std::flush;
 				if (hasKey(potentials, pkey)){
 					// sequence pair already known, just add counts
 					TPotCargo* potential = &cargo(potentials, pkey);
-					addCount(*potential, totalNumberOfMatches, getMotif(tfoSet[queryid]));
+					addCount(*potential, totalNumberOfMatches, getMotif(tfoSet[hit.getNdlSeqNo()]));
 				} else {
 					// new sequence pair, add counts and compute norm
 					TPotCargo potential(pkey);
 					addCount(potential, totalNumberOfMatches, getMotif(tfoSet[queryid]));
-					setNorm(potential, length(host(tfoSet[queryid])), length(ttsSet[ttsDuplex.seqNo]), options);
+					setNorm(potential, length(host(tfoSet[hit.getNdlSeqNo()])), length(host(ttsSet[queryid])), options);
 					insert(potentials, TPotValue(pkey, potential));
 				}
+				cout << "dammit " << std::flush;
 			}
 		}
 		options.timeVerifyAndStore += SEQAN_PROTIMEDIFF(time_verify);
@@ -4111,7 +4125,6 @@ namespace SEQAN_NAMESPACE_MAIN
 										) {
 		typedef TriplexString										TDuplex;
 		typedef StringSet<ModStringTriplex<TDuplex, TDuplex> >		TDuplexModSet;
-//		typedef StringSet<TDuplex>									TDuplexSet;
 		typedef typename Iterator<TDuplexModSet>::Type  			TIterMotifSet;
 
 		typedef Gardener<TId, TGardenerSpec>						TGardener;
@@ -4149,7 +4162,6 @@ namespace SEQAN_NAMESPACE_MAIN
         bool reduceSet = true; // merge overlapping features
 		
         //////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////
         // iterate over duplex sequences, and add them to ttsSet after processing ////
         //////////////////////////////////////////////////////////////////////////////
         SEQAN_PROTIMESTART(time_tts_io);
@@ -4183,30 +4195,36 @@ namespace SEQAN_NAMESPACE_MAIN
 
             // prefilter for putative TTSs
     		if (options.forward) {
-    			cout << "### Forward search" << endl << endl;
+    			cout << "### Forward search" << std::flush << endl << endl;
     			processDuplex(ttsSetForward, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
     	        if (length(ttsSetForward)>0) {
     	        	SEQAN_PROTIMESTART(time_search);
     	        	_filterTriplexMyers(gardenerForward, ttsSetForward, index, tfoMotifSet, options);
     	        	options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
-    	        	_verifyAndStoreMyers(matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, options);
+    	        	cout << "bte " << std::flush;
+    	        	_verifyAndStoreMyers(matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, duplexSeqNoWithinFile, true, options);
+    	        	cout << "yyu " << std::flush;
     	        }
     	        eraseAll(gardenerForward);
     		}
     		if (options.reverse) {
-    			cout << "### Reverse search" << endl << endl;
+    			cout << "### Reverse search" << std::flush << endl << endl;
     			processDuplex(ttsSetReverse, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
     			if (length(ttsSetReverse)>0) {
     				SEQAN_PROTIMESTART(time_search);
     				_filterTriplexMyers(gardenerReverse, ttsSetReverse, index, tfoMotifSet, options);
     				options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
+    				cout << "q12 " << std::flush;
+    				_verifyAndStoreMyers(matches, potentials, gardenerReverse, tfoMotifSet, ttsSetReverse, duplexSeqNoWithinFile, false, options);
+    				cout << "q21 " << std::flush;
     			}
     			eraseAll(gardenerReverse);
     		}
 
-    		// output all entries
-//            printTriplexEntryInverted(matches, duplexSeqNames, tfoMotifSet, tfoNames, outputfile, options);
-//            dumpSummaryInverted(potentials,  duplexSeqNames, tfoNames, options, TPX());
+			// output all entries
+			printTriplexEntry(matches, duplexName, duplexSeq, tfoMotifSet, tfoNames, outputfile, options);
+			dumpSummary(potentials, duplexName, tfoNames, options, TPX() );
+
     		// clean up
             clear(matches);
 		}
