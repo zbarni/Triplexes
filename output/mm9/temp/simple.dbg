@@ -29,18 +29,21 @@ Seed:
 	GGAGA
 MaxSeed Length: 				5
 MaxSeed Position (ttsFiber): 	8 - 12
-original seed
-Seed<Simple, TConfig>(8, 8, 12, 12, lower diag = 0, upper diag = 0)
-seedH: GGAG
-seedV: GGAG
+original seedSeed<Simple, TConfig>(8, 8, 12, 12, lower diag = 0, upper diag = 0)
+seedFiber: GGAG
+seedQuery: GGAG
+===>>> New seed is added to map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+	hash: 144
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
 seed after extension
 Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedH: GGGAGAGAGGAGAGG
-seedV: GGGAGAGGGGAGAGG
+seedFiber: GGGAGAGAGGAGAGG
+seedQuery: GGGAGAGGGGAGAGG
 tfo: 			GGGAGAGGGGAGAGG
 suffix itself: 	AGAGGGGAGAGG
 q-gram pos in tfo: 	3 - 12
-tfo sequence id (indx): 		0
+tfo sequence id (index): 		0
 MaxSeed P (local  suffixQGram): 5 - 9
 MaxSeed P (global suffixQGram): 8 - 12
 
@@ -67,18 +70,21 @@ Seed:
 	GAGAG
 MaxSeed Length: 				5
 MaxSeed Position (ttsFiber): 	2 - 6
-original seed
-Seed<Simple, TConfig>(2, 2, 6, 6, lower diag = 0, upper diag = 0)
-seedH: GAGA
-seedV: GAGA
+original seedSeed<Simple, TConfig>(2, 2, 6, 6, lower diag = 0, upper diag = 0)
+seedFiber: GAGA
+seedQuery: GAGA
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+	hash: 144
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
 seed after extension
 Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedH: GGGAGAGAGGAGAGG
-seedV: GGGAGAGGGGAGAGG
+seedFiber: GGGAGAGAGGAGAGG
+seedQuery: GGGAGAGGGGAGAGG
 tfo: 			GGGAGAGGGGAGAGG
 suffix itself: 	GAGAGGGGAGAGG
 q-gram pos in tfo: 	2 - 11
-tfo sequence id (indx): 		0
+tfo sequence id (index): 		0
 MaxSeed P (local  suffixQGram): 0 - 4
 MaxSeed P (global suffixQGram): 2 - 6
 
@@ -99,18 +105,21 @@ Seed:
 	GAGAGG
 MaxSeed Length: 				6
 MaxSeed Position (ttsFiber): 	4 - 9
-original seed
-Seed<Simple, TConfig>(4, 2, 9, 7, lower diag = -2, upper diag = -2)
-seedH: GAGAG
-seedV: GAGAG
+original seedSeed<Simple, TConfig>(4, 2, 9, 7, lower diag = -2, upper diag = -2)
+seedFiber: GAGAG
+seedQuery: GAGAG
+===>>> New seed is added to map: Seed<Simple, TConfig>(4, 2, 14, 12, lower diag = -2, upper diag = -2)
+	hash: 605
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
 seed after extension
 Seed<Simple, TConfig>(4, 2, 14, 12, lower diag = -2, upper diag = -2)
-seedH: GAGAGGAGAG
-seedV: GAGAGGGGAG
+seedFiber: GAGAGGAGAG
+seedQuery: GAGAGGGGAG
 tfo: 			GGGAGAGGGGAGAGG
 suffix itself: 	GAGAGGGGAGAGG
 q-gram pos in tfo: 	2 - 11
-tfo sequence id (indx): 		0
+tfo sequence id (index): 		0
 MaxSeed P (local  suffixQGram): 0 - 5
 MaxSeed P (global suffixQGram): 2 - 7
 
@@ -137,18 +146,21 @@ Seed:
 	GGAGAG
 MaxSeed Length: 				6
 MaxSeed Position (ttsFiber): 	8 - 13
-original seed
-Seed<Simple, TConfig>(8, 8, 13, 13, lower diag = 0, upper diag = 0)
-seedH: GGAGA
-seedV: GGAGA
+original seedSeed<Simple, TConfig>(8, 8, 13, 13, lower diag = 0, upper diag = 0)
+seedFiber: GGAGA
+seedQuery: GGAGA
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+	hash: 144
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
 seed after extension
 Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedH: GGGAGAGAGGAGAGG
-seedV: GGGAGAGGGGAGAGG
+seedFiber: GGGAGAGAGGAGAGG
+seedQuery: GGGAGAGGGGAGAGG
 tfo: 			GGGAGAGGGGAGAGG
 suffix itself: 	GAGGGGAGAGG
 q-gram pos in tfo: 	4 - 13
-tfo sequence id (indx): 		0
+tfo sequence id (index): 		0
 MaxSeed P (local  suffixQGram): 4 - 9
 MaxSeed P (global suffixQGram): 8 - 13
 
@@ -175,18 +187,21 @@ Seed:
 	GGAGAGG
 MaxSeed Length: 				7
 MaxSeed Position (ttsFiber): 	8 - 14
-original seed
-Seed<Simple, TConfig>(8, 8, 14, 14, lower diag = 0, upper diag = 0)
-seedH: GGAGAG
-seedV: GGAGAG
+original seedSeed<Simple, TConfig>(8, 8, 14, 14, lower diag = 0, upper diag = 0)
+seedFiber: GGAGAG
+seedQuery: GGAGAG
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+	hash: 144
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
 seed after extension
 Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedH: GGGAGAGAGGAGAGG
-seedV: GGGAGAGGGGAGAGG
+seedFiber: GGGAGAGAGGAGAGG
+seedQuery: GGGAGAGGGGAGAGG
 tfo: 			GGGAGAGGGGAGAGG
 suffix itself: 	AGGGGAGAGG
 q-gram pos in tfo: 	5 - 14
-tfo sequence id (indx): 		0
+tfo sequence id (index): 		0
 MaxSeed P (local  suffixQGram): 3 - 9
 MaxSeed P (global suffixQGram): 8 - 14
 
@@ -213,18 +228,21 @@ Seed:
 	GGAGAG
 MaxSeed Length: 				6
 MaxSeed Position (ttsFiber): 	1 - 6
-original seed
-Seed<Simple, TConfig>(1, 1, 6, 6, lower diag = 0, upper diag = 0)
-seedH: GGAGA
-seedV: GGAGA
+original seedSeed<Simple, TConfig>(1, 1, 6, 6, lower diag = 0, upper diag = 0)
+seedFiber: GGAGA
+seedQuery: GGAGA
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+	hash: 144
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
 seed after extension
 Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedH: GGGAGAGAGGAGAGG
-seedV: GGGAGAGGGGAGAGG
+seedFiber: GGGAGAGAGGAGAGG
+seedQuery: GGGAGAGGGGAGAGG
 tfo: 			GGGAGAGGGGAGAGG
 suffix itself: 	GGAGAGGGGAGAGG
 q-gram pos in tfo: 	1 - 10
-tfo sequence id (indx): 		0
+tfo sequence id (index): 		0
 MaxSeed P (local  suffixQGram): 0 - 5
 MaxSeed P (global suffixQGram): 1 - 6
 
@@ -251,19 +269,22 @@ Seed:
 	GGGAGAG
 MaxSeed Length: 				7
 MaxSeed Position (ttsFiber): 	0 - 6
-original seed
-Seed<Simple, TConfig>(0, 0, 6, 6, lower diag = 0, upper diag = 0)
-seedH: GGGAGA
-seedV: GGGAGA
+original seedSeed<Simple, TConfig>(0, 0, 6, 6, lower diag = 0, upper diag = 0)
+seedFiber: GGGAGA
+seedQuery: GGGAGA
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+	hash: 144
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
 seed after extension
 Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedH: GGGAGAGAGGAGAGG
-seedV: GGGAGAGGGGAGAGG
+seedFiber: GGGAGAGAGGAGAGG
+seedQuery: GGGAGAGGGGAGAGG
 tfo: 			GGGAGAGGGGAGAGG
 suffix itself: 	GGGAGAGGGGAGAGG
 q-gram pos in tfo: 	0 - 9
-tfo sequence id (indx): 		0
+tfo sequence id (index): 		0
 MaxSeed P (local  suffixQGram): 0 - 6
 MaxSeed P (global suffixQGram): 0 - 6
 6
-elapsed time: 0.000790975 sec
+elapsed time: 0.000844685 sec

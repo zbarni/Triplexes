@@ -3821,14 +3821,13 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TPotentials,
 	typename TId,
 	typename TGardenerSpec,
-	typename TPattern,
 	typename TStringSet,
 	typename TDuplexSet
 	>
-	void _verifyAndStoreInverted(TMatches				&matches,
+	void _verifyAndStoreMyers(TMatches					&matches,
 						 TPotentials					&potentials,
 						 Gardener<TId, TGardenerSpec>	&gardener,
-						 TPattern	const				&pattern,
+//						 TPattern	const				&pattern,
 						 TStringSet	const				&tfoSet,
 						 TDuplexSet	const				&ttsSet,
 						 Options						&options
@@ -4190,7 +4189,7 @@ namespace SEQAN_NAMESPACE_MAIN
     	        	SEQAN_PROTIMESTART(time_search);
     	        	_filterTriplexMyers(gardenerForward, ttsSetForward, index, tfoMotifSet, options);
     	        	options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
-//    	        	_verifyAndStoreInverted(matches, potentials, gardener, pattern, tfoMotifSet, ttsDuplexSet, options);
+    	        	_verifyAndStoreMyers(matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, options);
     	        }
     	        eraseAll(gardenerForward);
     		}
