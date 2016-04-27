@@ -1,0 +1,11 @@
+1) Instead of doing q-gram search / match for every position in the haystack, upon a hit, move |q-gram| and start from there. Anything inbetween will be added during the seed-extension phase.
+
+Useful algorithms / problems
+1) longest common extension
+2) k-mismatch:  - P, T, fixed number of k errors, a k-mismatch of P is: a substring of T that matches P with at most k mismatches. O(k*|T|)
+                - speedup for DNA: generate all possible P' by changing k chars of P and search for each P' in the ST/SA of T
+
+
+=== TO TEST ===
+1) several tts sequences in input file
+2) different c-s (consecutive errors, not yet impl.?)
