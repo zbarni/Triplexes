@@ -3869,7 +3869,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				TPos ttsStart;
 				TPos ttsEnd;
 				char strand;
-				cout << "bar " << endl << std::flush;
+				cout << "============ HIT ============ " << endl << std::flush;
 				cout << "hit.getNdlSeqNo() " << hit.getNdlSeqNo() << endl
 						<< "hit.getNdlPos() " << hit.getNdlPos() << endl
 						<< "hit.getHitLength() " << hit.getHitLength() << endl
@@ -3903,12 +3903,10 @@ namespace SEQAN_NAMESPACE_MAIN
 					THost invalid("TCYN");	// the interrupting characters
 					_makeParser(options.triplexParser, valid, invalid, options);
 				}
-				cout << "qwe " << endl << std::flush;
 				// split duplex into valid parts
 				TSegString seqString;	// target segment container
 				_parse(seqString, options.triplexParser, triplex, options);
 				unsigned totalNumberOfMatches = 0;
-				cout << "fuck " << endl << std::flush;
 				// process one segment at a time
 				for (TSegStringIter it = begin(seqString, Standard()); it != end(seqString, Standard()); ++it){
 #ifdef TRIPLEX_DEBUG
@@ -3950,14 +3948,13 @@ namespace SEQAN_NAMESPACE_MAIN
 					}
 
 					// calculate tfo positions according to binding orientation
-					if (isParallel(tfoSet[queryid])) {
+					if (isParallel(tfoSet[hit.getNdlSeqNo()])) {
 						tfoStart = hit.getNdlPos() + beginPosition(value(tfoSet, hit.getNdlSeqNo()))+beginPosition(*itr);
 						tfoEnd = tfoStart + length(*itr);
 					} else {
 						tfoEnd = endPosition(value(tfoSet, hit.getNdlSeqNo())) - (hit.getNdlPos() + beginPosition(*itr));
 						tfoStart = tfoEnd - length(*itr);
 					}
-
 					// save the corresponding triplex match
 					TMatch match(hit.getNdlSeqNo(),
 								 tfoStart,
