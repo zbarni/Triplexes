@@ -59,12 +59,6 @@ static int myersCalcEditDistanceSemiGlobal(Block* blocks, Word* Peq, int W, int 
                                            int alphabetLength, int k, int mode, int* bestScore,
                                            int** positions, int* numPositions);
 
-//static int myersCalcEditDistanceNW(Block* blocks, Word* Peq, int W, int maxNumBlocks,
-//                                   const unsigned char* query, int queryLength,
-//                                   const unsigned char* target, int targetLength,
-//                                   int alphabetLength, int k, int* bestScore, int* position,
-//                                   bool findAlignment, AlignmentData** alignData);
-
 static void obtainAlignment(int maxNumBlocks, int queryLength, int targetLength, int W, int bestScore,
                             int position, AlignmentData* alignData,
                             unsigned char** alignment, int* alignmentLength);
@@ -471,16 +465,16 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
                 // NOTE: Score that I find in column c is actually score from column c-W
                 if (bestScore == -1 || colScore <= bestScore) {
                     if (colScore != bestScore) {
-                        positions.clear();
+//                        positions.clear();
                         bestScore = colScore;
                         // Change k so we will look only for equal or better
                         // scores then the best found so far.
-                        k = bestScore;
+//                        k = bestScore;
                     }
 //                    positions.push_back(c - W);
                 }
                 // @barni moved push back here to keep all results
-//                        printf("yeyy@\n\n\n");
+//                printf("yeyy@\n\n\n");
                 positions.push_back(c - W);
             }
         }

@@ -3827,7 +3827,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	void _verifyAndStoreMyers(TMatches					&matches,
 						 TPotentials					&potentials,
 						 Gardener<TId, TGardenerSpec>	&gardener,
-//						 TPattern	const				&pattern,
 						 TStringSet	const				&tfoSet,		// needles
 						 TDuplexSet	const				&ttsSet,		// haystack
 						 TId		const				&duplexId,
@@ -3860,8 +3859,6 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// check all queries for hits
 		for (TId queryid=0; queryid<(TId)length(ttsSet); ++queryid){
-        	cout << "foo " << endl << std::flush;
-
 			for (TIter it = harvestBegin(gardener,queryid); it != harvestEnd(gardener, queryid); ++it){
 				THit hit = *it;
 				TPos tfoStart;
@@ -3880,7 +3877,6 @@ namespace SEQAN_NAMESPACE_MAIN
 				THost tfo = infix(ttsString(tfoSet[hit.getNdlSeqNo()]), hit.getNdlPos(), hit.getNdlPos() + hit.getHitLength());
 				THost triplex(infix(ttsString(value(ttsSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
 
-				cout << "qux " << endl << std::flush;
 #ifdef TRIPLEX_DEBUG
 				::std::cerr << "transform (triplex): " << triplex << :: std::endl;
 				::std::cerr << "transform (tts): " << tts << :: std::endl;
@@ -3894,7 +3890,6 @@ namespace SEQAN_NAMESPACE_MAIN
 #ifdef TRIPLEX_DEBUG
 				::std::cerr << "to       : " << triplex << :: std::endl;
 #endif
-				cout << "asd " << endl << std::flush;
 				// run through TTS parser
  				TStringSet triplexSet;
 				// create parser once
@@ -3916,15 +3911,13 @@ namespace SEQAN_NAMESPACE_MAIN
 					bool reduceSet = false; // don't merge overlapping triplexes
 					totalNumberOfMatches += _filterWithGuanineAndErrorRate(triplexSet, ttsfilter, 'G', 'Y', reduceSet, TRIPLEX_ORIENTATION_BOTH, options, TTS());
 				}
-				cout << "rty " << endl << std::flush;
-#ifdef TRIPLEX_DEBUG
+#ifndef TRIPLEX_DEBUG
 				::std::cerr << "totalNumberOfMatches:" << totalNumberOfMatches << ::std::endl;
 #endif
 				// skip parts below if no matches have been detected
 				if (totalNumberOfMatches == 0){
 					continue;
 				}
-				cout << "qqq " << endl << std::flush;
 				for (TStringIter itr=begin(triplexSet); itr!=end(triplexSet); ++itr){
 					// compute score = matching positions, which can be found in the triplex string (number of N's within the interval found)
 					int score=0;
@@ -3955,6 +3948,7 @@ namespace SEQAN_NAMESPACE_MAIN
 						tfoEnd = endPosition(value(tfoSet, hit.getNdlSeqNo())) - (hit.getNdlPos() + beginPosition(*itr));
 						tfoStart = tfoEnd - length(*itr);
 					}
+
 					// save the corresponding triplex match
 					TMatch match(hit.getNdlSeqNo(),
 								 tfoStart,
@@ -3970,17 +3964,9 @@ namespace SEQAN_NAMESPACE_MAIN
 								 guanines
 								 );
 					appendValue(matches, match);
-
-#ifdef TRIPLEX_DEBUG
-					::std::cout << "@zb triplex match inverted verify: ****\n";
-					match.print();
-					::std::cout << "@zb **** END\n";
-#endif
 				}
-				cout << "ohyes " << std::flush;
 				// save potential
 				TPotKey pkey(getSequenceNo(value(tfoSet,hit.getNdlSeqNo())), getSequenceNo(value(ttsSet,hit.getHstId())));
-				cout << "of course " << std::flush;
 				if (hasKey(potentials, pkey)){
 					// sequence pair already known, just add counts
 					TPotCargo* potential = &cargo(potentials, pkey);
@@ -3988,11 +3974,10 @@ namespace SEQAN_NAMESPACE_MAIN
 				} else {
 					// new sequence pair, add counts and compute norm
 					TPotCargo potential(pkey);
-					addCount(potential, totalNumberOfMatches, getMotif(tfoSet[queryid]));
+					addCount(potential, totalNumberOfMatches, getMotif(tfoSet[hit.getNdlSeqNo()]));
 					setNorm(potential, length(host(tfoSet[hit.getNdlSeqNo()])), length(host(ttsSet[queryid])), options);
 					insert(potentials, TPotValue(pkey, potential));
 				}
-				cout << "dammit " << std::flush;
 			}
 		}
 		options.timeVerifyAndStore += SEQAN_PROTIMEDIFF(time_verify);

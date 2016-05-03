@@ -1,0 +1,43 @@
+DNA
+    >chr1_truncated
+5'  AAAAGAAAAGAAAAAAGAAAAGAAAAG     3'
+
+3'  GAAAAGAAAAGAAAAAAGAAAAGAAAA     5'
+
+RNA
+    >TCONS_00064087 exon:4 REGION_chr15_59980410_59983790_+
+5'  GTTGGTTTTGTTTGTTTTTTTGTTTTT     3'
+
+3'  TTTTTGTTTTTTTGTTTGTTTTGGTTG     5'
+
+
+
+
+
+
+===========================================================================
+Theoretical matches
+
+# Sequence-ID	TFO start	TFO end	Duplex-ID	TTS start	TTS end	Score	Error-rate	Errors	Motif	Strand	Orientation	Guanine-rate
+
+TCONS_00064087	1	26	chr1_truncated	1	26	22	0.12	t2t12t15	M	+	P	0.12
+TFO: 5'- TTGGTTTTGTTTGTTTTTTTGTTTT -3'
+         ||*|||||||||*||*|||||||||
+TTS: 5'- AAAGAAAAGAAAAAAGAAAAGAAAA -3'
+     3'- TTTCTTTTCTTTTTTCTTTTCTTTT -5'
+
+TCONS_00064087	1	26	chr1_truncated	0	25	22	0.12	t9t12t22	M	+	A	0.12
+TFO: 3'- TTTTGTTTTTTTGTTTGTTTTGGTT -5'
+         |||||||||*||*|||||||||*||
+TTS: 5'- AAAAGAAAAGAAAAAAGAAAAGAAA -3'
+     3'- TTTTCTTTTCTTTTTTCTTTTCTTT -5'
+
+
+
+------------->>>>>>>>>>>>>>>>>>>>>  ? (This one is not present, although it's valid and different from the found ones)
+
+TCONS_00064087	0	25	chr1_truncated	1	26	22	0.12	xxxxxxxx	M	+	P	0.12
+TFO: 5'- GTTGGTTTTGTTTGTTTTTTTGTTTT -3'
+         *||*|||||||||*||*|||||||||
+TTS: 5'- AAAAGAAAAGAAAAAAGAAAAGAAAA -3'
+     3'- TTTTCTTTTCTTTTTTCTTTTCTTTT -5'

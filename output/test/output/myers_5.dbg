@@ -1,0 +1,1298 @@
+### Forward search
+
+Merged haystack has length: 88
+Fibers in merged haystack: 
+seq no: 0 (len = 52): AYAGGAGGAGGGAYGGAGYGAAGGAGAYAAAYGGAGGGYGAGAAAAAGYAGA
+seq no: 1 (len = 36): GYAYAGAAGAGGAAAGGGAAAGAAAYAAAGGAAAYG
+Segment map / vector:	0 x 52 x needle: #0		GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+fiber: #0		AYAGGAGGAGGGAYGGAGYGAAGGAGAYAAAYGGAGGGYGAGAAAAAGYAGA
+fiber: #1		GYAYAGAAGAGGAAAGGGAAAGAAAYAAAGGAAAYG
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGGGAGAGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGGGAGGGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 2
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 3
+
+Iteration #1 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 7
+
+--> Found valid match @ 
+	(#nr, merged ePos): (1, 16)
+	bPos (merged): 7
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GAGGGAYGGA	TTSFIBER substring
+GAGGGAGGGA	TFOSUFFIX substring
+
+Seed: 
+	GAGGGA
+MaxSeed Length: 				6
+MaxSeed Position (mergedHaystack): 	7 - 12
+
+Original seed: Seed<Simple, TConfig>(7, 76, 12, 81, lower diag = 69, upper diag = 69)
+seedFiber: GAGGGA
+seedQuery: GAGGGA
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+seedFiber: AYAGGAGGAGGGA
+seedQuery: AAAGGAGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	76 - 85
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 76 - 81
+===>>> New seed is added to map: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+	hash: -150
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAGGGAYGGA
+seedQuery: AGGAGGAGGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	76 - 85
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 76 - 81
+===>>> New seed is added to map: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+	hash: 1314
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAAAGGAGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAGANAGGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AAGAGANAGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AAAGAGAAAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 1(from 2) for bPos: 64
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 73)
+	bPos (merged): 64
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 1
+AAAGGGAAAG	TTSFIBER substring
+AAAGAGAAAG	TFOSUFFIX substring
+
+Seed: 
+	GAAAG
+MaxSeed Length: 				5
+MaxSeed Position (mergedHaystack): 	69 - 73
+
+Original seed: Seed<Simple, TConfig>(17, 68, 21, 72, lower diag = 51, upper diag = 51)
+seedFiber: GAAAG
+seedQuery: GAAAG
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(11, 62, 22, 73, lower diag = 51, upper diag = 51)
+seedFiber: GAAAGGGAAAG
+seedQuery: GAAAGAGAAAG
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	63 - 72
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 68 - 72
+===>>> New seed is added to map: Seed<Simple, TConfig>(11, 62, 22, 73, lower diag = 51, upper diag = 51)
+	hash: 7431
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 1
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(17, 68, 24, 75, lower diag = 51, upper diag = 51)
+seedFiber: GAAAGAA
+seedQuery: GAAAGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	63 - 72
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 68 - 72
+===>>> New seed is added to map: Seed<Simple, TConfig>(17, 68, 24, 75, lower diag = 51, upper diag = 51)
+	hash: 11955
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 1
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GANAGAGANA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GANAGAAAAA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AAAAAGAGAN
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AAAAGAGANA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): ANAGANAGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): ANAGAGAGAN
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGGGANAGGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGGGAGGGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 8
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 17)
+	bPos (merged): 8
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+AGGGAYGGAG	TTSFIBER substring
+AGGGAGGGAG	TFOSUFFIX substring
+
+Seed: 
+	AGGGA
+MaxSeed Length: 				5
+MaxSeed Position (mergedHaystack): 	8 - 12
+
+Original seed: Seed<Simple, TConfig>(8, 21, 12, 25, lower diag = 13, upper diag = 13)
+seedFiber: AGGGA
+seedQuery: AGGGA
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(7, 20, 13, 26, lower diag = 13, upper diag = 13)
+seedFiber: GAGGGA
+seedQuery: NAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	21 - 30
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 21 - 25
+===>>> New seed is added to map: Seed<Simple, TConfig>(7, 20, 13, 26, lower diag = 13, upper diag = 13)
+	hash: 1866
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(8, 21, 18, 31, lower diag = 13, upper diag = 13)
+seedFiber: AGGGAYGGAG
+seedQuery: AGGGAGGGAG
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	21 - 30
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 21 - 25
+===>>> New seed is added to map: Seed<Simple, TConfig>(8, 21, 18, 31, lower diag = 13, upper diag = 13)
+	hash: 2462
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGANAGGGAN
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): ANANAGANAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): ANAGAGANAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): ANAGGGANAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAGAGAAAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 1(from 2) for bPos: 58
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAGAAAGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): NAGAAAAAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): NAGANAGAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): NAGAGAGANA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): NAGAGANAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AAGAGAAAGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 1(from 2) for bPos: 59
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): ANAGAGAGAA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GGAGAGAGAN
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGGAGGGAGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 3
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 1
+
+Iteration #1 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 5
+
+--> Found valid match @ 
+	(#nr, merged ePos): (1, 14)
+	bPos (merged): 5
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+AGGAGGGAYG	TTSFIBER substring
+AGGAGGGAGG	TFOSUFFIX substring
+
+Seed: 
+	AGGAGGGA
+MaxSeed Length: 				8
+MaxSeed Position (mergedHaystack): 	5 - 12
+
+Original seed: Seed<Simple, TConfig>(5, 74, 12, 81, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGGA
+seedQuery: AGGAGGGA
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+seedFiber: AYAGGAGGAGGGA
+seedQuery: AAAGGAGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	74 - 83
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 74 - 81
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+	hash: -150
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAGGGAYGGA
+seedQuery: AGGAGGAGGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	74 - 83
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 74 - 81
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+	hash: 1314
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+Iteration #2 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 6
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GGGAGAGAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): ANAGGGAGGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGAGANAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGAGANANA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGGGAGAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 33
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 42)
+	bPos (merged): 33
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GAGGGYGAGA	TTSFIBER substring
+GAGGGAGAGA	TFOSUFFIX substring
+
+Seed: 
+	GAGGG
+MaxSeed Length: 				5
+MaxSeed Position (mergedHaystack): 	33 - 37
+
+Original seed: Seed<Simple, TConfig>(33, 24, 37, 28, lower diag = -9, upper diag = -9)
+seedFiber: GAGGG
+seedQuery: GAGGG
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(30, 21, 38, 29, lower diag = -9, upper diag = -9)
+seedFiber: AYGGAGGG
+seedQuery: AGGGAGGG
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	24 - 33
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 24 - 28
+===>>> New seed is added to map: Seed<Simple, TConfig>(30, 21, 38, 29, lower diag = -9, upper diag = -9)
+	hash: 8442
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(32, 23, 43, 34, lower diag = -9, upper diag = -9)
+seedFiber: GGAGGGYGAGA
+seedQuery: GGAGGGAGAGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	24 - 33
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 24 - 28
+===>>> New seed is added to map: Seed<Simple, TConfig>(32, 23, 43, 34, lower diag = -9, upper diag = -9)
+	hash: 10494
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GGGANAGGGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGANANAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GGAGGGAGGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 2
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 2
+
+Iteration #1 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 6
+
+--> Found valid match @ 
+	(#nr, merged ePos): (1, 15)
+	bPos (merged): 6
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GGAGGGAYGG	TTSFIBER substring
+GGAGGGAGGG	TFOSUFFIX substring
+
+Seed: 
+	GGAGGGA
+MaxSeed Length: 				7
+MaxSeed Position (mergedHaystack): 	6 - 12
+
+Original seed: Seed<Simple, TConfig>(6, 75, 12, 81, lower diag = 69, upper diag = 69)
+seedFiber: GGAGGGA
+seedQuery: GGAGGGA
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+seedFiber: AYAGGAGGAGGGA
+seedQuery: AAAGGAGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	75 - 84
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 75 - 81
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+	hash: -150
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAGGGAYGGA
+seedQuery: AGGAGGAGGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	75 - 84
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 75 - 81
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+	hash: 1314
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GGANAGGGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GGAGGGAGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 32
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 41)
+	bPos (merged): 32
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GGAGGGYGAG	TTSFIBER substring
+GGAGGGAGAG	TFOSUFFIX substring
+
+Seed: 
+	GGAGGG
+MaxSeed Length: 				6
+MaxSeed Position (mergedHaystack): 	32 - 37
+
+Original seed: Seed<Simple, TConfig>(32, 23, 37, 28, lower diag = -9, upper diag = -9)
+seedFiber: GGAGGG
+seedQuery: GGAGGG
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(30, 21, 38, 29, lower diag = -9, upper diag = -9)
+seedFiber: AYGGAGGG
+seedQuery: AGGGAGGG
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	23 - 32
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 23 - 28
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(30, 21, 38, 29, lower diag = -9, upper diag = -9)
+	hash: 8442
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(32, 23, 43, 34, lower diag = -9, upper diag = -9)
+seedFiber: GGAGGGYGAGA
+seedQuery: GGAGGGAGAGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	23 - 32
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 23 - 28
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(32, 23, 43, 34, lower diag = -9, upper diag = -9)
+	hash: 10494
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AAAGGAGGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 0
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 9)
+	bPos (merged): 0
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+AYAGGAGGAG	TTSFIBER substring
+AAAGGAGGAG	TFOSUFFIX substring
+
+Seed: 
+	AGGAGGAG
+MaxSeed Length: 				8
+MaxSeed Position (mergedHaystack): 	2 - 9
+
+Original seed: Seed<Simple, TConfig>(2, 71, 9, 78, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAG
+seedQuery: AGGAGGAG
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+seedFiber: AYAGGAGGAGGGA
+seedQuery: AAAGGAGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	69 - 78
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 71 - 78
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+	hash: -150
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAGGGAYGGA
+seedQuery: AGGAGGAGGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	69 - 78
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 71 - 78
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+	hash: 1314
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGANAGGGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): NAGAGAGAAA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGAAAGAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GGAGGAGGGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 3
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 2
+
+Iteration #1 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 3
+
+--> Found valid match @ 
+	(#nr, merged ePos): (1, 12)
+	bPos (merged): 3
+	mismatches: 0
+haystackFiberSeqNo (in original haystack): 0
+GGAGGAGGGA	TTSFIBER substring
+GGAGGAGGGA	TFOSUFFIX substring
+
+Seed: 
+	GGAGGAGGGA
+MaxSeed Length: 				10
+MaxSeed Position (mergedHaystack): 	3 - 12
+
+Original seed: Seed<Simple, TConfig>(3, 72, 12, 81, lower diag = 69, upper diag = 69)
+seedFiber: GGAGGAGGGA
+seedQuery: GGAGGAGGGA
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+seedFiber: AYAGGAGGAGGGA
+seedQuery: AAAGGAGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	72 - 81
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 72 - 81
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+	hash: -150
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAGGGAYGGA
+seedQuery: AGGAGGAGGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	72 - 81
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 72 - 81
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+	hash: 1314
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+Iteration #2 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 4
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): NAGGGANAGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGGAGGGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 3
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 3
+
+Iteration #1 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 4
+
+--> Found valid match @ 
+	(#nr, merged ePos): (1, 13)
+	bPos (merged): 4
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 0
+GAGGAGGGAY	TTSFIBER substring
+GAGGAGGGAG	TFOSUFFIX substring
+
+Seed: 
+	GAGGAGGGA
+MaxSeed Length: 				9
+MaxSeed Position (mergedHaystack): 	4 - 12
+
+Original seed: Seed<Simple, TConfig>(4, 73, 12, 81, lower diag = 69, upper diag = 69)
+seedFiber: GAGGAGGGA
+seedQuery: GAGGAGGGA
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+seedFiber: AYAGGAGGAGGGA
+seedQuery: AAAGGAGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	73 - 82
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 73 - 81
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+	hash: -150
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAGGGAYGGA
+seedQuery: AGGAGGAGGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	73 - 82
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 73 - 81
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+	hash: 1314
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+Iteration #2 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 5
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GANAGAGAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGAAAGGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GANANAGANA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GGGAGGGAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAAAAAGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 41
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAAAGAGAA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAAAGGAGGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): ANAGAAAAAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AAGGAGGAGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 1
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 10)
+	bPos (merged): 1
+	mismatches: 0
+haystackFiberSeqNo (in original haystack): 0
+YAGGAGGAGG	TTSFIBER substring
+AAGGAGGAGG	TFOSUFFIX substring
+
+Seed: 
+	AGGAGGAGG
+MaxSeed Length: 				9
+MaxSeed Position (mergedHaystack): 	2 - 10
+
+Original seed: Seed<Simple, TConfig>(2, 71, 10, 79, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAGG
+seedQuery: AGGAGGAGG
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+seedFiber: AYAGGAGGAGGGA
+seedQuery: AAAGGAGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	70 - 79
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 71 - 79
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+	hash: -150
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAGGGAYGGA
+seedQuery: AGGAGGAGGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	70 - 79
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 71 - 79
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+	hash: 1314
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): NAGGGAGGGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): NANAGANAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGGGAGGGAA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAAAAAGAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 42
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GANAGGGANA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAAAGAGAAA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 1
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 1(from 2) for bPos: 63
+
+--> Found valid match @ 
+	(#nr, merged ePos): (0, 72)
+	bPos (merged): 63
+	mismatches: 1
+haystackFiberSeqNo (in original haystack): 1
+GAAAGGGAAA	TTSFIBER substring
+GAAAGAGAAA	TFOSUFFIX substring
+
+Seed: 
+	GAAAG
+MaxSeed Length: 				5
+MaxSeed Position (mergedHaystack): 	63 - 67
+
+Original seed: Seed<Simple, TConfig>(11, 62, 15, 66, lower diag = 51, upper diag = 51)
+seedFiber: GAAAG
+seedQuery: GAAAG
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(10, 61, 16, 67, lower diag = 51, upper diag = 51)
+seedFiber: GGAAAG
+seedQuery: AGAAAG
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	62 - 71
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 62 - 66
+===>>> New seed is added to map: Seed<Simple, TConfig>(10, 61, 16, 67, lower diag = 51, upper diag = 51)
+	hash: 6426
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 1
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(11, 62, 22, 73, lower diag = 51, upper diag = 51)
+seedFiber: GAAAGGGAAAG
+seedQuery: GAAAGAGAAAG
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	62 - 71
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 62 - 66
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(11, 62, 22, 73, lower diag = 51, upper diag = 51)
+	hash: 7431
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 1
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AAAGAGANAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGAGAGANA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGANAGAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GANAGGGAGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGGAGGAGGG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 3
+
+Iteration #0 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 1
+
+Iteration #1 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 2
+
+--> Found valid match @ 
+	(#nr, merged ePos): (1, 11)
+	bPos (merged): 2
+	mismatches: 0
+haystackFiberSeqNo (in original haystack): 0
+AGGAGGAGGG	TTSFIBER substring
+AGGAGGAGGG	TFOSUFFIX substring
+
+Seed: 
+	AGGAGGAGGG
+MaxSeed Length: 				10
+MaxSeed Position (mergedHaystack): 	2 - 11
+
+Original seed: Seed<Simple, TConfig>(2, 71, 11, 80, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAGGG
+seedQuery: AGGAGGAGGG
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+seedFiber: AYAGGAGGAGGGA
+seedQuery: AAAGGAGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	71 - 80
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 71 - 80
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 69, 13, 82, lower diag = 69, upper diag = 69)
+	hash: -150
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+seedFiber: AGGAGGAGGGAYGGA
+seedQuery: AGGAGGAGGGAGGGA
+needle (tfo - isparallel): 0			GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+q-gram pos in tfo: 	71 - 80
+tfo sequence id (index): 		0
+MaxSeed P (global suffixQGram): 71 - 80
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(2, 71, 17, 86, lower diag = 69, upper diag = 69)
+	hash: 1314
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+Iteration #2 =====================================
+getHaystackFiberSeqNo: 0(from 2) for bPos: 3
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAGAGANAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAGANAGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAGAAAGGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGANAGAGAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAGAGANAN
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGAGANANAG
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGANAGAGAN
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): GAGAGAAAGA
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+
+
+----------------------------------------
+----------- NEW QGRAM-SUFFIX -----------
+----------------------------------------
+current suffix (length == 10): AGANANAGAN
+current target (length == 88):0402202202220422024200220204000422022242020000024020240402002022000222000200040002200042
+Number of hits (numLocations): 0
+bte ============ HIT ============ 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 69
+hit.getHitLength() 13
+hit.getHstId() 0
+hit.getHstkPos() 0
+tfoSet[hit.getNdlSeqNo()]: GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+value(ttsSet,hit.getHstId()): AYAGGAGGAGGGAYGGAGYGAAGGAGAYAAAYGGAGGGYGAGAAAAAGYAGA
+totalNumberOfMatches:7
+============ HIT ============ 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 71
+hit.getHitLength() 15
+hit.getHstId() 0
+hit.getHstkPos() 2
+tfoSet[hit.getNdlSeqNo()]: GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+value(ttsSet,hit.getHstId()): AYAGGAGGAGGGAYGGAGYGAAGGAGAYAAAYGGAGGGYGAGAAAAAGYAGA
+totalNumberOfMatches:18
+============ HIT ============ 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 20
+hit.getHitLength() 6
+hit.getHstId() 0
+hit.getHstkPos() 7
+tfoSet[hit.getNdlSeqNo()]: GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+value(ttsSet,hit.getHstId()): AYAGGAGGAGGGAYGGAGYGAAGGAGAYAAAYGGAGGGYGAGAAAAAGYAGA
+totalNumberOfMatches:0
+============ HIT ============ 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 21
+hit.getHitLength() 10
+hit.getHstId() 0
+hit.getHstkPos() 8
+tfoSet[hit.getNdlSeqNo()]: GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+value(ttsSet,hit.getHstId()): AYAGGAGGAGGGAYGGAGYGAAGGAGAYAAAYGGAGGGYGAGAAAAAGYAGA
+totalNumberOfMatches:1
+============ HIT ============ 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 21
+hit.getHitLength() 8
+hit.getHstId() 0
+hit.getHstkPos() 30
+tfoSet[hit.getNdlSeqNo()]: GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+value(ttsSet,hit.getHstId()): AYAGGAGGAGGGAYGGAGYGAAGGAGAYAAAYGGAGGGYGAGAAAAAGYAGA
+totalNumberOfMatches:0
+============ HIT ============ 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 23
+hit.getHitLength() 11
+hit.getHstId() 0
+hit.getHstkPos() 32
+tfoSet[hit.getNdlSeqNo()]: GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+value(ttsSet,hit.getHstId()): AYAGGAGGAGGGAYGGAGYGAAGGAGAYAAAYGGAGGGYGAGAAAAAGYAGA
+totalNumberOfMatches:3
+============ HIT ============ 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 61
+hit.getHitLength() 6
+hit.getHstId() 1
+hit.getHstkPos() 10
+tfoSet[hit.getNdlSeqNo()]: GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+value(ttsSet,hit.getHstId()): GYAYAGAAGAGGAAAGGGAAAGAAAYAAAGGAAAYG
+totalNumberOfMatches:0
+============ HIT ============ 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 62
+hit.getHitLength() 11
+hit.getHstId() 1
+hit.getHstkPos() 11
+tfoSet[hit.getNdlSeqNo()]: GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+value(ttsSet,hit.getHstId()): GYAYAGAAGAGGAAAGGGAAAGAAAYAAAGGAAAYG
+totalNumberOfMatches:3
+============ HIT ============ 
+hit.getNdlSeqNo() 0
+hit.getNdlPos() 68
+hit.getHitLength() 7
+hit.getHstId() 1
+hit.getHstkPos() 17
+tfoSet[hit.getNdlSeqNo()]: GANAGAAAAAGAGANAGGGANAGGGAGGGAGAGAGANANAGANAGAGAGANAGAGANAGAGAGAAAGAGAAAGGAGGAGGGAGGGAA
+value(ttsSet,hit.getHstId()): GYAYAGAAGAGGAAAGGGAAAGAAAYAAAGGAAAYG
+totalNumberOfMatches:0
+yyu ### Reverse search
+

@@ -52,27 +52,27 @@
 - runtime mode : 0 = serial
 *************************************************************
 *** Log messages:
-[04/27/16 19:36:58] * Started checking duplex file
-[04/27/16 19:36:58] * Finished checking duplex file
-[04/27/16 19:36:58] * Started reading single-stranded file:../data/tfo_1.data
-[04/27/16 19:36:58] * Finished reading single-stranded file (1 sequences read)
-[04/27/16 19:36:58] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
-[04/27/16 19:36:58] * Finished detecting TFOs within 6.9e-05 seconds (1 TFOs detected)
-[04/27/16 19:36:58] * Started searching for triplexes
-[04/27/16 19:36:58] * Processing ../data/tts_1.data
-[04/27/16 19:36:58] * Finished processing ../data/tts_1.data
+[05/03/16 19:23:25] * Started checking duplex file
+[05/03/16 19:23:25] * Finished checking duplex file
+[05/03/16 19:23:25] * Started reading single-stranded file:../data/tfo_1.data
+[05/03/16 19:23:25] * Finished reading single-stranded file (1 sequences read)
+[05/03/16 19:23:25] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
+[05/03/16 19:23:25] * Finished detecting TFOs within 0.000166 seconds (1 TFOs detected)
+[05/03/16 19:23:25] * Started searching for triplexes
+[05/03/16 19:23:25] * Processing ../data/tts_1.data
+[05/03/16 19:23:25] * Finished processing ../data/tts_1.data
 
-[04/27/16 19:36:58] * Finished searching for triplexes  within 0.000 seconds (summed over all cpus)
-[04/27/16 19:36:58] * Time for triplex search only (search + verify - triplex.h) 0.000 seconds (summed over all cpus)
-[04/27/16 19:36:58] * Time for ds IO reading/processing only 0.000 seconds (summed over all cpus)
-[04/27/16 19:36:58] * Time for `verifyAndStore` function in triplex.h 0.000 seconds (summed over all cpus)
-[04/27/16 19:36:58] * Time for `find` function in qgram-Finder 0.000 seconds (summed over all cpus)
-[04/27/16 19:36:58] * Time for `collectSeeds` function in gardener 0.000 seconds (summed over all cpus)
-[04/27/16 19:36:58] * Time for `collectSeeds LOOP` function in gardener 0.000 seconds (summed over all cpus)
-[04/27/16 19:36:58] * Time for `collectSeeds FreeSpace` function in gardener 0.000 seconds (summed over all cpus)
-[04/27/16 19:36:58] * Time for `collectSeeds find loop cnt` function in gardener 0 seconds (summed over all cpus)
-[04/27/16 19:36:58] * Time for `_find` function in gardener 0.000 seconds (summed over all cpus)
-[04/27/16 19:36:58] * Time for `_putSeedsInMap` function in gardener 0.000 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Finished searching for triplexes  within 0.000 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Time for triplex search only (search + verify - triplex.h) 0.000 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Time for ds IO reading/processing only 0.000 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Time for `verifyAndStore` function in triplex.h 0.000 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Time for `find` function in qgram-Finder 0.000 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Time for `collectSeeds` function in gardener 0.000 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Time for `collectSeeds LOOP` function in gardener 0.000 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Time for `collectSeeds FreeSpace` function in gardener 0.000 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Time for `collectSeeds find loop cnt` function in gardener 0 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Time for `_find` function in gardener 0.000 seconds (summed over all cpus)
+[05/03/16 19:23:25] * Time for `_putSeedsInMap` function in gardener 0.000 seconds (summed over all cpus)
 
-[04/27/16 19:36:58] * Exit without errors 
-[04/27/16 19:36:58] * Finished program within 0.000 seconds
+[05/03/16 19:23:25] * Exit without errors 
+[05/03/16 19:23:25] * Finished program within 0.001 seconds
