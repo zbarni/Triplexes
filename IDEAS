@@ -7,5 +7,10 @@ Useful algorithms / problems
 
 
 === TO TEST ===
-1) several tts sequences in input file
-2) different c-s (consecutive errors, not yet impl.?)
+Y 1) several tts sequences in input file
+  2) different c-s (consecutive errors, not yet impl.?)
+Y 3) forward reverse stuff
+
+=== WARNING !!! ===
+1. if mismatch occurs at the ends the initial seed, handle it! (although it's discarded at the end, possibly)
+2. TODO!! keep mad of max seeds as these are quite redundant, check before extending them

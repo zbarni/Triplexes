@@ -1,0 +1,3 @@
+open ./tmp_chr1_brute_l25_c1_e15_truncated.fulldna.out
+Starting on duplex file mm9.chr1.fa
+rename temorary file ./tmp_chr1_brute_l25_c1_e15_truncated.fulldna.out to ./chr1_brute_l25_c1_e15_truncated.fulldna.out

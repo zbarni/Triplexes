@@ -3227,7 +3227,7 @@ namespace SEQAN_NAMESPACE_MAIN
 						tmp_error = cnt_interrupt_chars;
 						// add match straight away if all matches should be reported
 						if (options.allMatches){
-#ifdef TRIPLEX_DEBUG		
+#ifdef TRIPLEX_DEBUG
 							::std::cerr << "add match:" << infix(pattern,tmp_start,tmp_end) << ::std::endl;
 							double tmp_cnt_filter_chars = 0.0;
 							double tmp_cnt_interrupt_chars = 0.0;
@@ -3253,7 +3253,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					}
 				}
 				if (is_match && tmp_end > covered_end){
-#ifdef TRIPLEX_DEBUG		
+#ifdef TRIPLEX_DEBUG
 					::std::cerr << "add match:" << infix(pattern,tmp_start,tmp_end) << ::std::endl;
 					double tmp_cnt_filter_chars = 0.0;
 					double tmp_cnt_interrupt_chars = 0.0;
@@ -3866,6 +3866,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				TPos ttsStart;
 				TPos ttsEnd;
 				char strand;
+#ifdef TRIPLEX_DEBUG
 				cout << "============ HIT ============ " << endl << std::flush;
 				cout << "hit.getNdlSeqNo() " << hit.getNdlSeqNo() << endl
 						<< "hit.getNdlPos() " << hit.getNdlPos() << endl
@@ -3874,12 +3875,13 @@ namespace SEQAN_NAMESPACE_MAIN
 						<< "hit.getHstkPos() " << hit.getHstkPos() << endl << std::flush;
 				cout << "tfoSet[hit.getNdlSeqNo()]: " << tfoSet[hit.getNdlSeqNo()] << endl <<
 						"value(ttsSet,hit.getHstId()): " << value(ttsSet,hit.getHstId()) << endl << std::flush;
+#endif
 				THost tfo = infix(ttsString(tfoSet[hit.getNdlSeqNo()]), hit.getNdlPos(), hit.getNdlPos() + hit.getHitLength());
 				THost triplex(infix(ttsString(value(ttsSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
 
 #ifdef TRIPLEX_DEBUG
 				::std::cerr << "transform (triplex): " << triplex << :: std::endl;
-				::std::cerr << "transform (tts): " << tts << :: std::endl;
+				::std::cerr << "transform (tfo): " << tfo << :: std::endl;
 #endif
 				THostIter itTTS=begin(triplex);
 				for (THostIter itTFO=begin(tfo); itTFO!=end(tfo); ++itTFO,++itTTS){
@@ -3911,7 +3913,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					bool reduceSet = false; // don't merge overlapping triplexes
 					totalNumberOfMatches += _filterWithGuanineAndErrorRate(triplexSet, ttsfilter, 'G', 'Y', reduceSet, TRIPLEX_ORIENTATION_BOTH, options, TTS());
 				}
-#ifndef TRIPLEX_DEBUG
+#ifdef TRIPLEX_DEBUG
 				::std::cerr << "totalNumberOfMatches:" << totalNumberOfMatches << ::std::endl;
 #endif
 				// skip parts below if no matches have been detected
@@ -3964,6 +3966,14 @@ namespace SEQAN_NAMESPACE_MAIN
 								 guanines
 								 );
 					appendValue(matches, match);
+//					cout << "====++====== MATCH =====++===== " << endl << std::flush;
+//					cout << "hit.getNdlSeqNo() " << hit.getNdlSeqNo() << endl
+//							<< "hit.getNdlPos() == tfoStart " << tfoStart << endl
+//							<< "tfoend " << tfoEnd << endl
+//							<< "ttsstart " << ttsStart << endl << std::flush
+//							<< "ttsend " << ttsEnd << endl << std::flush;
+//					cout << "tfoSet[hit.getNdlSeqNo()]: " << tfoSet[hit.getNdlSeqNo()] << endl <<
+//							"value(ttsSet,hit.getHstId()): " << value(ttsSet,hit.getHstId()) << endl << std::flush;
 				}
 				// save potential
 				TPotKey pkey(getSequenceNo(value(tfoSet,hit.getNdlSeqNo())), getSequenceNo(value(ttsSet,hit.getHstId())));
@@ -4183,9 +4193,7 @@ namespace SEQAN_NAMESPACE_MAIN
     	        	SEQAN_PROTIMESTART(time_search);
     	        	_filterTriplexMyers(gardenerForward, ttsSetForward, index, tfoMotifSet, options);
     	        	options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
-    	        	cout << "bte " << std::flush;
     	        	_verifyAndStoreMyers(matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, duplexSeqNoWithinFile, true, options);
-    	        	cout << "yyu " << std::flush;
     	        }
     	        eraseAll(gardenerForward);
     		}
@@ -4196,9 +4204,7 @@ namespace SEQAN_NAMESPACE_MAIN
     				SEQAN_PROTIMESTART(time_search);
     				_filterTriplexMyers(gardenerReverse, ttsSetReverse, index, tfoMotifSet, options);
     				options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
-    				cout << "q12 " << std::flush;
     				_verifyAndStoreMyers(matches, potentials, gardenerReverse, tfoMotifSet, ttsSetReverse, duplexSeqNoWithinFile, false, options);
-    				cout << "q21 " << std::flush;
     			}
     			eraseAll(gardenerReverse);
     		}
