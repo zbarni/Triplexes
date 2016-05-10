@@ -17,21 +17,51 @@ TTS: 3'- GGAGAGGAGAGAGGG -5'
          |||||||*|||||||
 TFO: 5'- GGAGAGGGGAGAGGG -3'
 
-TFOsequence_0	3	13	TTSsequence_1	1	11	9	0.1	t3	R	-	A	0.6
-     5'- CTCTCCTCTC -3'
-TTS: 3'- GAGAGGAGAG -5'
-         |||*||||||
-TFO: 5'- GAGGGGAGAG -3'
+TFOsequence_0	3	15	TTSsequence_1	1	13	10	0.17	t3t10	R	-	A	0.58
+     5'- CTCTCCTCTCTC -3'
+TTS: 3'- GAGAGGAGAGAG -5'
+         |||*||||||*|
+TFO: 5'- GAGGGGAGAGGG -3'
 
-TFOsequence_0	0	10	TTSsequence_2	12	22	9	0.1	t2	R	+	A	0.6
-TFO: 3'- AGGGGAGAGG -5'
-         ||*|||||||
-TTS: 5'- AGAGGAGAGG -3'
-     3'- TCTCCTCTCC -5'
+TFOsequence_0	0	12	TTSsequence_2	10	22	10	0.17	t1t4	R	+	A	0.5
+TFO: 3'- AGAGGGGAGAGG -5'
+         |*||*|||||||
+TTS: 5'- AAAGAGGAGAGG -3'
+     3'- TTTCTCCTCTCC -5'
+
+TFOsequence_0	0	14	TTSsequence_2	15	29	12	0.14	t7t9	R	+	A	0.64
+TFO: 3'- GGAGAGGGGAGAGG -5'
+         |||||||*|*||||
+TTS: 5'- GGAGAGGAGGGAGG -3'
+     3'- CCTCTCCTCCCTCC -5'
+
+TFOsequence_0	1	11	TTSsequence_2	16	26	8	0.2	t3t8	R	+	A	0.6
+TFO: 3'- GAGGGGAGAG -5'
+         |||*||||*|
+TTS: 5'- GAGAGGAGGG -3'
+     3'- CTCTCCTCCC -5'
+
+TFOsequence_0	5	15	TTSsequence_2	21	31	8	0.2	t1t3	R	+	A	0.7
+TFO: 3'- GGGAGAGGGG -5'
+         |*|*||||||
+TTS: 5'- GAGGGAGGGG -3'
+     3'- CTCCCTCCCC -5'
 
 TFOsequence_0	5	15	TTSsequence_2	23	33	9	0.1	t5	R	+	A	0.8
 TFO: 3'- GGGAGAGGGG -5'
          |||||*||||
+TTS: 5'- GGGAGGGGGG -3'
+     3'- CCCTCCCCCC -5'
+
+TFOsequence_0	3	13	TTSsequence_2	23	33	8	0.2	t1t8	R	+	A	0.7
+TFO: 3'- GAGAGGGGAG -5'
+         |*||||||*|
+TTS: 5'- GGGAGGGGGG -3'
+     3'- CCCTCCCCCC -5'
+
+TFOsequence_0	5	15	TTSsequence_2	23	33	8	0.2	o3o5	M	+	A	0.8
+TFO: 3'- GGGaGaGGGG -5'
+         |||*|*||||
 TTS: 5'- GGGAGGGGGG -3'
      3'- CCCTCCCCCC -5'
 

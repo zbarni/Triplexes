@@ -2129,7 +2129,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			eR = min(options.errorRate, max(double(options.maximalError)/options.minLength, 0.0));
 		}
 //		assert(tfoSet[0].isTFO);
-		plantMyers(gardener, haystack, index, tfoSet, eR, options.minLength, options.maxInterruptions+1, SINGLE_WORKER() );
+		plantMyers(gardener, haystack, index, tfoSet, eR, options.minLength, options.maxInterruptions, SINGLE_WORKER() );
 	}
 	
 	

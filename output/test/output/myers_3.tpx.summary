@@ -1,13 +1,2 @@
 # Duplex-ID	Sequence-ID	Total (abs)	Total (rel)	GA (abs)	GA (rel)	TC (abs)	TC (rel)	GT (abs)	GT (rel)
-TTSsequence_0	TFOsequence_0	7	0.02	7	0.02	0	0	0	0	
-TTSsequence_0	TFOsequence_1	7	0.02	7	0.02	0	0	0	0	
-TTSsequence_0	TFOsequence_2	7	0.00746	7	0.00746	0	0	0	0	
-TTSsequence_1	TFOsequence_0	23	0.0116	23	0.0116	0	0	0	0	
-TTSsequence_1	TFOsequence_1	23	0.0116	23	0.0116	0	0	0	0	
-TTSsequence_1	TFOsequence_2	23	0.00287	23	0.00287	0	0	0	0	
-TTSsequence_2	TFOsequence_0	17	0.00859	17	0.00859	0	0	0	0	
-TTSsequence_2	TFOsequence_1	17	0.00859	17	0.00859	0	0	0	0	
-TTSsequence_2	TFOsequence_2	17	0.00212	17	0.00212	0	0	0	0	
-TTSsequence_4	TFOsequence_0	7	0.02	7	0.02	0	0	0	0	
-TTSsequence_4	TFOsequence_1	7	0.02	7	0.02	0	0	0	0	
-TTSsequence_4	TFOsequence_2	7	0.00746	7	0.00746	0	0	0	0	
+TTSsequence_2	TFOsequence_2	9	0.023	9	0.023	0	0	0	0	

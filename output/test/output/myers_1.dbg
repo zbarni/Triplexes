@@ -5,317 +5,646 @@
 Merged haystack has length: 15
 Fibers in merged haystack: 
 seq no: 0 (len = 15): GGGAGAGAGGAGAGG
-Segment map / vector:	0 x needle: #0		GGGAGAGGGGAGAGG
-fiber: #0		GGGAGAGAGGAGAGG
+Segment map / vector:	0 x 
 
+Number of hits (numLocations): 0
 
-----------------------------------------
------------ NEW QGRAM-SUFFIX -----------
-----------------------------------------
-current suffix (length == 10): AGAGGGGAGA
-current target (length == 15):222020202202022
-Number of hits (numLocations): 1
-
-Iteration #0 =====================================
+Number of hits (numLocations): 4
+getHaystackFiberSeqNo: 0(from 1) for bPos: 2
 getHaystackFiberSeqNo: 0(from 1) for bPos: 3
 
---> Found valid match @ 
-	(#nr, merged ePos): (0, 12)
-	bPos (merged): 3
-	mismatches: 1
-haystackFiberSeqNo (in original haystack): 0
-AGAGAGGAGA	TTSFIBER substring
-AGAGGGGAGA	TFOSUFFIX substring
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	AGAGAGGAGA	tts
+	AGAGGGGAGA	tfo
 
-Seed: 
+Max. seed: 
 	GGAGA
-MaxSeed Length: 				5
-MaxSeed Position (mergedHaystack): 	8 - 12
+MaxSeed Length: 5
+MaxSeed Position (mergedHaystack): 8 - 12
 
 Original seed: Seed<Simple, TConfig>(8, 8, 12, 12, lower diag = 0, upper diag = 0)
+Actual right ends (including this pos.): 12, 12
 seedFiber: GGAGA
 seedQuery: GGAGA
+lMmOffsets: 1 8 
+rMmOffsets: 2 
+bDim0, bDim1:0, 0
+eDim0, eDim1:14, 14
+eDim0, eDim1 after skipping:14, 14
+bDim0, bDim1 after skipping:0, 0
+diagonal (+1 incl.): 15
+#mismatches 1, localK: 3
+previousR: -1
+l: 1, r: 0
+valid & new seed extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+bDim0, bDim1:7, 7
+eDim0, eDim1:14, 14
+skip 1 bDim* for FREE, they differ
+eDim0, eDim1 after skipping:14, 14
+bDim0, bDim1 after skipping:8, 8
+diagonal (+1 incl.): 7
+#mismatches 0, localK: 2
+previousR: 0
+r <= previousR: 0 <= 0
 ++++++++++++++++++++++++++++++++++++++++++++++++
 one seed after extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedFiber: GGGAGAGAGGAGAGG
-seedQuery: GGGAGAGGGGAGAGG
+Match: 
+	seedFiber: GGGAGAGAGGAGAGG
+	seedQuery: GGGAGAGGGGAGAGG
 needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
-q-gram pos in tfo: 	3 - 12
+match length: 15
 tfo sequence id (index): 		0
-MaxSeed P (global suffixQGram): 8 - 12
++++++ ------- +++++++ ------ ++++++ will try to add new? seed
 ===>>> New seed is added to map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
 	hash: 144
 	tfoSeqNo: 0
 	haystackFiberSeqNo: 0
-
-
-----------------------------------------
------------ NEW QGRAM-SUFFIX -----------
-----------------------------------------
-current suffix (length == 10): GAGAGGGGAG
-current target (length == 15):222020202202022
-Number of hits (numLocations): 2
-
-Iteration #0 =====================================
-getHaystackFiberSeqNo: 0(from 1) for bPos: 2
-
---> Found valid match @ 
-	(#nr, merged ePos): (0, 11)
-	bPos (merged): 2
-	mismatches: 1
-haystackFiberSeqNo (in original haystack): 0
-GAGAGAGGAG	TTSFIBER substring
-GAGAGGGGAG	TFOSUFFIX substring
-
-Seed: 
-	GAGAG
-MaxSeed Length: 				5
-MaxSeed Position (mergedHaystack): 	2 - 6
-
-Original seed: Seed<Simple, TConfig>(2, 2, 6, 6, lower diag = 0, upper diag = 0)
-seedFiber: GAGAG
-seedQuery: GAGAG
-++++++++++++++++++++++++++++++++++++++++++++++++
-one seed after extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedFiber: GGGAGAGAGGAGAGG
-seedQuery: GGGAGAGGGGAGAGG
-needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
-q-gram pos in tfo: 	2 - 11
-tfo sequence id (index): 		0
-MaxSeed P (global suffixQGram): 2 - 6
-== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-	hash: 144
-	tfoSeqNo: 0
-	haystackFiberSeqNo: 0
-
-Iteration #1 =====================================
++++ adding new hit for matchKey<int,int> : 0, 15
 getHaystackFiberSeqNo: 0(from 1) for bPos: 4
-
---> Found valid match @ 
-	(#nr, merged ePos): (1, 13)
-	bPos (merged): 4
-	mismatches: 1
-haystackFiberSeqNo (in original haystack): 0
-GAGAGGAGAG	TTSFIBER substring
-GAGAGGGGAG	TFOSUFFIX substring
-
-Seed: 
-	GAGAGG
-MaxSeed Length: 				6
-MaxSeed Position (mergedHaystack): 	4 - 9
-
-Original seed: Seed<Simple, TConfig>(4, 2, 9, 7, lower diag = -2, upper diag = -2)
-seedFiber: GAGAGG
-seedQuery: GAGAGG
-++++++++++++++++++++++++++++++++++++++++++++++++
-one seed after extension: Seed<Simple, TConfig>(2, 0, 10, 8, lower diag = -2, upper diag = -2)
-seedFiber: GAGAGAGG
-seedQuery: GGGAGAGG
-needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
-q-gram pos in tfo: 	2 - 11
-tfo sequence id (index): 		0
-MaxSeed P (global suffixQGram): 2 - 7
-===>>> New seed is added to map: Seed<Simple, TConfig>(2, 0, 10, 8, lower diag = -2, upper diag = -2)
-	hash: 259
-	tfoSeqNo: 0
-	haystackFiberSeqNo: 0
-++++++++++++++++++++++++++++++++++++++++++++++++
-one seed after extension: Seed<Simple, TConfig>(4, 2, 14, 12, lower diag = -2, upper diag = -2)
-seedFiber: GAGAGGAGAG
-seedQuery: GAGAGGGGAG
-needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
-q-gram pos in tfo: 	2 - 11
-tfo sequence id (index): 		0
-MaxSeed P (global suffixQGram): 2 - 7
-===>>> New seed is added to map: Seed<Simple, TConfig>(4, 2, 14, 12, lower diag = -2, upper diag = -2)
-	hash: 605
-	tfoSeqNo: 0
-	haystackFiberSeqNo: 0
-
-
-----------------------------------------
------------ NEW QGRAM-SUFFIX -----------
-----------------------------------------
-current suffix (length == 10): GAGGGGAGAG
-current target (length == 15):222020202202022
-Number of hits (numLocations): 1
-
-Iteration #0 =====================================
-getHaystackFiberSeqNo: 0(from 1) for bPos: 4
-
---> Found valid match @ 
-	(#nr, merged ePos): (0, 13)
-	bPos (merged): 4
-	mismatches: 1
-haystackFiberSeqNo (in original haystack): 0
-GAGAGGAGAG	TTSFIBER substring
-GAGGGGAGAG	TFOSUFFIX substring
-
-Seed: 
-	GGAGAG
-MaxSeed Length: 				6
-MaxSeed Position (mergedHaystack): 	8 - 13
-
-Original seed: Seed<Simple, TConfig>(8, 8, 13, 13, lower diag = 0, upper diag = 0)
-seedFiber: GGAGAG
-seedQuery: GGAGAG
-++++++++++++++++++++++++++++++++++++++++++++++++
-one seed after extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedFiber: GGGAGAGAGGAGAGG
-seedQuery: GGGAGAGGGGAGAGG
-needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
-q-gram pos in tfo: 	4 - 13
-tfo sequence id (index): 		0
-MaxSeed P (global suffixQGram): 8 - 13
-== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-	hash: 144
-	tfoSeqNo: 0
-	haystackFiberSeqNo: 0
-
-
-----------------------------------------
------------ NEW QGRAM-SUFFIX -----------
-----------------------------------------
-current suffix (length == 10): AGGGGAGAGG
-current target (length == 15):222020202202022
-Number of hits (numLocations): 1
-
-Iteration #0 =====================================
 getHaystackFiberSeqNo: 0(from 1) for bPos: 5
 
---> Found valid match @ 
-	(#nr, merged ePos): (0, 14)
-	bPos (merged): 5
-	mismatches: 1
-haystackFiberSeqNo (in original haystack): 0
-AGAGGAGAGG	TTSFIBER substring
-AGGGGAGAGG	TFOSUFFIX substring
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	AGAGGAGAGG	tts
+	AGAGGGGAGA	tfo
 
-Seed: 
-	GGAGAGG
-MaxSeed Length: 				7
-MaxSeed Position (mergedHaystack): 	8 - 14
+Max. seed: 
+	AGAGG
+MaxSeed Length: 5
+MaxSeed Position (mergedHaystack): 5 - 9
 
-Original seed: Seed<Simple, TConfig>(8, 8, 14, 14, lower diag = 0, upper diag = 0)
-seedFiber: GGAGAGG
-seedQuery: GGAGAGG
+Original seed: Seed<Simple, TConfig>(5, 3, 9, 7, lower diag = -2, upper diag = -2)
+Actual right ends (including this pos.): 9, 7
+seedFiber: AGAGG
+seedQuery: AGAGG
+lMmOffsets: 2 3 
+rMmOffsets: 1 5 
+bDim0, bDim1:2, 0
+eDim0, eDim1:14, 12
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:13, 11
+bDim0, bDim1 after skipping:2, 0
+diagonal (+1 incl.): 12
+#mismatches 2, localK: 2
+previousR: -1
+l: 1, r: 1
+valid & new seed extension: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+bDim0, bDim1:2, 0
+eDim0, eDim1:10, 8
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:9, 7
+bDim0, bDim1 after skipping:2, 0
+diagonal (+1 incl.): 8
+#mismatches 1, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
+bDim0, bDim1:3, 1
+eDim0, eDim1:14, 12
+skip 1 bDim* for FREE, they differ
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:13, 11
+bDim0, bDim1 after skipping:4, 2
+diagonal (+1 incl.): 10
+#mismatches 1, localK: 2
+previousR: 1
+r <= previousR: 1 <= 1
+bDim0, bDim1:3, 1
+eDim0, eDim1:10, 8
+skip 1 bDim* for FREE, they differ
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:9, 7
+bDim0, bDim1 after skipping:4, 2
+diagonal (+1 incl.): 6
+#mismatches 0, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+Match: 
+	seedFiber: GAGAGAGGAGAG
+	seedQuery: GGGAGAGGGGAG
+needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
+match length: 12
+tfo sequence id (index): 		0
++++++ ------- +++++++ ------ ++++++ will try to add new? seed
+===>>> New seed is added to map: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+	hash: 375
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
++++ adding new hit for matchKey<int,int> : 2, 14
+
+Number of hits (numLocations): 5
+getHaystackFiberSeqNo: 0(from 1) for bPos: 1
+getHaystackFiberSeqNo: 0(from 1) for bPos: 2
+
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	GAGAGAGGAG	tts
+	GAGAGGGGAG	tfo
+
+Max. seed: 
+	GAGAG
+MaxSeed Length: 5
+MaxSeed Position (mergedHaystack): 2 - 6
+
+Original seed: Seed<Simple, TConfig>(2, 2, 6, 6, lower diag = 0, upper diag = 0)
+Actual right ends (including this pos.): 6, 6
+seedFiber: GAGAG
+seedQuery: GAGAG
+lMmOffsets: 2 
+rMmOffsets: 1 8 
+bDim0, bDim1:0, 0
+eDim0, eDim1:14, 14
+eDim0, eDim1 after skipping:14, 14
+bDim0, bDim1 after skipping:0, 0
+diagonal (+1 incl.): 15
+#mismatches 1, localK: 3
+previousR: -1
+l: 0, r: 1
+valid & new seed extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+bDim0, bDim1:0, 0
+eDim0, eDim1:7, 7
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:6, 6
+bDim0, bDim1 after skipping:0, 0
+diagonal (+1 incl.): 7
+#mismatches 0, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
 ++++++++++++++++++++++++++++++++++++++++++++++++
 one seed after extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedFiber: GGGAGAGAGGAGAGG
-seedQuery: GGGAGAGGGGAGAGG
+Match: 
+	seedFiber: GGGAGAGAGGAGAGG
+	seedQuery: GGGAGAGGGGAGAGG
 needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
-q-gram pos in tfo: 	5 - 14
+match length: 15
 tfo sequence id (index): 		0
-MaxSeed P (global suffixQGram): 8 - 14
++++++ ------- +++++++ ------ ++++++ will try to add new? seed
 == XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
 	hash: 144
 	tfoSeqNo: 0
 	haystackFiberSeqNo: 0
+getHaystackFiberSeqNo: 0(from 1) for bPos: 3
+getHaystackFiberSeqNo: 0(from 1) for bPos: 4
 
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	GAGAGGAGAG	tts
+	GAGAGGGGAG	tfo
 
-----------------------------------------
------------ NEW QGRAM-SUFFIX -----------
-----------------------------------------
-current suffix (length == 10): GGAGAGGGGA
-current target (length == 15):222020202202022
-Number of hits (numLocations): 1
+Max. seed: 
+	GAGAGG
+MaxSeed Length: 6
+MaxSeed Position (mergedHaystack): 4 - 9
 
-Iteration #0 =====================================
-getHaystackFiberSeqNo: 0(from 1) for bPos: 1
+Original seed: Seed<Simple, TConfig>(4, 2, 9, 7, lower diag = -2, upper diag = -2)
+Actual right ends (including this pos.): 9, 7
+seedFiber: GAGAGG
+seedQuery: GAGAGG
+lMmOffsets: 1 2 
+rMmOffsets: 1 5 
+bDim0, bDim1:2, 0
+eDim0, eDim1:14, 12
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:13, 11
+bDim0, bDim1 after skipping:2, 0
+diagonal (+1 incl.): 12
+#mismatches 2, localK: 2
+previousR: -1
+l: 1, r: 1
+valid & new seed extension: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+bDim0, bDim1:2, 0
+eDim0, eDim1:10, 8
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:9, 7
+bDim0, bDim1 after skipping:2, 0
+diagonal (+1 incl.): 8
+#mismatches 1, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
+bDim0, bDim1:3, 1
+eDim0, eDim1:14, 12
+skip 1 bDim* for FREE, they differ
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:13, 11
+bDim0, bDim1 after skipping:4, 2
+diagonal (+1 incl.): 10
+#mismatches 1, localK: 2
+previousR: 1
+r <= previousR: 1 <= 1
+bDim0, bDim1:3, 1
+eDim0, eDim1:10, 8
+skip 1 bDim* for FREE, they differ
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:9, 7
+bDim0, bDim1 after skipping:4, 2
+diagonal (+1 incl.): 6
+#mismatches 0, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+Match: 
+	seedFiber: GAGAGAGGAGAG
+	seedQuery: GGGAGAGGGGAG
+needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
+match length: 12
+tfo sequence id (index): 		0
++++++ ------- +++++++ ------ ++++++ will try to add new? seed
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+	hash: 375
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+getHaystackFiberSeqNo: 0(from 1) for bPos: 5
 
---> Found valid match @ 
-	(#nr, merged ePos): (0, 10)
-	bPos (merged): 1
-	mismatches: 1
-haystackFiberSeqNo (in original haystack): 0
-GGAGAGAGGA	TTSFIBER substring
-GGAGAGGGGA	TFOSUFFIX substring
+Number of hits (numLocations): 4
+getHaystackFiberSeqNo: 0(from 1) for bPos: 3
+getHaystackFiberSeqNo: 0(from 1) for bPos: 4
 
-Seed: 
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	GAGAGGAGAG	tts
+	GAGGGGAGAG	tfo
+
+Max. seed: 
 	GGAGAG
-MaxSeed Length: 				6
-MaxSeed Position (mergedHaystack): 	1 - 6
+MaxSeed Length: 6
+MaxSeed Position (mergedHaystack): 8 - 13
 
-Original seed: Seed<Simple, TConfig>(1, 1, 6, 6, lower diag = 0, upper diag = 0)
+Original seed: Seed<Simple, TConfig>(8, 8, 13, 13, lower diag = 0, upper diag = 0)
+Actual right ends (including this pos.): 13, 13
 seedFiber: GGAGAG
 seedQuery: GGAGAG
+lMmOffsets: 1 8 
+rMmOffsets: 1 
+bDim0, bDim1:0, 0
+eDim0, eDim1:14, 14
+eDim0, eDim1 after skipping:14, 14
+bDim0, bDim1 after skipping:0, 0
+diagonal (+1 incl.): 15
+#mismatches 1, localK: 3
+previousR: -1
+l: 1, r: 0
+valid & new seed extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+bDim0, bDim1:7, 7
+eDim0, eDim1:14, 14
+skip 1 bDim* for FREE, they differ
+eDim0, eDim1 after skipping:14, 14
+bDim0, bDim1 after skipping:8, 8
+diagonal (+1 incl.): 7
+#mismatches 0, localK: 2
+previousR: 0
+r <= previousR: 0 <= 0
 ++++++++++++++++++++++++++++++++++++++++++++++++
 one seed after extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedFiber: GGGAGAGAGGAGAGG
-seedQuery: GGGAGAGGGGAGAGG
+Match: 
+	seedFiber: GGGAGAGAGGAGAGG
+	seedQuery: GGGAGAGGGGAGAGG
 needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
-q-gram pos in tfo: 	1 - 10
+match length: 15
 tfo sequence id (index): 		0
-MaxSeed P (global suffixQGram): 1 - 6
++++++ ------- +++++++ ------ ++++++ will try to add new? seed
 == XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
 	hash: 144
 	tfoSeqNo: 0
 	haystackFiberSeqNo: 0
+getHaystackFiberSeqNo: 0(from 1) for bPos: 5
 
-
-----------------------------------------
------------ NEW QGRAM-SUFFIX -----------
-----------------------------------------
-current suffix (length == 10): GGGAGAGGGG
-current target (length == 15):222020202202022
-Number of hits (numLocations): 1
-
-Iteration #0 =====================================
+Number of hits (numLocations): 3
 getHaystackFiberSeqNo: 0(from 1) for bPos: 0
 
---> Found valid match @ 
-	(#nr, merged ePos): (0, 9)
-	bPos (merged): 0
-	mismatches: 1
-haystackFiberSeqNo (in original haystack): 0
-GGGAGAGAGG	TTSFIBER substring
-GGGAGAGGGG	TFOSUFFIX substring
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	GGGAGAGAGG	tts
+	AGGGGAGAGG	tfo
 
-Seed: 
-	GGGAGAG
-MaxSeed Length: 				7
-MaxSeed Position (mergedHaystack): 	0 - 6
+Max. seed: 
+	GAGAGG
+MaxSeed Length: 6
+MaxSeed Position (mergedHaystack): 4 - 9
 
-Original seed: Seed<Simple, TConfig>(0, 0, 6, 6, lower diag = 0, upper diag = 0)
-seedFiber: GGGAGAG
-seedQuery: GGGAGAG
+Original seed: Seed<Simple, TConfig>(4, 9, 9, 14, lower diag = 5, upper diag = 5)
+Actual right ends (including this pos.): 9, 14
+seedFiber: GAGAGG
+seedQuery: GAGAGG
+lMmOffsets: 1 4 
+rMmOffsets: 0 
+bDim0, bDim1:0, 5
+eDim0, eDim1:9, 14
+skip 1 bDim* for FREE, they differ
+eDim0, eDim1 after skipping:9, 14
+bDim0, bDim1 after skipping:1, 6
+diagonal (+1 incl.): 9
+#mismatches 1, localK: 2
+previousR: -1
+length of match is: 9 < 10
+bDim0, bDim1:3, 8
+eDim0, eDim1:9, 14
+skip 1 bDim* for FREE, they differ
+eDim0, eDim1 after skipping:9, 14
+bDim0, bDim1 after skipping:4, 9
+diagonal (+1 incl.): 6
+#mismatches 0, localK: 2
+previousR: -1
+length of match is: 6 < 10
+getHaystackFiberSeqNo: 0(from 1) for bPos: 4
+getHaystackFiberSeqNo: 0(from 1) for bPos: 5
+
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	AGAGGAGAGG	tts
+	AGGGGAGAGG	tfo
+
+Max. seed: 
+	GGAGAGG
+MaxSeed Length: 7
+MaxSeed Position (mergedHaystack): 8 - 14
+
+Original seed: Seed<Simple, TConfig>(8, 8, 14, 14, lower diag = 0, upper diag = 0)
+Actual right ends (including this pos.): 14, 14
+seedFiber: GGAGAGG
+seedQuery: GGAGAGG
+lMmOffsets: 1 8 
+rMmOffsets: 0 
+bDim0, bDim1:0, 0
+eDim0, eDim1:14, 14
+eDim0, eDim1 after skipping:14, 14
+bDim0, bDim1 after skipping:0, 0
+diagonal (+1 incl.): 15
+#mismatches 1, localK: 3
+previousR: -1
+l: 1, r: 0
+valid & new seed extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+bDim0, bDim1:7, 7
+eDim0, eDim1:14, 14
+skip 1 bDim* for FREE, they differ
+eDim0, eDim1 after skipping:14, 14
+bDim0, bDim1 after skipping:8, 8
+diagonal (+1 incl.): 7
+#mismatches 0, localK: 2
+previousR: 0
+r <= previousR: 0 <= 0
 ++++++++++++++++++++++++++++++++++++++++++++++++
 one seed after extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
-seedFiber: GGGAGAGAGGAGAGG
-seedQuery: GGGAGAGGGGAGAGG
+Match: 
+	seedFiber: GGGAGAGAGGAGAGG
+	seedQuery: GGGAGAGGGGAGAGG
 needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
-q-gram pos in tfo: 	0 - 9
+match length: 15
 tfo sequence id (index): 		0
-MaxSeed P (global suffixQGram): 0 - 6
++++++ ------- +++++++ ------ ++++++ will try to add new? seed
 == XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
 	hash: 144
 	tfoSeqNo: 0
 	haystackFiberSeqNo: 0
-q12 ============ HIT ============ 
-hit.getNdlSeqNo() 0
-hit.getNdlPos() 0
-hit.getHitLength() 15
-hit.getHstId() 0
-hit.getHstkPos() 0
-tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
-value(ttsSet,hit.getHstId()): GGGAGAGAGGAGAGG
-totalNumberOfMatches:21
-============ HIT ============ 
-hit.getNdlSeqNo() 0
-hit.getNdlPos() 0
-hit.getHitLength() 8
-hit.getHstId() 0
-hit.getHstkPos() 2
-tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
-value(ttsSet,hit.getHstId()): GGGAGAGAGGAGAGG
-totalNumberOfMatches:0
-============ HIT ============ 
-hit.getNdlSeqNo() 0
-hit.getNdlPos() 2
-hit.getHitLength() 10
-hit.getHstId() 0
-hit.getHstkPos() 4
-tfoSet[hit.getNdlSeqNo()]: GGGAGAGGGGAGAGG
-value(ttsSet,hit.getHstId()): GGGAGAGAGGAGAGG
-totalNumberOfMatches:1
-q21 
+
+Number of hits (numLocations): 4
+getHaystackFiberSeqNo: 0(from 1) for bPos: 0
+getHaystackFiberSeqNo: 0(from 1) for bPos: 1
+
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	GGAGAGAGGA	tts
+	GGAGAGGGGA	tfo
+
+Max. seed: 
+	GGAGAG
+MaxSeed Length: 6
+MaxSeed Position (mergedHaystack): 1 - 6
+
+Original seed: Seed<Simple, TConfig>(1, 1, 6, 6, lower diag = 0, upper diag = 0)
+Actual right ends (including this pos.): 6, 6
+seedFiber: GGAGAG
+seedQuery: GGAGAG
+lMmOffsets: 1 
+rMmOffsets: 1 8 
+bDim0, bDim1:0, 0
+eDim0, eDim1:14, 14
+eDim0, eDim1 after skipping:14, 14
+bDim0, bDim1 after skipping:0, 0
+diagonal (+1 incl.): 15
+#mismatches 1, localK: 3
+previousR: -1
+l: 0, r: 1
+valid & new seed extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+bDim0, bDim1:0, 0
+eDim0, eDim1:7, 7
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:6, 6
+bDim0, bDim1 after skipping:0, 0
+diagonal (+1 incl.): 7
+#mismatches 0, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+Match: 
+	seedFiber: GGGAGAGAGGAGAGG
+	seedQuery: GGGAGAGGGGAGAGG
+needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
+match length: 15
+tfo sequence id (index): 		0
++++++ ------- +++++++ ------ ++++++ will try to add new? seed
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+	hash: 144
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+getHaystackFiberSeqNo: 0(from 1) for bPos: 2
+getHaystackFiberSeqNo: 0(from 1) for bPos: 3
+
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	AGAGAGGAGA	tts
+	GGAGAGGGGA	tfo
+
+Max. seed: 
+	GAGAGG
+MaxSeed Length: 6
+MaxSeed Position (mergedHaystack): 4 - 9
+
+Original seed: Seed<Simple, TConfig>(4, 2, 9, 7, lower diag = -2, upper diag = -2)
+Actual right ends (including this pos.): 9, 7
+seedFiber: GAGAGG
+seedQuery: GAGAGG
+lMmOffsets: 1 2 
+rMmOffsets: 1 5 
+bDim0, bDim1:2, 0
+eDim0, eDim1:14, 12
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:13, 11
+bDim0, bDim1 after skipping:2, 0
+diagonal (+1 incl.): 12
+#mismatches 2, localK: 2
+previousR: -1
+l: 1, r: 1
+valid & new seed extension: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+bDim0, bDim1:2, 0
+eDim0, eDim1:10, 8
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:9, 7
+bDim0, bDim1 after skipping:2, 0
+diagonal (+1 incl.): 8
+#mismatches 1, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
+bDim0, bDim1:3, 1
+eDim0, eDim1:14, 12
+skip 1 bDim* for FREE, they differ
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:13, 11
+bDim0, bDim1 after skipping:4, 2
+diagonal (+1 incl.): 10
+#mismatches 1, localK: 2
+previousR: 1
+r <= previousR: 1 <= 1
+bDim0, bDim1:3, 1
+eDim0, eDim1:10, 8
+skip 1 bDim* for FREE, they differ
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:9, 7
+bDim0, bDim1 after skipping:4, 2
+diagonal (+1 incl.): 6
+#mismatches 0, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+Match: 
+	seedFiber: GAGAGAGGAGAG
+	seedQuery: GGGAGAGGGGAG
+needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
+match length: 12
+tfo sequence id (index): 		0
++++++ ------- +++++++ ------ ++++++ will try to add new? seed
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+	hash: 375
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+Number of hits (numLocations): 4
+getHaystackFiberSeqNo: 0(from 1) for bPos: 0
+
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	GGGAGAGAGG	tts
+	GGGAGAGGGG	tfo
+
+Max. seed: 
+	GGGAGAG
+MaxSeed Length: 7
+MaxSeed Position (mergedHaystack): 0 - 6
+
+Original seed: Seed<Simple, TConfig>(0, 0, 6, 6, lower diag = 0, upper diag = 0)
+Actual right ends (including this pos.): 6, 6
+seedFiber: GGGAGAG
+seedQuery: GGGAGAG
+lMmOffsets: 0 
+rMmOffsets: 1 8 
+bDim0, bDim1:0, 0
+eDim0, eDim1:14, 14
+eDim0, eDim1 after skipping:14, 14
+bDim0, bDim1 after skipping:0, 0
+diagonal (+1 incl.): 15
+#mismatches 1, localK: 3
+previousR: -1
+l: 0, r: 1
+valid & new seed extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+bDim0, bDim1:0, 0
+eDim0, eDim1:7, 7
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:6, 6
+bDim0, bDim1 after skipping:0, 0
+diagonal (+1 incl.): 7
+#mismatches 0, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+Match: 
+	seedFiber: GGGAGAGAGGAGAGG
+	seedQuery: GGGAGAGGGGAGAGG
+needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
+match length: 15
+tfo sequence id (index): 		0
++++++ ------- +++++++ ------ ++++++ will try to add new? seed
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(0, 0, 15, 15, lower diag = 0, upper diag = 0)
+	hash: 144
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+getHaystackFiberSeqNo: 0(from 1) for bPos: 1
+getHaystackFiberSeqNo: 0(from 1) for bPos: 2
+
+=====>>>>> Found valid match @ 
+Seed match is (Myers):
+	GAGAGAGGAG	tts
+	GGGAGAGGGG	tfo
+
+Max. seed: 
+	GAGAGG
+MaxSeed Length: 6
+MaxSeed Position (mergedHaystack): 4 - 9
+
+Original seed: Seed<Simple, TConfig>(4, 2, 9, 7, lower diag = -2, upper diag = -2)
+Actual right ends (including this pos.): 9, 7
+seedFiber: GAGAGG
+seedQuery: GAGAGG
+lMmOffsets: 1 2 
+rMmOffsets: 1 5 
+bDim0, bDim1:2, 0
+eDim0, eDim1:14, 12
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:13, 11
+bDim0, bDim1 after skipping:2, 0
+diagonal (+1 incl.): 12
+#mismatches 2, localK: 2
+previousR: -1
+l: 1, r: 1
+valid & new seed extension: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+bDim0, bDim1:2, 0
+eDim0, eDim1:10, 8
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:9, 7
+bDim0, bDim1 after skipping:2, 0
+diagonal (+1 incl.): 8
+#mismatches 1, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
+bDim0, bDim1:3, 1
+eDim0, eDim1:14, 12
+skip 1 bDim* for FREE, they differ
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:13, 11
+bDim0, bDim1 after skipping:4, 2
+diagonal (+1 incl.): 10
+#mismatches 1, localK: 2
+previousR: 1
+r <= previousR: 1 <= 1
+bDim0, bDim1:3, 1
+eDim0, eDim1:10, 8
+skip 1 bDim* for FREE, they differ
+skip 1 eDim* for FREE, they differ
+eDim0, eDim1 after skipping:9, 7
+bDim0, bDim1 after skipping:4, 2
+diagonal (+1 incl.): 6
+#mismatches 0, localK: 2
+previousR: 1
+r <= previousR: 0 <= 1
+++++++++++++++++++++++++++++++++++++++++++++++++
+one seed after extension: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+Match: 
+	seedFiber: GAGAGAGGAGAG
+	seedQuery: GGGAGAGGGGAG
+needle (tfo - isparallel): 0			GGGAGAGGGGAGAGG
+match length: 12
+tfo sequence id (index): 		0
++++++ ------- +++++++ ------ ++++++ will try to add new? seed
+== XXX >> Seed is already in map: Seed<Simple, TConfig>(2, 0, 14, 12, lower diag = -2, upper diag = -2)
+	hash: 375
+	tfoSeqNo: 0
+	haystackFiberSeqNo: 0
+
+Number of hits (numLocations): 0
+
+
+Merging overlaps

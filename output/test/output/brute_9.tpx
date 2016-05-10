@@ -1,0 +1,25 @@
+# Sequence-ID	TFO start	TFO end	Duplex-ID	TTS start	TTS end	Score	Error-rate	Errors	Motif	Strand	Orientation	Guanine-rate
+TFOsequence_0	4	15	TTSsequence_0	1	12	9	0.18	t4d7	Y	-	P	0.64
+     5'- CTCCTCTACCC -3'
+TTS: 3'- GAGGAGAtGGG -5'
+         ||||*||*|||
+TFO: 3'- CTCCCCTCCCC -5'
+
+TFOsequence_0	5	20	TTSsequence_0	1	16	12	0.2	t4d7d11	Y	-	P	0.67
+     5'- CTCCTCTACCCACCC -3'
+TTS: 3'- GAGGAGAtGGGtGGG -5'
+         ||||*||*|||*|||
+TFO: 3'- CTCCCCTCCCCTCCC -5'
+
+TFOsequence_0	10	25	TTSsequence_0	1	16	12	0.2	t4d7d11	Y	-	P	0.67
+     5'- CTCCTCTACCCACCC -3'
+TTS: 3'- GAGGAGAtGGGtGGG -5'
+         ||||*||*|||*|||
+TFO: 3'- CTCCCCTCCCCTCCC -5'
+
+TFOsequence_0	15	25	TTSsequence_0	6	16	8	0.2	d2d6	Y	-	P	0.7
+     5'- CTACCCACCC -3'
+TTS: 3'- GAtGGGtGGG -5'
+         ||*|||*|||
+TFO: 3'- CTCCCCTCCC -5'
+
