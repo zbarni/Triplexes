@@ -1332,12 +1332,14 @@ namespace SEQAN_NAMESPACE_MAIN
 	}
 
 	template<
+	typename TSeedHashMap,
 	typename TSeed,
 	typename TSeedList,
 	typename THaystackFiber,
 	typename TQuery,
 	typename TError>
 	void extendSimpleSeedRevised(
+			TSeedHashMap		  &addedSeedHashes,
 			TSeed 			const &seed,
 			TSeedList			  &extendedSeeds,
 			THaystackFiber 	const &fiber,
@@ -1423,6 +1425,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			rMmOffsets.push_back(std::min((int)(length(query) - getEndDim1(seed) - 1), (int)(length(fiber) - getEndDim0(seed) - 1)));
 		}
 
+#ifdef DEBUG
 		// ------------------------------------------------------------
 		// debug print
 		cout << "lMmOffsets: ";
@@ -1434,15 +1437,13 @@ namespace SEQAN_NAMESPACE_MAIN
 			cout << rMmOffsets[i] << " ";
 		}
 		cout << endl;
-
+#endif
 		// ============================================================================
 		// START REAL SHIT
 		// init left and right mismatch numbers
 		int lMmSize = lMmOffsets.size();
 		int rMmSize = rMmOffsets.size();
 		int previousR = -1;
-
-		std::set<int> addedSeedHashes;
 
 		for (int l = lMmSize - 1; l >= 0; --l) {
 			for (int r = rMmSize - 1; r >= 0; --r) {
@@ -1452,16 +1453,16 @@ namespace SEQAN_NAMESPACE_MAIN
 				eDim1 = getEndDim1(seed) + rMmOffsets[r];
         		int cnt = 0;
 
-        		cout << "bDim0, bDim1:" << bDim0 << ", " << bDim1 << endl << std::flush;
-        		cout << "eDim0, eDim1:" << eDim0 << ", " << eDim1 << endl << std::flush;
+//        		cout << "bDim0, bDim1:" << bDim0 << ", " << bDim1 << endl << std::flush;
+//        		cout << "eDim0, eDim1:" << eDim0 << ", " << eDim1 << endl << std::flush;
         		// skip beginning positions until match found
         		while (fiber[bDim0] != query[bDim1]) {
         			if (cnt) {
         				--l;
-        				cout << "skip 1 bDim* with consequences, lower l: " << l << endl << std::flush;
+//        				cout << "skip 1 bDim* with consequences, lower l: " << l << endl << std::flush;
         			}
         			else {
-        				cout << "skip 1 bDim* for FREE, they differ" << endl << std::flush;
+//        				cout << "skip 1 bDim* for FREE, they differ" << endl << std::flush;
         			}
         			++bDim0;
         			++bDim1;
@@ -1472,10 +1473,10 @@ namespace SEQAN_NAMESPACE_MAIN
         		while (fiber[eDim0] != query[eDim1]) {
         			if (cnt) {
         				--r;
-        				cout << "skip 1 eDim* with consequences" << endl << std::flush;
+//        				cout << "skip 1 eDim* with consequences" << endl << std::flush;
         			}
         			else {
-        				cout << "skip 1 eDim* for FREE, they differ" << endl << std::flush;
+//        				cout << "skip 1 eDim* for FREE, they differ" << endl << std::flush;
         			}
         			--eDim0;
         			--eDim1;
@@ -1487,42 +1488,49 @@ namespace SEQAN_NAMESPACE_MAIN
         		localK		= std::max((int)floor(diag * errorRate), k);
         		mismatches 	= l + r;
 
+#ifdef DEBUG
         		cout << "eDim0, eDim1 after skipping:" << eDim0 << ", " << eDim1 << endl << std::flush;
         		cout << "bDim0, bDim1 after skipping:" << bDim0 << ", " << bDim1 << endl << std::flush;
         		cout << "diagonal (+1 incl.): " << diag << endl;
         		cout << "#mismatches " << mismatches << ", localK: " << localK << endl;
         		cout << "previousR: " << previousR << endl;
+#endif
 
         		// make sure #mismatches is valid
         		if (localK < mismatches) {
-        			cout << "localK < mismatches" << endl;
+//        			cout << "localK < mismatches" << endl;
         			continue;
         		}
 
         		if (r <= previousR) {
-        			cout << "r <= previousR: " << r << " <= " << previousR << endl;
+//        			cout << "r <= previousR: " << r << " <= " << previousR << endl;
         			continue;
         		}
 
-        		// valid? match
         		// eDim* still include the last match, to report we add +1
         		if (eDim0 + 1 - bDim0 >= minLength) {
-        			int hash = ((bDim0 + 1) * (eDim1 + 1) * 10) - (bDim1 + 1) * (eDim0 + 1);
+        			if (bDim0 >= 65536 || bDim1 >= 65536 || eDim0 >= 65536 || eDim0 >= 65536) {
+        				cout << "YOU SUCK! find a new hash function." << endl << std::flush;
+        				exit(-1);
+        			}
+        			long long hash = bDim0;
+        			hash = (((((hash << 16) + eDim0) << 16) + bDim1) << 16) + eDim1;
+
         			// if new match
         			if (!addedSeedHashes.count(hash)) {
         				// add +1 to endDim*, it's how seeds / matches are reported
         				extendedSeeds.push_back(TSeed(bDim0, bDim1, eDim0 + 1, eDim1 + 1));
         				addedSeedHashes.insert(hash);
         				previousR = r;
-        				cout << "l: " << l << ", r: " << r << endl;
-        				cout << "valid & new seed extension: " << extendedSeeds.back() << endl;
+//        				cout << "l: " << l << ", r: " << r << endl;
+//        				cout << "valid & new seed extension: " << extendedSeeds.back() << endl;
         			}
         			else {
-        				cout << "Hmm, this is wrong... same hash already existing." << endl;
+//        				cout << "Hmm, this is wrong... same hash already existing." << endl;
         			}
         		}
         		else {
-        			cout << "length of match is: " << eDim0 + 1 - bDim0 << " < " << minLength << endl;
+//        			cout << "length of match is: " << eDim0 + 1 - bDim0 << " < " << minLength << endl;
         		}
 			}
 		}
@@ -1532,44 +1540,32 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	/**
 	 * If seed is new, add it to seedMap and return True, False otherwise.
+	 * param: addedSeedHashes is the set of hashes for a given tts-tfo pair
 	 */
 	template<
 	typename TId,
 	typename TSeed,
-	typename TSeedMap
+	typename TSeedHashesSet
 	>
 	bool addIfNewSeed(
 			TId 	const 	&haystackFiberSeqNo,
 			TId 	const 	&tfoSeqNo,
 			TSeed  	const	&seed,
-			TSeedMap 		&seedMap) {
-		int hash = ((getBeginDim0(seed) + 1) * (getEndDim1(seed) + 1) * 10) - (getBeginDim1(seed) + 1) * (getEndDim0(seed) + 1);
+			TSeedHashesSet	&addedSeedHashes) {
 
-		if (seedMap.count(tfoSeqNo)) {
-			if ((seedMap.find(tfoSeqNo))->second.count(haystackFiberSeqNo)) {
-				if (seedMap[tfoSeqNo][haystackFiberSeqNo].find(hash) == seedMap[tfoSeqNo][haystackFiberSeqNo].end()) {
-					seedMap[tfoSeqNo][haystackFiberSeqNo].insert(hash);
-				}
-				else {
+		unsigned long long hash = getBeginDim0(seed);
+		hash = (((((hash << 16) + getEndDim0(seed)) << 16) + getBeginDim1(seed)) << 16) + getEndDim1(seed);
+
+		if (addedSeedHashes.count(hash)) {
 #ifdef DEBUG
-					std::cout << "== XXX >> Seed is already in map: " << seed << std::endl
-							<< "\thash: " << hash << std::endl
-							<< "\ttfoSeqNo: " << tfoSeqNo << std::endl
-							<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo << std::endl;
+			std::cout << "== XXX >> Seed is already in map: " << seed << std::endl
+					<< "\thash: " << hash << std::endl
+					<< "\ttfoSeqNo: " << tfoSeqNo << std::endl
+					<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo << std::endl;
 #endif
-					return false;
-				}
-			}
-			else {
-				seedMap[tfoSeqNo][haystackFiberSeqNo] = std::set<int>();
-				seedMap[tfoSeqNo][haystackFiberSeqNo].insert(hash);
-			}
+			return false;
 		}
-		else {
-			seedMap[tfoSeqNo] = std::map<int, std::set<int> >();
-			seedMap[tfoSeqNo][haystackFiberSeqNo] = std::set<int>();
-			seedMap[tfoSeqNo][haystackFiberSeqNo].insert(hash);
-		}
+		addedSeedHashes.insert(hash);
 #ifdef DEBUG
 		std::cout << "===>>> New seed is added to map: " << seed << std::endl
 				<< "\thash: " << hash << std::endl
@@ -1599,7 +1595,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename THitListKey
 	>
 	void verifyMatches(
-			TSeedMap	   			&addedSeedHashes,
+			TSeedMap	   			&addedSeedHashMap,
 			THitList				&hitList,
 //			THitSetPointerMap 		&hitSetMap,
 			THaystack 		const 	&haystack,
@@ -1738,6 +1734,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	            int qGramSeedBegin  = maxSeedQGramEnd - maxSeedLength + 1 + qGramOffset;
 	            int qGramSeedEnd 	= maxSeedQGramEnd + qGramOffset;
 
+	            THitListKey seqNoKey(haystackFiberSeqNo, ndlSeqNo);
 	            TSeed seed(maxSeedFiberEnd - maxSeedLength + 1, qGramSeedBegin, maxSeedFiberEnd, qGramSeedEnd);
 #ifdef DEBUG
 	            std::cout << endl << "Original seed: " << seed << endl
@@ -1745,7 +1742,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	            		<< "seedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(seed), getEndDim0(seed) + 1) << "\n"
 						<< "seedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(seed), getEndDim1(seed) + 1) << "\n";
 #endif
-	            extendSimpleSeedRevised(seed, extendedSeeds, haystack[haystackFiberSeqNo],
+	            extendSimpleSeedRevised(addedSeedHashMap[seqNoKey], seed, extendedSeeds, haystack[haystackFiberSeqNo],
 	            		needleSet[ndlSeqNo], errorRate, k, minLength, consErrors);
 
 	            for (TSeedListIterator seed = extendedSeeds.begin(); seed != extendedSeeds.end(); ++seed) {
@@ -1761,7 +1758,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	            	cout << "+++++ ------- +++++++ ------ ++++++ will try to add new? seed" << endl;
 #endif
 	            	// if new seed, add to seedMap and to hitSet
-	            	if (addIfNewSeed(haystackFiberSeqNo, ndlSeqNo, *seed, addedSeedHashes)) {
+	            	if (addIfNewSeed(haystackFiberSeqNo, ndlSeqNo, *seed, addedSeedHashMap[seqNoKey])) {
 	            		THit *hit = new THit(
 	            				haystackFiberSeqNo,
 								ndlSeqNo,
@@ -1773,7 +1770,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	            		);
 
 	            		THitListKey matchKey(getBeginDim0(*seed), getEndDim0(*seed));
-	            		THitListKey seqNoKey(haystackFiberSeqNo, ndlSeqNo);
 
 	            		cout << "+++ adding new hit for matchKey<int,int> : " << matchKey.first << ", " << matchKey.second << endl;
 	            		((hitList[seqNoKey])[matchKey]).push_back(hit);
@@ -1881,7 +1877,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		for (THitListIterator it = hitList.begin(); it != hitList.end(); ++it) {
 			haystackFiberSeqNo = (it->first).first;
 
-//			cout << "Starting new tts-tfo pair" << endl;
+			cout << "Starting new tts-tfo pair" << endl;
 
 			for (dim0It = (it->second).begin(); dim0It != (it->second).end(); ++dim0It) {
 				int currBegDim0 = dim0It->first.first;
@@ -1894,8 +1890,8 @@ namespace SEQAN_NAMESPACE_MAIN
 					int nextBegDim0 = nextDim0It->first.first;
 					int nextEndDim0 = nextDim0It->first.second;
 
-//					cout << endl << endl << "current matchKey<int,int> : " << currBegDim0 << ", " << currEndDim0 << endl << std::flush;
-//					cout << "next matchKey<int,int> : " << nextBegDim0 << ", " << nextEndDim0 << endl << std::flush;
+					cout << endl << endl << "current matchKey<int,int> : " << currBegDim0 << ", " << currEndDim0 << endl << std::flush;
+					cout << "next matchKey<int,int> : " << nextBegDim0 << ", " << nextEndDim0 << endl << std::flush;
 
 					// check if dim0 indices overlap
 					if (nextBegDim0 >= currBegDim0 && nextBegDim0 < currEndDim0) {
@@ -1905,12 +1901,12 @@ namespace SEQAN_NAMESPACE_MAIN
 							for (THitIterator nextHitIt = nextDim0It->second.begin(); nextHitIt != nextDim0It->second.end();) {
 								THit *currHit = *currHitIt;
 								THit *nextHit = *nextHitIt;
-//								cout 	<< "c Hit: ndlPos = " << currHit->ndlPos << endl
-//										<< "n Hit: ndlPos = " << nextHit->ndlPos << endl
-//										<< "c Hit: hstkPos = " << currHit->hstkPos << endl
-//										<< "n Hit: hstkPos = " << nextHit->hstkPos << endl
-//										<< "c Hit: hstkPos - ndlPos = " << currHit->hstkPos - currHit->ndlPos << endl
-//										<< "n Hit: hstkPos - ndlPos = " << nextHit->hstkPos - nextHit->ndlPos << endl;
+								cout 	<< "c Hit: ndlPos = " << currHit->ndlPos << endl
+										<< "n Hit: ndlPos = " << nextHit->ndlPos << endl
+										<< "c Hit: hstkPos = " << currHit->hstkPos << endl
+										<< "n Hit: hstkPos = " << nextHit->hstkPos << endl
+										<< "c Hit: hstkPos - ndlPos = " << currHit->hstkPos - currHit->ndlPos << endl
+										<< "n Hit: hstkPos - ndlPos = " << nextHit->hstkPos - nextHit->ndlPos << endl;
 
 
 								// case I: currHit contains nextHit
@@ -1918,7 +1914,7 @@ namespace SEQAN_NAMESPACE_MAIN
 										&& currHit->ndlPos + currHit->hitLength >= nextHit->ndlPos + nextHit->hitLength
 										&& currHit->hstkPos - currHit->ndlPos == nextHit->hstkPos - nextHit->ndlPos 	// alignment must also match
 								) {
-//									cout << "current hit contains next hit, delete next" << std::flush;
+									cout << "current hit contains next hit, delete next" << std::flush;
 									delete nextHit;
 									nextHitIt = nextDim0It->second.erase(nextHitIt);
 								}
@@ -1928,7 +1924,7 @@ namespace SEQAN_NAMESPACE_MAIN
 										&& currHit->ndlPos + currHit->hitLength <= nextHit->ndlPos + nextHit->hitLength
 										&& currHit->hstkPos - currHit->ndlPos == nextHit->hstkPos - nextHit->ndlPos		// alignment must also match
 								) {
-//									cout << "next hit contains current hit, just delete current and skip to next current" << std::flush;
+									cout << "next hit contains current hit, just delete current and skip to next current" << std::flush;
 									delete currHit;
 									currHitIt = dim0It->second.erase(currHitIt);
 									moveIt = false;
@@ -1945,12 +1941,12 @@ namespace SEQAN_NAMESPACE_MAIN
 					}
 					// no overlap --> add all hits and stop verifying current dim0It
 					else {
-//						cout << "no overlap! stop after this" << endl;
+						cout << "no overlap! stop after this" << endl;
 						noMoreOverlap = true;
 					}
 				}
 
-//				cout << "will add all remaining current hits, nextDim0It loop exited (or didn't enter)" << endl;
+				cout << "will add all remaining current hits, nextDim0It loop exited (or didn't enter)" << endl;
 				// add all remaining hits and stop verifying current dim0It
 				for (THitIterator hit = dim0It->second.begin(); hit != dim0It->second.end(); ++hit) {
 					add((*hitSetMap[haystackFiberSeqNo]), **hit);
@@ -2005,8 +2001,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef 		 std::vector<int>								TSegments;
 		typedef  		 String<char> 									TMergedHaystack;
 		typedef 		 std::map<int, THitSetPointer> 					THitSetPointerMap;
-		typedef 		 std::map<int, std::map<int, std::set<int> > > 	TSeedHashesMap;
 		typedef			 std::pair<int, int> 							THitListKey;
+		typedef 		 std::map<THitListKey, std::set<unsigned long long> > 				TSeedHashesMap;
 		typedef typename Suffix<typename GetSequenceByNo<TQGramIndex const>::Type >::Type	TSuffix;
 		typedef			 std::map<THitListKey, std::map<THitListKey, std::vector<THit*> > >	THitList;
 
@@ -2100,6 +2096,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	    	}
 	    	bucketBegin = bucketEnd;
 	    }
+	    // keep only maximum segments, remove those included in larger hits
 	    mergeOverlappingHits(hitList, hitSetPointerMap, THit());
 	    // add hits to gardener
 	    for (int i = 0; i < length(haystack); ++i) {
