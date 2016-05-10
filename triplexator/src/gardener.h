@@ -59,7 +59,7 @@ _Pragma(STRINGIFY(code))
 #define SEQAN_PRAGMA_IF_PARALLEL(code)
 #endif // SEQAN_ENABLE_PARALLELISM
 #endif // SEQAN_PRAGMA_IF_PARALLEL
-//#define DEBUG
+#define DEBUG
 using namespace seqan;
 
 namespace SEQAN_NAMESPACE_MAIN
@@ -246,7 +246,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	// indicates if two seeds overlap
 	// ATTENTION assumes same diagonal and size of seeds
 	template <typename TSeed>
-	bool isOverlapping(TSeed const & a, TSeed const & b){ ENTER
+	bool isOverlapping(TSeed const & a, TSeed const & b){
 		if (getBeginDim0(a) < getBeginDim0(b) and getBeginDim0(b) < getEndDim0(a)) return true;
 		if (getBeginDim0(b) < getBeginDim0(a) and getBeginDim0(a) < getEndDim0(b)) return true;
 		return false;
@@ -1331,32 +1331,32 @@ namespace SEQAN_NAMESPACE_MAIN
 		return m;
 	}
 
-	/**
-	 * Given a maximum seed match between fiber and query, this function returns all maximally
-	 * extended seeds which don't overlap entirely, w.r.t. to k and maximum lengths of the segments.
-	 * The ends of the seed to be extended are included in the match.
-	 */
 	template<
 	typename TSeed,
 	typename TSeedList,
 	typename THaystackFiber,
-	typename TQuery>
-	void extendSimpleSeed(
+	typename TQuery,
+	typename TError>
+	void extendSimpleSeedRevised(
 			TSeed 			const &seed,
 			TSeedList			  &extendedSeeds,
 			THaystackFiber 	const &fiber,
 			TQuery 			const &query,
-			int 			const &k,
-			int				const &minLength) {
+			TError  		const &errorRate,
+			int				const &k,
+			int				const &minLength,
+			int				const &consErrors) {
 		extendedSeeds.clear();
-
 		int posFiber;
 		int posQuery;
 		int mismatches;
+		int consecutiveMismatches;
 		int bDim0;
 		int bDim1;
 		int eDim0;
 		int eDim1;
+
+		int localK = 1000; // should be inf but this is enough
 
 		bool isLeftZeroIncluded = false;
 		bool isRightEndIncluded = false;
@@ -1365,161 +1365,170 @@ namespace SEQAN_NAMESPACE_MAIN
 		std::vector<int> lMmOffsets;
 		std::vector<int> rMmOffsets;
 
-        // go left
-        mismatches = 0;
-        posFiber = getBeginDim0(seed);
-        posQuery = getBeginDim1(seed);
-        while (posFiber >= 0 && posQuery >= 0 && mismatches <= k) {
-            if (fiber[posFiber] != query[posQuery]) {
-                lMmOffsets.push_back(getBeginDim0(seed) - posFiber);
-                mismatches++;
-                if (posFiber == 0 || posQuery == 0) {
-                	isLeftZeroIncluded = true;
-                }
-            }
-            posFiber--;
-            posQuery--;
-        }
+		// go left
+		mismatches = 0;
+		consecutiveMismatches = 0;
+		posFiber = getBeginDim0(seed);
+		posQuery = getBeginDim1(seed);
+		while (posFiber >= 0 && posQuery >= 0 && mismatches <= localK + 1
+				&& consecutiveMismatches <= consErrors) {
+			if (fiber[posFiber] != query[posQuery]) {
+				lMmOffsets.push_back(getBeginDim0(seed) - posFiber);
+				++mismatches;
+				if (posFiber == 0 || posQuery == 0) {
+					isLeftZeroIncluded = true;
+				}
+				++consecutiveMismatches;
+			}
+			else {
+				consecutiveMismatches = 0;
+			}
+			localK = std::max((int)floor((getEndDiagonal(seed) - posFiber + 1) * errorRate), k);
+			--posFiber;
+			--posQuery;
+		}
 
+		// add corresponding end points if required
+		if ((posFiber == -1 || posQuery == -1) && !isLeftZeroIncluded) {
+			lMmOffsets.push_back(std::min((int)(getBeginDim0(seed)),(int)(getBeginDim1(seed))));
+		}
 
-        // go right
-        mismatches = 0;
-        posFiber = getEndDim0(seed);
-        posQuery = getEndDim1(seed);
-        int endFiber = length(fiber);
-        int endQuery = length(query);
-        // only go until the second last element, the last one is added later if needed (end* - 1)
-        while (posFiber < endFiber && posQuery < endQuery && mismatches <= k) {
-            if (fiber[posFiber] != query[posQuery]) {
-                rMmOffsets.push_back(posFiber - getEndDim0(seed));
-                mismatches++;
-                if (posFiber == endFiber - 1 || posQuery == endQuery - 1) {
-                	isRightEndIncluded = true;
-                }
-            }
-            posFiber++;
-            posQuery++;
-        }
+		// go right
+		mismatches = 0;
+		consecutiveMismatches = 0;
+		posFiber = getEndDim0(seed);
+		posQuery = getEndDim1(seed);
+		int endFiber = length(fiber);
+		int endQuery = length(query);
+		// only go until the second last element, the last one is added later if needed (end* - 1)
+		while (posFiber < endFiber && posQuery < endQuery && mismatches <= localK + 1
+				&& consecutiveMismatches <= consErrors) {
+			if (fiber[posFiber] != query[posQuery]) {
+				rMmOffsets.push_back(posFiber - getEndDim0(seed));
+				mismatches++;
+				if (posFiber == endFiber - 1 || posQuery == endQuery - 1) {
+					isRightEndIncluded = true;
+				}
+				++consecutiveMismatches;
+			}
+			else {
+				consecutiveMismatches = 0;
+			}
+			localK = std::max((int)floor((posFiber - getBeginDim0(seed) + 1) * errorRate), k);
+			++posFiber;
+			++posQuery;
+		}
+		// add corresponding end points if required
+		if ((posFiber == endFiber || posQuery == endQuery) && !isRightEndIncluded) {
+			rMmOffsets.push_back(std::min((int)(length(query) - getEndDim1(seed) - 1), (int)(length(fiber) - getEndDim0(seed) - 1)));
+		}
 
+		// ------------------------------------------------------------
+		// debug print
+		cout << "lMmOffsets: ";
+		for (int i = 0; i < lMmOffsets.size(); ++i) {
+			cout << lMmOffsets[i] << " ";
+		}
+		cout << endl << "rMmOffsets: ";
+		for (int i = 0; i < rMmOffsets.size(); ++i) {
+			cout << rMmOffsets[i] << " ";
+		}
+		cout << endl;
 
-        // init left and right mismatch numbers
-        int lMmSize = lMmOffsets.size();
-        int rMmSize = rMmOffsets.size();
-//        cout << "initial leftMismatches: " << lMmSize << endl;
-//        cout << "initial rightMismatches: " << rMmSize << endl;
+		// ============================================================================
+		// START REAL SHIT
+		// init left and right mismatch numbers
+		int lMmSize = lMmOffsets.size();
+		int rMmSize = rMmOffsets.size();
+		int previousR = -1;
 
-        // if #mismatches less than k, whole segments match
-        if (lMmSize + rMmSize <= k) {
-#ifdef DEBUG
-            cout << "Whole segments match in seed extension, limits are included." << endl;
-#endif
-        	bDim0 = std::max(0, (int)(getBeginDim0(seed) - getBeginDim1(seed)));
-        	bDim1 = std::max(0, (int)(getBeginDim1(seed) - getBeginDim0(seed)));
-        	eDim0 = std::min((int)(length(fiber)), (int)(getEndDim0(seed) + length(query) - getEndDim1(seed)));
-        	eDim1 = std::min((int)(length(query)), (int)(getEndDim1(seed) + length(fiber) - getEndDim0(seed)));
+		std::set<int> addedSeedHashes;
 
-        	while (fiber[bDim0] != query[bDim1]) {
-        		++bDim0;
-        		++bDim1;
-        	}
+		for (int l = lMmSize - 1; l >= 0; --l) {
+			for (int r = rMmSize - 1; r >= 0; --r) {
+				bDim0 = getBeginDim0(seed) - lMmOffsets[l];
+				bDim1 = getBeginDim1(seed) - lMmOffsets[l];
+				eDim0 = getEndDim0(seed) + rMmOffsets[r];
+				eDim1 = getEndDim1(seed) + rMmOffsets[r];
+        		int cnt = 0;
 
-        	while (fiber[eDim0 - 1] != query[eDim1 - 1]) {
-        		--eDim0;
-        		--eDim1;
-        	}
+        		cout << "bDim0, bDim1:" << bDim0 << ", " << bDim1 << endl << std::flush;
+        		cout << "eDim0, eDim1:" << eDim0 << ", " << eDim1 << endl << std::flush;
+        		// skip beginning positions until match found
+        		while (fiber[bDim0] != query[bDim1]) {
+        			if (cnt) {
+        				--l;
+        				cout << "skip 1 bDim* with consequences, lower l: " << l << endl << std::flush;
+        			}
+        			else {
+        				cout << "skip 1 bDim* for FREE, they differ" << endl << std::flush;
+        			}
+        			++bDim0;
+        			++bDim1;
+        			++cnt;
+        		}
 
-            if (eDim0 - bDim0 >= minLength) {
-            	extendedSeeds.push_back(TSeed(bDim0, bDim1, eDim0, eDim1));
-            }
-#ifdef DEBUG
-            else {
-            	cout << "length of match is: " << eDim0 - bDim0 << " < " << minLength << endl;
-            }
-#endif
-            return;
-        }
+        		cnt = 0;
+        		while (fiber[eDim0] != query[eDim1]) {
+        			if (cnt) {
+        				--r;
+        				cout << "skip 1 eDim* with consequences" << endl << std::flush;
+        			}
+        			else {
+        				cout << "skip 1 eDim* for FREE, they differ" << endl << std::flush;
+        			}
+        			--eDim0;
+        			--eDim1;
+        			++cnt;
+        		}
 
-        // add corresponding end points if required
-        // if leftmost offset (beg. of seed) was not included
-        if (lMmSize <= k && !isLeftZeroIncluded) {
-        	lMmOffsets.push_back(std::min((int)(getBeginDim0(seed)),(int)(getBeginDim1(seed))));
-        	++lMmSize;
-        }
-        // if rightmost offset (beg. of seed) was not included
-        if (rMmSize <= k && !isRightEndIncluded) {
-        	rMmOffsets.push_back(std::min((int)(length(query) - getEndDim1(seed) - 1), (int)(length(fiber) - getEndDim0(seed) - 1)));
-        	++rMmSize;
-        }
+        		// bDim* and eDim* include the respective elements as match
+        		int diag 	= eDim0 - bDim0 + 1; //
+        		localK		= std::max((int)floor(diag * errorRate), k);
+        		mismatches 	= l + r;
 
-        // init left and right pointers
-        int l = lMmSize - 1;
-        int r = (lMmSize <= k) ? std::min(k - lMmSize + 1, rMmSize - 1) : 0;
+        		cout << "eDim0, eDim1 after skipping:" << eDim0 << ", " << eDim1 << endl << std::flush;
+        		cout << "bDim0, bDim1 after skipping:" << bDim0 << ", " << bDim1 << endl << std::flush;
+        		cout << "diagonal (+1 incl.): " << diag << endl;
+        		cout << "#mismatches " << mismatches << ", localK: " << localK << endl;
+        		cout << "previousR: " << previousR << endl;
 
-#ifdef DEBUG
-        cout << "leftMismatches: " << lMmSize << endl;
-        cout << "rightMismatches: " << rMmSize << endl;
-        cout << "starting l: " << l << endl;
-        cout << "starting r: " << r << endl;
-        cout << "isLeftZeroIncluded: " << isLeftZeroIncluded << endl;
-        cout << "isRightEndIncluded: " << isRightEndIncluded << endl;
-#endif
+        		// make sure #mismatches is valid
+        		if (localK < mismatches) {
+        			cout << "localK < mismatches" << endl;
+        			continue;
+        		}
 
-        // find maximal seeds
-        for (; l >= 0 && r < rMmSize; --l) {
-            assert(abs(l - r) <= k);
+        		if (r <= previousR) {
+        			cout << "r <= previousR: " << r << " <= " << previousR << endl;
+        			continue;
+        		}
 
-            bDim0 = getBeginDim0(seed) - lMmOffsets[l];
-            bDim1 = getBeginDim1(seed) - lMmOffsets[l];
-
-            // first skip of mismatch is "FREE"
-            if (fiber[bDim0] != query[bDim1]) {
-            	++bDim0;
-            	++bDim1;
-//            	cout << "skip 1 for FREE" << endl << std::flush;
-            }
-
-            // skip beginning positions until match found
-            while (fiber[bDim0] != query[bDim1]) {
-//            	cout << "skip 1 with consequences" << endl << std::flush;
-            	--l;
-            	++bDim0;
-            	++bDim1;
-
-            	// if we adjust the beginning positions, we can extend the right ones to get
-            	// maximal seeds
-            	if (r < rMmSize - 1) {
-            		++r;
-//            		cout << "skip r also " << endl << std::flush;
-            	}
-            }
-
-//            cout << "bar r:" << r << endl << std::flush;
-            eDim0 = getEndDim0(seed) + rMmOffsets[r];
-            eDim1 = getEndDim1(seed) + rMmOffsets[r];
-//            cout << "qux eDim0 eDim1:" << eDim0 << ", " << eDim1 << endl << std::flush;
-
-            while (fiber[eDim0] != query[eDim1]) {
-            	--eDim0;
-            	--eDim1;
-            }
-
-            ++eDim0;
-            ++eDim1;
-
-#ifdef DEBUG
-            cout << "l: " << l << ", r: " << r << endl;
-#endif
-            if (eDim0 - bDim0 >= minLength) {
-            	extendedSeeds.push_back(TSeed(bDim0, bDim1, eDim0, eDim1));
-            }
-#ifdef DEBUG
-            else {
-            	cout << "length of match is: " << eDim0 - bDim0 << " < " << minLength << endl;
-            }
-#endif
-            ++r;
-        }
+        		// valid? match
+        		// eDim* still include the last match, to report we add +1
+        		if (eDim0 + 1 - bDim0 >= minLength) {
+        			int hash = ((bDim0 + 1) * (eDim1 + 1) * 10) - (bDim1 + 1) * (eDim0 + 1);
+        			// if new match
+        			if (!addedSeedHashes.count(hash)) {
+        				// add +1 to endDim*, it's how seeds / matches are reported
+        				extendedSeeds.push_back(TSeed(bDim0, bDim1, eDim0 + 1, eDim1 + 1));
+        				addedSeedHashes.insert(hash);
+        				previousR = r;
+        				cout << "l: " << l << ", r: " << r << endl;
+        				cout << "valid & new seed extension: " << extendedSeeds.back() << endl;
+        			}
+        			else {
+        				cout << "Hmm, this is wrong... same hash already existing." << endl;
+        			}
+        		}
+        		else {
+        			cout << "length of match is: " << eDim0 + 1 - bDim0 << " < " << minLength << endl;
+        		}
+			}
+		}
 	}
+
+
 
 	/**
 	 * If seed is new, add it to seedMap and return True, False otherwise.
@@ -1575,7 +1584,8 @@ namespace SEQAN_NAMESPACE_MAIN
 	 */
 	template<
 	typename TSeedMap,
-	typename THitSetPointerMap,
+	typename THitList,
+//	typename THitSetPointerMap,
 	typename THaystack,
 	typename TMergedHaystack,
 	typename TSegment,
@@ -1584,12 +1594,14 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TSAIter,
 	typename TError,
 	typename TSize,
-	typename TDrop,
-	typename THitType
+	typename TConsError,
+	typename THit,
+	typename THitListKey
 	>
 	void verifyMatches(
-			TSeedMap	   			&seedMap,
-			THitSetPointerMap 		&hitSetMap,
+			TSeedMap	   			&addedSeedHashes,
+			THitList				&hitList,
+//			THitSetPointerMap 		&hitSetMap,
 			THaystack 		const 	&haystack,
 			TMergedHaystack const 	&mergedHaystack,
 			TSegment 		const 	&segmentMap,
@@ -1601,12 +1613,12 @@ namespace SEQAN_NAMESPACE_MAIN
 			int 		   	const	&numLocations,
 	        int 			const	endLocations[],
 	        TSize 			const	&minLength,
-	        TDrop 			const   &xDrop,
-			THitType)
+			TConsError		const	&consErrors,
+			THit,
+			THitListKey)
 	{
 		typedef int								TScore;
 		typedef Seed<Simple, DefaultSeedConfig>	TSeed;
-		typedef typename THitType::Type			THit;
 		typedef std::vector< Seed<Simple, DefaultSeedConfig> > 			 TSeedList;
 		typedef std::vector< Seed<Simple, DefaultSeedConfig> >::iterator TSeedListIterator;
 
@@ -1655,9 +1667,17 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	        /////////////////////////////
 	        // validate TODO check for # of consecutive mismatches
+	        int consecutiveMismatches = 0;
 	        for (int pos = ePos; pos > bPos && misM <= k; --pos) {
 	        	if (mergedHaystack[pos] != suffixQGram[qPos--]) {
 	        		++misM;
+	        		++consecutiveMismatches;
+	        		if (consecutiveMismatches > consErrors) {
+	        			continue;
+	        		}
+	        	}
+	        	else {
+	        		consecutiveMismatches = 0;
 	        	}
 	        }
 	        // invalid alignment
@@ -1667,8 +1687,6 @@ namespace SEQAN_NAMESPACE_MAIN
 
 #ifdef DEBUG
 	        cout 	<< endl << "=====>>>>> Found valid match @ " << endl;
-//	        		<< "\t(#nr, merged ePos): (" << match << ", " << ePos << ")" << endl
-//	        		<< "\tbPos (merged): " << bPos << endl
 //					<< "\tmismatches: " << misM << endl
 //	        		<< "haystackFiberSeqNo (in original haystack): " << haystackFiberSeqNo << endl
 	        cout
@@ -1727,7 +1745,8 @@ namespace SEQAN_NAMESPACE_MAIN
 	            		<< "seedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(seed), getEndDim0(seed) + 1) << "\n"
 						<< "seedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(seed), getEndDim1(seed) + 1) << "\n";
 #endif
-	            extendSimpleSeed(seed, extendedSeeds, haystack[haystackFiberSeqNo], needleSet[ndlSeqNo], k, minLength);
+	            extendSimpleSeedRevised(seed, extendedSeeds, haystack[haystackFiberSeqNo],
+	            		needleSet[ndlSeqNo], errorRate, k, minLength, consErrors);
 
 	            for (TSeedListIterator seed = extendedSeeds.begin(); seed != extendedSeeds.end(); ++seed) {
 #ifdef DEBUG
@@ -1739,10 +1758,11 @@ namespace SEQAN_NAMESPACE_MAIN
 	            	cout << "needle (tfo - isparallel): " << isParallel(needleSet[ndlSeqNo]) << "\t\t\t" << needleSet[ndlSeqNo] << endl;
 	            	cout << "match length: " << getEndDim0(*seed) - getBeginDim0(*seed) << endl;
 	            	cout << "tfo sequence id (index): \t\t" << ndlSeqNo << endl;
+	            	cout << "+++++ ------- +++++++ ------ ++++++ will try to add new? seed" << endl;
 #endif
 	            	// if new seed, add to seedMap and to hitSet
-	            	if (addIfNewSeed(haystackFiberSeqNo, ndlSeqNo, *seed, seedMap)) {
-	            		THit hit(
+	            	if (addIfNewSeed(haystackFiberSeqNo, ndlSeqNo, *seed, addedSeedHashes)) {
+	            		THit *hit = new THit(
 	            				haystackFiberSeqNo,
 								ndlSeqNo,
 								getBeginDim0(*seed),
@@ -1751,8 +1771,12 @@ namespace SEQAN_NAMESPACE_MAIN
 								0,
 								getEndDim0(*seed)-getBeginDim0(*seed)
 	            		);
-	            		assert(hitSetMap.count(haystackFiberSeqNo));
-	            		add((*hitSetMap[haystackFiberSeqNo]), hit);
+
+	            		THitListKey matchKey(getBeginDim0(*seed), getEndDim0(*seed));
+	            		THitListKey seqNoKey(haystackFiberSeqNo, ndlSeqNo);
+
+	            		cout << "+++ adding new hit for matchKey<int,int> : " << matchKey.first << ", " << matchKey.second << endl;
+	            		((hitList[seqNoKey])[matchKey]).push_back(hit);
 	            	}
 	            }
 	        }
@@ -1833,6 +1857,108 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 	}
 
+	template<
+		typename THitSetPointerMap,
+		typename THitList,
+		typename THit
+	>
+	void mergeOverlappingHits(
+			THitList 			&hitList,
+			THitSetPointerMap 	&hitSetMap,
+			THit)
+	{
+		typedef std::pair<int,int>										THitListKey;
+		typedef typename 	THitList::iterator 							THitListIterator;
+		typedef typename 	std::vector<THit*>::iterator 				THitIterator;
+		typedef typename 	std::map<THitListKey, std::vector<THit*> >::iterator TDim0Iterator;
+
+		int haystackFiberSeqNo;
+		TDim0Iterator dim0It;
+		TDim0Iterator nextDim0It;
+
+		cout << endl << endl << "Merging overlaps" << endl;
+
+		for (THitListIterator it = hitList.begin(); it != hitList.end(); ++it) {
+			haystackFiberSeqNo = (it->first).first;
+
+//			cout << "Starting new tts-tfo pair" << endl;
+
+			for (dim0It = (it->second).begin(); dim0It != (it->second).end(); ++dim0It) {
+				int currBegDim0 = dim0It->first.first;
+				int currEndDim0 = dim0It->first.second;
+
+				nextDim0It = dim0It;
+				bool noMoreOverlap = false;
+				for (++nextDim0It; nextDim0It != (it->second).end() && !noMoreOverlap; ++nextDim0It) {
+
+					int nextBegDim0 = nextDim0It->first.first;
+					int nextEndDim0 = nextDim0It->first.second;
+
+//					cout << endl << endl << "current matchKey<int,int> : " << currBegDim0 << ", " << currEndDim0 << endl << std::flush;
+//					cout << "next matchKey<int,int> : " << nextBegDim0 << ", " << nextEndDim0 << endl << std::flush;
+
+					// check if dim0 indices overlap
+					if (nextBegDim0 >= currBegDim0 && nextBegDim0 < currEndDim0) {
+						// iterate over all hit matches
+						for (THitIterator currHitIt = dim0It->second.begin(); currHitIt != dim0It->second.end();) {
+							bool moveIt = true;
+							for (THitIterator nextHitIt = nextDim0It->second.begin(); nextHitIt != nextDim0It->second.end();) {
+								THit *currHit = *currHitIt;
+								THit *nextHit = *nextHitIt;
+//								cout 	<< "c Hit: ndlPos = " << currHit->ndlPos << endl
+//										<< "n Hit: ndlPos = " << nextHit->ndlPos << endl
+//										<< "c Hit: hstkPos = " << currHit->hstkPos << endl
+//										<< "n Hit: hstkPos = " << nextHit->hstkPos << endl
+//										<< "c Hit: hstkPos - ndlPos = " << currHit->hstkPos - currHit->ndlPos << endl
+//										<< "n Hit: hstkPos - ndlPos = " << nextHit->hstkPos - nextHit->ndlPos << endl;
+
+
+								// case I: currHit contains nextHit
+								if (currHit->ndlPos <= nextHit->ndlPos
+										&& currHit->ndlPos + currHit->hitLength >= nextHit->ndlPos + nextHit->hitLength
+										&& currHit->hstkPos - currHit->ndlPos == nextHit->hstkPos - nextHit->ndlPos 	// alignment must also match
+								) {
+//									cout << "current hit contains next hit, delete next" << std::flush;
+									delete nextHit;
+									nextHitIt = nextDim0It->second.erase(nextHitIt);
+								}
+
+								// case II: nextHit contains currHit
+								else if (currHit->ndlPos >= nextHit->ndlPos
+										&& currHit->ndlPos + currHit->hitLength <= nextHit->ndlPos + nextHit->hitLength
+										&& currHit->hstkPos - currHit->ndlPos == nextHit->hstkPos - nextHit->ndlPos		// alignment must also match
+								) {
+//									cout << "next hit contains current hit, just delete current and skip to next current" << std::flush;
+									delete currHit;
+									currHitIt = dim0It->second.erase(currHitIt);
+									moveIt = false;
+									break;
+								}
+								else {
+									++nextHitIt;
+								}
+							}
+							if (moveIt) {
+								++currHitIt;
+							}
+						}
+					}
+					// no overlap --> add all hits and stop verifying current dim0It
+					else {
+//						cout << "no overlap! stop after this" << endl;
+						noMoreOverlap = true;
+					}
+				}
+
+//				cout << "will add all remaining current hits, nextDim0It loop exited (or didn't enter)" << endl;
+				// add all remaining hits and stop verifying current dim0It
+				for (THitIterator hit = dim0It->second.begin(); hit != dim0It->second.end(); ++hit) {
+					add((*hitSetMap[haystackFiberSeqNo]), **hit);
+				}
+			} // end dim0It for loop
+		} // end tts-tfo match for loop
+	}
+
 	/**
 	 * One parameter is the q-gram index of the TFO set. This function iterates over each double
 	 * stranded sequence in the haystack, and for each of these sequences iterates over each substring
@@ -1846,7 +1972,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TQuerySet,		 // query set (needle) - single stranded sequences (tfo)
 	typename TError,		 // error rate
 	typename TSize,			 // minimum hit size
-	typename TDrop,			 // xdrop
 	typename TSpec,			 // specialization
 	typename TId,			 // sequence id
 	typename TWorker
@@ -1858,7 +1983,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TQuerySet				&needles,			// TFO set
 			TError const			&errorRate,
 			TSize const				&minLength,
-			TDrop const				&xDrop,
+			int const				&consErrors,
 			TWorker
 	){
 	    double t = sysTime();
@@ -1866,6 +1991,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename Value<THitMap>::Type					THitMapEntry;
 		typedef typename Value<THitMapEntry,2>::Type			THitSetPointer;
 		typedef typename Value<THitSetPointer>::Type			THitSet;
+		typedef typename Value<THitSet>::Type					THit;
 
 	    typedef typename Value<THaystack>::Type               	THaystackValue;
 	    typedef typename Fibre<TQGramIndex, QGramSA>::Type      TSA;
@@ -1873,12 +1999,16 @@ namespace SEQAN_NAMESPACE_MAIN
 	    typedef typename Value<TSADir>::Type                    TSADirValue;
 	    typedef typename Iterator<TSA, Standard>::Type          TSAIter;
 	    typedef typename Iterator<TSADir, Standard>::Type       TSADirIter;
+		typedef Seed<Simple, DefaultSeedConfig>					TSeed;
+
 
 		typedef 		 std::vector<int>								TSegments;
 		typedef  		 String<char> 									TMergedHaystack;
 		typedef 		 std::map<int, THitSetPointer> 					THitSetPointerMap;
-		typedef 		 std::map<int, std::map<int, std::set<int> > > 	TSeedMap;
+		typedef 		 std::map<int, std::map<int, std::set<int> > > 	TSeedHashesMap;
+		typedef			 std::pair<int, int> 							THitListKey;
 		typedef typename Suffix<typename GetSequenceByNo<TQGramIndex const>::Type >::Type	TSuffix;
+		typedef			 std::map<THitListKey, std::map<THitListKey, std::vector<THit*> > >	THitList;
 
 	    int score;
 	    int numLocations;
@@ -1893,9 +2023,10 @@ namespace SEQAN_NAMESPACE_MAIN
 	    int cnt 		 = 0;
 		unsigned targetLength 	= 0;
 		unsigned alphabetSize	= 6;	// 4 + Y and N
-		assert((int)minLength == 25);
 
-		TSeedMap 		seedMap;
+		THitList		hitList;		// for each tts-tfo pair: keeps a
+										//
+		TSeedHashesMap 	seedHashMap;
 	    TSADirIter  	itBucketDir;
 	    TSADirIter  	itBucketDirEnd;
 	    TSAIter     	saBegin;
@@ -1922,13 +2053,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	    itBucketDirEnd      = end(indexDir(index), Standard());
 	    saBegin             = begin(indexSA(index), Standard());
 	    bucketBegin 		= *itBucketDir;
-
-//	    for (int i = 0; i < length(needles); ++i) {
-//	    	cout << "needle: #" << i << "\t\t" << needles[i] << endl << std::flush;
-//	    }
-//	    for (int i = 0; i < length(haystack); ++i) {
-//	    	cout << "fiber: #" << i << "\t\t" << haystack[i] << endl << std::flush;
-//	    }
 
 	    // iterate over each substring of length 'minLength' == same as iterating over each
 	    // bucket (unique q-gram) in the q-gram index
@@ -1970,18 +2094,18 @@ namespace SEQAN_NAMESPACE_MAIN
 	    		cout << endl << "Number of hits (numLocations): " << numLocations << endl;
 #endif
 
-	    		verifyMatches(seedMap, hitSetPointerMap, haystack, mergedHaystack, segmentMap, needles,
+	    		verifyMatches(seedHashMap, hitList, haystack, mergedHaystack, segmentMap, needles,
 	    				suffixQGram, itBucketItem, itEndBucket, errorRate, numLocations,
-						endLocations, minLength, xDrop, Value<THitSet>());
+						endLocations, minLength, consErrors, THit(), THitListKey());
 	    	}
 	    	bucketBegin = bucketEnd;
 	    }
+	    mergeOverlappingHits(hitList, hitSetPointerMap, THit());
 	    // add hits to gardener
 	    for (int i = 0; i < length(haystack); ++i) {
 	    	insert(gardener.hits, i, hitSetPointerMap[i]);
 	    }
 	    delete bitTarget;
-//	    std::cout << "elapsed time: "<< sysTime() - t << " sec\n";
 	}
 
 	/** 
@@ -2253,3 +2377,259 @@ namespace SEQAN_NAMESPACE_MAIN
 } //namespace SEQAN_NAMESPACE_MAIN
 
 #endif //#ifndef FBUSKE_APPS_TRIPLEXATOR_HEADER_GARDENER_H
+
+
+//	/**
+//	 * Given a maximum seed match between fiber and query, this function returns all maximally
+//	 * extended seeds which don't overlap entirely, w.r.t. to k and maximum lengths of the segments.
+//	 * The ends of the seed to be extended are included in the match.
+//	 */
+//	template<
+//	typename TSeed,
+//	typename TSeedList,
+//	typename THaystackFiber,
+//	typename TQuery>
+//	void extendSimpleSeed(
+//			TSeed 			const &seed,
+//			TSeedList			  &extendedSeeds,
+//			THaystackFiber 	const &fiber,
+//			TQuery 			const &query,
+//			int 			const &k,
+//			int				const &minLength) {
+//		extendedSeeds.clear();
+//
+//		int posFiber;
+//		int posQuery;
+//		int mismatches;
+//		int bDim0;
+//		int bDim1;
+//		int eDim0;
+//		int eDim1;
+//
+//		bool isLeftZeroIncluded = false;
+//		bool isRightEndIncluded = false;
+//
+//		// keep list of where mismatches occur, left and right from seed
+//		std::vector<int> lMmOffsets;
+//		std::vector<int> rMmOffsets;
+//
+//        // go left
+//        mismatches = 0;
+//        posFiber = getBeginDim0(seed);
+//        posQuery = getBeginDim1(seed);
+//        while (posFiber >= 0 && posQuery >= 0 && mismatches <= k) {
+//            if (fiber[posFiber] != query[posQuery]) {
+//                lMmOffsets.push_back(getBeginDim0(seed) - posFiber);
+//                mismatches++;
+//                if (posFiber == 0 || posQuery == 0) {
+//                	isLeftZeroIncluded = true;
+//                }
+//            }
+//            posFiber--;
+//            posQuery--;
+//        }
+//
+//        // go right
+//        mismatches = 0;
+//        posFiber = getEndDim0(seed);
+//        posQuery = getEndDim1(seed);
+//        int endFiber = length(fiber);
+//        int endQuery = length(query);
+//        // only go until the second last element, the last one is added later if needed (end* - 1)
+//        while (posFiber < endFiber && posQuery < endQuery && mismatches <= k) {
+//            if (fiber[posFiber] != query[posQuery]) {
+//                rMmOffsets.push_back(posFiber - getEndDim0(seed));
+//                mismatches++;
+//                if (posFiber == endFiber - 1 || posQuery == endQuery - 1) {
+//                	isRightEndIncluded = true;
+//                }
+//            }
+//            posFiber++;
+//            posQuery++;
+//        }
+//
+//        // init left and right mismatch numbers
+//        int lMmSize = lMmOffsets.size();
+//        int rMmSize = rMmOffsets.size();
+//
+//        // if #mismatches less than k, whole segments match
+//        if (lMmSize + rMmSize <= k) {
+//#ifdef DEBUG
+//            cout << "Whole segments match in seed extension, limits are included." << endl;
+//#endif
+//        	bDim0 = std::max(0, (int)(getBeginDim0(seed) - getBeginDim1(seed)));
+//        	bDim1 = std::max(0, (int)(getBeginDim1(seed) - getBeginDim0(seed)));
+//        	eDim0 = std::min((int)(length(fiber)), (int)(getEndDim0(seed) + length(query) - getEndDim1(seed)));
+//        	eDim1 = std::min((int)(length(query)), (int)(getEndDim1(seed) + length(fiber) - getEndDim0(seed)));
+//
+//        	while (fiber[bDim0] != query[bDim1]) {
+//        		++bDim0;
+//        		++bDim1;
+//        	}
+//
+//        	while (fiber[eDim0 - 1] != query[eDim1 - 1]) {
+//        		--eDim0;
+//        		--eDim1;
+//        	}
+//
+//            if (eDim0 - bDim0 >= minLength) {
+//            	extendedSeeds.push_back(TSeed(bDim0, bDim1, eDim0, eDim1));
+//            }
+//#ifdef DEBUG
+//            else {
+//            	cout << "length of match is: " << eDim0 - bDim0 << " < " << minLength << endl;
+//            }
+//#endif
+//            return;
+//        }
+//
+//        // add corresponding end points if required
+//        // if leftmost offset (beg. of seed) was not included
+//        if (lMmSize <= k && !isLeftZeroIncluded) {
+//        	lMmOffsets.push_back(std::min((int)(getBeginDim0(seed)),(int)(getBeginDim1(seed))));
+//        	++lMmSize;
+//        }
+//        // if rightmost offset (beg. of seed) was not included
+//        if (rMmSize <= k && !isRightEndIncluded) {
+//        	rMmOffsets.push_back(std::min((int)(length(query) - getEndDim1(seed) - 1), (int)(length(fiber) - getEndDim0(seed) - 1)));
+//        	++rMmSize;
+//        }
+//
+//#ifdef DEBUG
+//        cout << "leftMismatches: " << lMmSize << endl;
+//        cout << "rightMismatches: " << rMmSize << endl;
+//        cout << "isLeftZeroIncluded: " << isLeftZeroIncluded << endl;
+//        cout << "isRightEndIncluded: " << isRightEndIncluded << endl;
+//#endif
+//
+//        std::set<int> addedSeedHashes;
+//        std::vector<int> offsetPairs(lMmSize + 1, -1);
+//
+//        for (int l = lMmSize - 1; l >= 0; --l) {
+//        	for (int r = rMmSize - 1; r >= 0 && l + r >= k; --r) {
+//        		// lower r until match is valid, i.e., <= k
+//        		if (l + r > k) {
+//        			continue;
+//        		}
+//#ifdef DEBUG
+//        		cout << "iter start l: " << l << endl;
+//        		cout << "iter start r: " << r << endl;
+//        		cout << "l + r: " << l + r << endl;
+//#endif
+//        		bDim0 = getBeginDim0(seed) - lMmOffsets[l];
+//        		bDim1 = getBeginDim1(seed) - lMmOffsets[l];
+//        		eDim0 = getEndDim0(seed) + rMmOffsets[r];
+//        		eDim1 = getEndDim1(seed) + rMmOffsets[r];
+//        		int cnt = 0;
+//
+//        		cout << "bDim0, bDim1:" << bDim0 << ", " << bDim1 << endl << std::flush;
+//        		cout << "eDim0, eDim1:" << eDim0 << ", " << eDim1 << endl << std::flush;
+//        		// skip beginning positions until match found
+//        		while (fiber[bDim0] != query[bDim1]) {
+//        			if (cnt) {
+//        				--l;
+//        				cout << "skip 1 bDim* with consequences, lower l: " << l << endl << std::flush;
+//        			}
+//        			else {
+//        				cout << "skip 1 bDim* for FREE, they differ" << endl << std::flush;
+//        			}
+//        			++bDim0;
+//        			++bDim1;
+//        			++cnt;
+//        		}
+//
+//        		cnt = 0;
+//        		while (fiber[eDim0] != query[eDim1]) {
+//        			if (cnt) {
+//        				--r;
+//        				cout << "skip 1 eDim* for FREE, they differ" << endl << std::flush;
+//        			}
+//        			else {
+//        				cout << "skip 1 eDim* with consequences" << endl << std::flush;
+//        			}
+//        			--eDim0;
+//        			--eDim1;
+//        			++cnt;
+//        		}
+//        		cout << "eDim0, eDim1 after skipping:" << eDim0 << ", " << eDim1 << endl << std::flush;
+//        		cout << "bDim0, bDim1 after skipping:" << bDim0 << ", " << bDim1 << endl << std::flush;
+//
+//        		// eDim* still include the last match, to report we add +1
+//        		if (eDim0 + 1 - bDim0 >= minLength && offsetPairs[l + 1] < r && offsetPairs[l] < r) {
+//        			int hash = ((bDim0 + 1) * (eDim1 + 1) * 10) - (bDim1 + 1) * (eDim0 + 1);
+//        			// if new match
+//        			if (!addedSeedHashes.count(hash)) {
+//        				// add +1 to endDim*, it's how seeds / matches are reported
+//        				extendedSeeds.push_back(TSeed(bDim0, bDim1, eDim0 + 1, eDim1 + 1));
+//        				addedSeedHashes.insert(hash);
+//        				offsetPairs[l] = r;
+//#ifdef DEBUG
+//        				cout << "l: " << l << ", r: " << r << endl;
+//        				cout << "valid & new seed extension: " << extendedSeeds.back() << endl;
+//#endif
+//        			}
+//        		}
+//#ifdef DEBUG
+//        		else {
+//        			cout << "length of match is: " << eDim0 + 1 - bDim0 << " < " << minLength << endl;
+//        			cout << "offsetPairs[l]: " << offsetPairs[l + 1] << ", r: " << r << endl;
+//        		}
+//#endif
+//        	}
+//        }
+//
+//        // find maximal seeds
+////        for (; l >= 0 && r < rMmSize; --l) {
+////            assert(abs(l - r) <= k);
+////
+////            bDim0 = getBeginDim0(seed) - lMmOffsets[l];
+////            bDim1 = getBeginDim1(seed) - lMmOffsets[l];
+////
+////            // first skip of mismatch is "FREE"
+////            if (fiber[bDim0] != query[bDim1]) {
+////            	++bDim0;
+////            	++bDim1;
+////            	cout << "skip 1 for FREE" << endl << std::flush;
+////            }
+////
+////            // skip beginning positions until match found
+////            while (fiber[bDim0] != query[bDim1]) {
+////            	cout << "skip 1 with consequences" << endl << std::flush;
+////            	--l;
+////            	++bDim0;
+////            	++bDim1;
+////
+////            	// if we adjust the beginning positions, we can extend the right ones to get maximal seeds
+////            	if (r < rMmSize - 1) {
+////            		++r;
+////            		cout << "skip r also " << endl << std::flush;
+////            	}
+////            }
+////
+////            cout << "bar r:" << r << endl << std::flush;
+////            eDim0 = getEndDim0(seed) + rMmOffsets[r];
+////            eDim1 = getEndDim1(seed) + rMmOffsets[r];
+////            cout << "qux eDim0 eDim1:" << eDim0 << ", " << eDim1 << endl << std::flush;
+////
+////            while (fiber[eDim0] != query[eDim1]) {
+////            	--eDim0;
+////            	--eDim1;
+////            }
+////
+////            ++eDim0;
+////            ++eDim1;
+////
+////#ifdef DEBUG
+////            cout << "l: " << l << ", r: " << r << endl;
+////#endif
+////            if (eDim0 - bDim0 >= minLength) {
+////            	extendedSeeds.push_back(TSeed(bDim0, bDim1, eDim0, eDim1));
+////            }
+////#ifdef DEBUG
+////            else {
+////            	cout << "length of match is: " << eDim0 - bDim0 << " < " << minLength << endl;
+////            }
+////#endif
+////            ++r;
+////        }
+//	}
