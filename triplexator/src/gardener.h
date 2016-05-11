@@ -40,6 +40,7 @@
 #include "triplex_alphabet.h"
 #include "helper.h"
 #include "edlib.h"
+#include "myers.h"
 #include <seqan/seeds2.h>  // Include module under test.
 #include <seqan/sequence/adapt_std_list.h>
 #include <seqan/misc/priority_type_base.h>
@@ -1385,7 +1386,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			else {
 				consecutiveMismatches = 0;
 			}
-			localK = std::max((int)floor((getEndDiagonal(seed) - posFiber + 1) * errorRate), k);
+			localK = std::max((int)floor((getEndDim0(seed) - posFiber + 1) * errorRate), k);
 			--posFiber;
 			--posQuery;
 		}
@@ -1581,7 +1582,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	template<
 	typename TSeedMap,
 	typename THitList,
-//	typename THitSetPointerMap,
 	typename THaystack,
 	typename TMergedHaystack,
 	typename TSegment,
@@ -1596,8 +1596,8 @@ namespace SEQAN_NAMESPACE_MAIN
 	>
 	void verifyMatches(
 			TSeedMap	   			&addedSeedHashMap,
+			TSeedMap	   			&initMaxSeedHashMap,
 			THitList				&hitList,
-//			THitSetPointerMap 		&hitSetMap,
 			THaystack 		const 	&haystack,
 			TMergedHaystack const 	&mergedHaystack,
 			TSegment 		const 	&segmentMap,
@@ -1654,6 +1654,9 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	        // make sure the found match doesn't span 2 different fibers in the original haystack
 	        if ((bPos - segmentMap[haystackFiberSeqNo]) + minLength > length(haystack[haystackFiberSeqNo])) {
+#ifdef DEBUG
+	        	cout << "Discarding Myers match because it spans over different fibers in original haystack." << endl;
+#endif
 	        	continue;
 	        }
 
@@ -1678,6 +1681,9 @@ namespace SEQAN_NAMESPACE_MAIN
 	        }
 	        // invalid alignment
 	        if (misM > k) {
+#ifdef DEBUG
+	        	cout << "Discarding Myers match because there are more than allowed mismatches." << endl;
+#endif
 	        	continue;
 	        }
 
@@ -1710,7 +1716,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	        	if (matchLength > maxSeedLength) {
 	        		maxSeedLength 		= matchLength;
-	        		maxSeedMergedEnd 	= pos + matchLength;
+	        		maxSeedMergedEnd 	= pos  + matchLength;
 	        		maxSeedQGramEnd		= qPos + matchLength;
 	        		maxSeedFiberEnd		= maxSeedMergedEnd - segmentMap[haystackFiberSeqNo];
 	        	}
@@ -1735,6 +1741,14 @@ namespace SEQAN_NAMESPACE_MAIN
 	            int qGramSeedEnd 	= maxSeedQGramEnd + qGramOffset;
 
 	            THitListKey seqNoKey(haystackFiberSeqNo, ndlSeqNo);
+
+		        unsigned long long maxSeedHash = maxSeedFiberEnd - maxSeedLength + 1;
+		        maxSeedHash = (((((maxSeedHash << 16) + maxSeedFiberEnd) << 16) + qGramSeedBegin) << 16) + qGramSeedEnd;
+		        if (initMaxSeedHashMap[seqNoKey].count(maxSeedHash)) {
+		        	continue;
+		        }
+		        initMaxSeedHashMap[seqNoKey].insert(maxSeedHash);
+
 	            TSeed seed(maxSeedFiberEnd - maxSeedLength + 1, qGramSeedBegin, maxSeedFiberEnd, qGramSeedEnd);
 #ifdef DEBUG
 	            std::cout << endl << "Original seed: " << seed << endl
@@ -1770,8 +1784,9 @@ namespace SEQAN_NAMESPACE_MAIN
 	            		);
 
 	            		THitListKey matchKey(getBeginDim0(*seed), getEndDim0(*seed));
-
+#ifdef DEBUG
 	            		cout << "+++ adding new hit for matchKey<int,int> : " << matchKey.first << ", " << matchKey.second << endl;
+#endif
 	            		((hitList[seqNoKey])[matchKey]).push_back(hit);
 	            	}
 	            }
@@ -1856,11 +1871,18 @@ namespace SEQAN_NAMESPACE_MAIN
 	template<
 		typename THitSetPointerMap,
 		typename THitList,
+		typename THaystack,
+		typename TNeedles,
+		typename TError,
 		typename THit
 	>
 	void mergeOverlappingHits(
-			THitList 			&hitList,
-			THitSetPointerMap 	&hitSetMap,
+			THitList 					&hitList,
+			THitSetPointerMap 			&hitSetMap,
+			THaystack 			const 	&haystack,
+			TNeedles  			const	&needles,
+			TError				const	&errorRate,
+			int 				const	&minLength,
 			THit)
 	{
 		typedef std::pair<int,int>										THitListKey;
@@ -1869,15 +1891,20 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename 	std::map<THitListKey, std::vector<THit*> >::iterator TDim0Iterator;
 
 		int haystackFiberSeqNo;
+		int ndlSeqNo;
+
 		TDim0Iterator dim0It;
 		TDim0Iterator nextDim0It;
-
+#ifdef DEBUG
 		cout << endl << endl << "Merging overlaps" << endl;
+#endif
 
 		for (THitListIterator it = hitList.begin(); it != hitList.end(); ++it) {
-			haystackFiberSeqNo = (it->first).first;
-
+			haystackFiberSeqNo 	= (it->first).first;
+			ndlSeqNo			= (it->first).second;
+#ifdef DEBUG
 			cout << "Starting new tts-tfo pair" << endl;
+#endif
 
 			for (dim0It = (it->second).begin(); dim0It != (it->second).end(); ++dim0It) {
 				int currBegDim0 = dim0It->first.first;
@@ -1889,32 +1916,39 @@ namespace SEQAN_NAMESPACE_MAIN
 
 					int nextBegDim0 = nextDim0It->first.first;
 					int nextEndDim0 = nextDim0It->first.second;
-
+#ifdef DEBUG
 					cout << endl << endl << "current matchKey<int,int> : " << currBegDim0 << ", " << currEndDim0 << endl << std::flush;
 					cout << "next matchKey<int,int> : " << nextBegDim0 << ", " << nextEndDim0 << endl << std::flush;
-
+#endif
 					// check if dim0 indices overlap
 					if (nextBegDim0 >= currBegDim0 && nextBegDim0 < currEndDim0) {
 						// iterate over all hit matches
 						for (THitIterator currHitIt = dim0It->second.begin(); currHitIt != dim0It->second.end();) {
-							bool moveIt = true;
+							bool incrementCurrHitIt = true;
 							for (THitIterator nextHitIt = nextDim0It->second.begin(); nextHitIt != nextDim0It->second.end();) {
 								THit *currHit = *currHitIt;
 								THit *nextHit = *nextHitIt;
-								cout 	<< "c Hit: ndlPos = " << currHit->ndlPos << endl
-										<< "n Hit: ndlPos = " << nextHit->ndlPos << endl
-										<< "c Hit: hstkPos = " << currHit->hstkPos << endl
-										<< "n Hit: hstkPos = " << nextHit->hstkPos << endl
+#ifdef DEBUG
+								cout 	<< "c Hit seed: = " << currBegDim0 << ", " << currBegDim0 + currHit->hitLength << ", - " << currHit->ndlPos << ", " << currHit->ndlPos + currHit->hitLength << endl
+										<< "n Hit seed: = " << nextHit->hstkPos << ", " << nextHit->hstkPos + nextHit->hitLength << ", - " << nextHit->ndlPos << ", " << nextHit->ndlPos + nextHit->hitLength << endl
 										<< "c Hit: hstkPos - ndlPos = " << currHit->hstkPos - currHit->ndlPos << endl
 										<< "n Hit: hstkPos - ndlPos = " << nextHit->hstkPos - nextHit->ndlPos << endl;
-
+#endif
+								if (currHit->hstkPos - currHit->ndlPos != nextHit->hstkPos - nextHit->ndlPos) {
+									++nextHitIt;
+#ifdef DEBUG
+									cout << "hits overlap but they are not aligned" << endl;
+#endif
+									continue;
+								}
 
 								// case I: currHit contains nextHit
 								if (currHit->ndlPos <= nextHit->ndlPos
-										&& currHit->ndlPos + currHit->hitLength >= nextHit->ndlPos + nextHit->hitLength
-										&& currHit->hstkPos - currHit->ndlPos == nextHit->hstkPos - nextHit->ndlPos 	// alignment must also match
-								) {
+										&& currHit->ndlPos + currHit->hitLength >= nextHit->ndlPos + nextHit->hitLength)
+								{
+#ifdef DEBUG
 									cout << "current hit contains next hit, delete next" << std::flush;
+#endif
 									delete nextHit;
 									nextHitIt = nextDim0It->second.erase(nextHitIt);
 								}
@@ -1922,33 +1956,74 @@ namespace SEQAN_NAMESPACE_MAIN
 								// case II: nextHit contains currHit
 								else if (currHit->ndlPos >= nextHit->ndlPos
 										&& currHit->ndlPos + currHit->hitLength <= nextHit->ndlPos + nextHit->hitLength
-										&& currHit->hstkPos - currHit->ndlPos == nextHit->hstkPos - nextHit->ndlPos		// alignment must also match
 								) {
+#ifdef DEBUG
 									cout << "next hit contains current hit, just delete current and skip to next current" << std::flush;
+#endif
 									delete currHit;
 									currHitIt = dim0It->second.erase(currHitIt);
-									moveIt = false;
+									incrementCurrHitIt = false;
 									break;
 								}
+								//  case III: hits overlap and are aligned, check if merge can be done
 								else {
-									++nextHitIt;
+									int mismatches  = 0;
+									int mergeEndPos = nextHit->hstkPos + nextHit->hitLength;
+									int hstkPos = currHit->hstkPos;
+									int ndlPos 	= currHit->ndlPos;
+									int overlappedLength = mergeEndPos - currHit->hstkPos;
+#ifdef DEBUG
+									cout << "trying to merge, overlapped segment len:" << overlappedLength << endl;
+									if (mergeEndPos <= currHit->hstkPos + currHit->hitLength) {
+										cout << "AJJJAJAJ wrong assumption while overlapping!" << endl;
+									}
+#endif
+									while (hstkPos <= mergeEndPos) {
+										if (haystack[haystackFiberSeqNo][hstkPos] != needles[ndlSeqNo][ndlPos]) {
+											++mismatches;
+										}
+										++hstkPos;
+										++ndlPos;
+									}
+									// should merge overlapping segments, errorRate isn't changed
+									if (mismatches <= std::floor(errorRate * overlappedLength)) {
+#ifdef DEBUG
+										cout << "okay, we can overlap these two..." << endl;
+#endif
+										currHit->hitLength = overlappedLength;
+										// delete next hit as it's now part of current hit
+										delete nextHit;
+										nextHitIt = nextDim0It->second.erase(nextHitIt);
+									}
+									else {
+										++nextHitIt;
+									}
 								}
 							}
-							if (moveIt) {
+							if (incrementCurrHitIt) {
 								++currHitIt;
 							}
 						}
 					}
 					// no overlap --> add all hits and stop verifying current dim0It
 					else {
+#ifdef DEBUG
 						cout << "no overlap! stop after this" << endl;
+#endif
 						noMoreOverlap = true;
 					}
 				}
-
+#ifdef DEBUG
 				cout << "will add all remaining current hits, nextDim0It loop exited (or didn't enter)" << endl;
+#endif
 				// add all remaining hits and stop verifying current dim0It
 				for (THitIterator hit = dim0It->second.begin(); hit != dim0It->second.end(); ++hit) {
+#ifdef DEBUG
+					cout 	<< "seed bDim0: " << (*hit)->hstkPos << endl
+							<< "seed eDim0: " << (*hit)->hstkPos + (*hit)->hitLength << endl
+							<< "seed bDim1: " << (*hit)->ndlPos << endl
+							<< "seed eDim1: " << (*hit)->ndlPos + (*hit)->hitLength << endl;
+#endif
 					add((*hitSetMap[haystackFiberSeqNo]), **hit);
 				}
 			} // end dim0It for loop
@@ -2023,6 +2098,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		THitList		hitList;		// for each tts-tfo pair: keeps a
 										//
 		TSeedHashesMap 	seedHashMap;
+		TSeedHashesMap 	initMaxSeedHashMap;
 	    TSADirIter  	itBucketDir;
 	    TSADirIter  	itBucketDirEnd;
 	    TSAIter     	saBegin;
@@ -2069,7 +2145,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	    		//calculate Myers distance - this yields putative matches in endLocations
 	    		edlibCalcEditDistance(bitQGram, minLength, bitTarget, targetLength, alphabetSize,
-	    				k, EDLIB_MODE_HW, true, true, &score,
+	    				k + 1, EDLIB_MODE_HW, true, true, &score,
 						&endLocations, &startLocations, &numLocations,
 						&alignment, &alignmentLength);
 
@@ -2089,15 +2165,15 @@ namespace SEQAN_NAMESPACE_MAIN
 //	    		}
 	    		cout << endl << "Number of hits (numLocations): " << numLocations << endl;
 #endif
-
-	    		verifyMatches(seedHashMap, hitList, haystack, mergedHaystack, segmentMap, needles,
+	    		mergeMyersMatches();
+	    		verifyMatches(seedHashMap, initMaxSeedHashMap, hitList, haystack, mergedHaystack, segmentMap, needles,
 	    				suffixQGram, itBucketItem, itEndBucket, errorRate, numLocations,
 						endLocations, minLength, consErrors, THit(), THitListKey());
 	    	}
 	    	bucketBegin = bucketEnd;
 	    }
 	    // keep only maximum segments, remove those included in larger hits
-	    mergeOverlappingHits(hitList, hitSetPointerMap, THit());
+	    mergeOverlappingHits(hitList, hitSetPointerMap, haystack, needles, errorRate, minLength, THit());
 	    // add hits to gardener
 	    for (int i = 0; i < length(haystack); ++i) {
 	    	insert(gardener.hits, i, hitSetPointerMap[i]);

@@ -1,0 +1,7 @@
+open ./tmp_chr1_myers_l25_c1_e15_truncated_fulldna.tpx
+Starting on duplex file mm9.chr1.fa
+### Forward search
+
+### Reverse search
+
+rename temorary file ./tmp_chr1_myers_l25_c1_e15_truncated_fulldna.tpx to ./chr1_myers_l25_c1_e15_truncated_fulldna.tpx

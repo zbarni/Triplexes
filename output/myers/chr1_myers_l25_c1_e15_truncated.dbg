@@ -1,0 +1,7 @@
+open ./tmp_chr1_myers_l25_c1_e15_truncated.tpx
+Starting on duplex file mm9.chr1.oneline.truncated.fa
+### Forward search
+
+### Reverse search
+
+rename temorary file ./tmp_chr1_myers_l25_c1_e15_truncated.tpx to ./chr1_myers_l25_c1_e15_truncated.tpx

@@ -1,18 +1,51 @@
 #!/bin/bash
 
-TTS_FILE='data.tts'
-TFO_FILE='data.tfo'
+LARGE=""
+VERBOSE=""
+TEST=""
 
+while getopts ":vx:t:" opt; do
+    case ${opt} in
+        v ) 
+        VERBOSE=" -of 1 "
+        ;;
+        x ) 
+        LARGE="x"
+        ;;
+        t ) TEST=$OPTARG
+        ;;
+        \? ) echo "Usage: run.sh [-t TESTNUMBER] [-x] [-v]"
+        ;;
+    esac
+done
 #1
 cd "output"
-for TEST in {1..9}
+
+if [[ $TEST != "" ]]; then
+    echo "Running MYERS #${LARGE}${TEST}"
+    triplexator -ss "../data/tfo_${LARGE}${TEST}.data" -ds "../data/tts_${LARGE}${TEST}.data" -e 20 -c 1 -l 25 -L -1 -fm 1 -i  -o "myers_${LARGE}${TEST}.tpx" $VERBOSE  &> "myers_${LARGE}${TEST}.dbg"
+
+    echo "Running BRUTE FORCE #${LARGE}${TEST}"
+    triplexator -ss "../data/tfo_${LARGE}${TEST}.data" -ds "../data/tts_${LARGE}${TEST}.data" -e 20 -c 1 -l 25 -L -1 -o "brute_${LARGE}${TEST}.tpx" $VERBOSE &> "brute_${LARGE}${TEST}.dbg"
+
+    echo ""
+    sort "myers_${LARGE}${TEST}.tpx" > "myers.tmp"
+    sort "brute_${LARGE}${TEST}.tpx" > "brute.tmp"
+    cmp --silent "myers.tmp" "brute.tmp"  || echo "==> Test #${LARGE}${TEST} failed. <=="
+    exit
+fi
+
+for TEST in {3..3}
 do
-    triplexator -ss "../data/tfo_${TEST}.data" -ds "../data/tts_${TEST}.data" -e 20 -c 1 -l 10 -fm 1 -i  -o "myers_${TEST}.tpx" -of 1 &> "myers_${TEST}.dbg"
-    triplexator -ss "../data/tfo_${TEST}.data" -ds "../data/tts_${TEST}.data" -e 20 -c 1 -l 10 -o "brute_${TEST}.tpx" -of 1 &> "brute_${TEST}.dbg"
-#    triplexator -ss "../data/tfo_${TEST}.data" -ds "../data/tts_${TEST}.data" -e 20 -c 1 -l 10 -fm 1 -i  -o "myers_${TEST}.tpx"  &> "myers_${TEST}.dbg"
-#    triplexator -ss "../data/tfo_${TEST}.data" -ds "../data/tts_${TEST}.data" -e 20 -c 1 -l 10 -o "brute_${TEST}.tpx" &> "brute_${TEST}.dbg"
-    sort "myers_${TEST}.tpx" > "myers.tmp"
-    sort "brute_${TEST}.tpx" > "brute.tmp"
-    cmp --silent "myers.tmp" "brute.tmp"  || echo "Test #${TEST} failed."
+    echo "Running MYERS #${LARGE}${TEST}"
+    triplexator -ss "../data/tfo_${LARGE}${TEST}.data" -ds "../data/tts_${LARGE}${TEST}.data" -e 20 -c 1 -l 25 -L -1 -fm 1 -i  -o "myers_${LARGE}${TEST}.tpx" $VERBOSE  &> "myers_${LARGE}${TEST}.dbg"
+
+    echo "Running BRUTE FORCE #${LARGE}${TEST}"
+    triplexator -ss "../data/tfo_${LARGE}${TEST}.data" -ds "../data/tts_${LARGE}${TEST}.data" -e 20 -c 1 -l 25 -L -1 -o "brute_${LARGE}${TEST}.tpx" $VERBOSE &> "brute_${LARGE}${TEST}.dbg"
+
+    echo ""
+    sort "myers_${LARGE}${TEST}.tpx" > "myers.tmp"
+    sort "brute_${LARGE}${TEST}.tpx" > "brute.tmp"
+    cmp --silent "myers.tmp" "brute.tmp"  || echo "==> Test #${LARGE}${TEST} failed. <=="
     #rm "myers.tmp" "brute.tmp"
 done
