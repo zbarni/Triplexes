@@ -3817,6 +3817,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	
 	// Store all matches in a vector and convert the references accordingly
 	template<
+	typename TTriplexHashes,
 	typename TMatches,
 	typename TPotentials,
 	typename TId,
@@ -3824,7 +3825,9 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TStringSet,
 	typename TDuplexSet
 	>
-	void _verifyAndStoreMyers(TMatches					&matches,
+	void _verifyAndStoreMyers(
+						 TTriplexHashes					&triplexHashes,
+						 TMatches						&matches,
 						 TPotentials					&potentials,
 						 Gardener<TId, TGardenerSpec>	&gardener,
 						 TStringSet	const				&tfoSet,		// needles
@@ -3832,7 +3835,7 @@ namespace SEQAN_NAMESPACE_MAIN
 						 TId		const				&duplexId,
 						 bool		const				plusstrand,
 						 Options						&options
-						 ){
+						 ) {
 		SEQAN_PROTIMESTART(time_verify);
 
 		typedef Gardener<TId, TGardenerSpec>				TGardener;
@@ -3857,6 +3860,10 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename Key<TPotValue>::Type				TPotKey;
 		typedef typename Cargo<TPotValue>::Type				TPotCargo;
 
+		typedef typename Value<TTriplexHashes>::Type		TTriplexHashValue;
+		typedef typename Key<TTriplexHashValue>::Type		TTriplexHashKey;
+		typedef typename Cargo<TTriplexHashValue>::Type		TTriplexHashEntry;
+
 		// check all queries for hits
 		for (TId queryid=0; queryid<(TId)length(ttsSet); ++queryid){
 			for (TIter it = harvestBegin(gardener,queryid); it != harvestEnd(gardener, queryid); ++it){
@@ -3866,18 +3873,20 @@ namespace SEQAN_NAMESPACE_MAIN
 				TPos ttsStart;
 				TPos ttsEnd;
 				char strand;
-#ifdef TRIPLEX_DEBUG
-				cout << "============ HIT ============ " << endl << std::flush;
-				cout << "hit.getNdlSeqNo() " << hit.getNdlSeqNo() << endl
-						<< "hit.getNdlPos() " << hit.getNdlPos() << endl
-						<< "hit.getHitLength() " << hit.getHitLength() << endl
-						<< "hit.getHstId() " << hit.getHstId() << endl
-						<< "hit.getHstkPos() " << hit.getHstkPos() << endl << std::flush;
-				cout << "tfoSet[hit.getNdlSeqNo()]: " << tfoSet[hit.getNdlSeqNo()] << endl <<
-						"value(ttsSet,hit.getHstId()): " << value(ttsSet,hit.getHstId()) << endl << std::flush;
-#endif
+
 				THost tfo = infix(ttsString(tfoSet[hit.getNdlSeqNo()]), hit.getNdlPos(), hit.getNdlPos() + hit.getHitLength());
 				THost triplex(infix(ttsString(value(ttsSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
+
+#ifdef TRIPLEX_DEBUG
+				cout << "============ HIT ============ " << endl << std::flush;
+				cout << "Seed gardener: " << endl << '\t'
+						<< hit.getHstkPos() << ", " << hit.getHstkPos() + hit.getHitLength()
+						<< " - " <<  hit.getNdlPos() << ", " <<  hit.getNdlPos() + hit.getHitLength() << endl
+						<< "hit.getHitLength() " << hit.getHitLength() << endl << std::flush;
+				cout << "tfoSet[hit.getNdlSeqNo()]: " << tfoSet[hit.getNdlSeqNo()] << endl <<
+						"value(ttsSet,hit.getHstId()): " << value(ttsSet,hit.getHstId()) << endl << std::flush;
+				cout << "TFO: " << tfo << endl << "TTS: " << triplex << endl << endl;
+#endif
 
 #ifdef TRIPLEX_DEBUG
 				::std::cerr << "transform (triplex): " << triplex << :: std::endl;
@@ -3951,6 +3960,18 @@ namespace SEQAN_NAMESPACE_MAIN
 						tfoStart = tfoEnd - length(*itr);
 					}
 
+					TTriplexHashKey ttsTfoKey(queryid, hit.getNdlSeqNo());
+					unsigned long hash = ttsStart;
+			        hash = (((((hash << 16) + ttsEnd) << 16) + tfoStart) << 16) + tfoEnd;
+
+			        if (!triplexHashes.count(ttsTfoKey)) {
+			        	triplexHashes[ttsTfoKey] = TTriplexHashEntry();
+			        }
+			        if (triplexHashes[ttsTfoKey].count(hash)) {
+			        	continue;
+			        }
+			        triplexHashes[ttsTfoKey].insert(hash);
+
 					// save the corresponding triplex match
 					TMatch match(hit.getNdlSeqNo(),
 								 tfoStart,
@@ -3966,14 +3987,13 @@ namespace SEQAN_NAMESPACE_MAIN
 								 guanines
 								 );
 					appendValue(matches, match);
-//					cout << "====++====== MATCH =====++===== " << endl << std::flush;
-//					cout << "hit.getNdlSeqNo() " << hit.getNdlSeqNo() << endl
-//							<< "hit.getNdlPos() == tfoStart " << tfoStart << endl
-//							<< "tfoend " << tfoEnd << endl
-//							<< "ttsstart " << ttsStart << endl << std::flush
-//							<< "ttsend " << ttsEnd << endl << std::flush;
-//					cout << "tfoSet[hit.getNdlSeqNo()]: " << tfoSet[hit.getNdlSeqNo()] << endl <<
-//							"value(ttsSet,hit.getHstId()): " << value(ttsSet,hit.getHstId()) << endl << std::flush;
+
+//					cout << "====+++===== MATCH?! ====+++===== " << endl << std::flush;
+//					cout << "Seed gardener: " << endl << '\t'
+//							<< ttsStart << ", " << ttsEnd
+//							<< " - " <<  tfoStart << ", " <<  tfoEnd << endl << std::flush;
+//					cout << "TFO: " << infix(ttsString(tfoSet[hit.getNdlSeqNo()]), tfoStart, tfoEnd) << endl
+//							<< "TTS: " << infix(ttsString(ttsSet[duplexId]), ttsStart, ttsEnd) << endl << endl;
 				}
 				// save potential
 				TPotKey pkey(getSequenceNo(value(tfoSet,hit.getNdlSeqNo())), getSequenceNo(value(ttsSet,hit.getHstId())));
@@ -4131,6 +4151,10 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef String<TRepeat>										TRepeatString; 
 		typedef typename Iterator<TRepeatString, Rooted>::Type		TRepeatIterator;
 
+		typedef std::pair<unsigned, unsigned> 						TTriplexHashKey;
+		typedef std::map<TTriplexHashKey, std::set<unsigned long> > TTriplexHashes;
+
+		TTriplexHashes triplexHashes;
 		// open duplex file
 		::std::ifstream file;
 		file.open(toCString(options.duplexFileNames[0]), ::std::ios_base::in | ::std::ios_base::binary);
@@ -4193,7 +4217,7 @@ namespace SEQAN_NAMESPACE_MAIN
     	        	SEQAN_PROTIMESTART(time_search);
     	        	_filterTriplexMyers(gardenerForward, ttsSetForward, index, tfoMotifSet, options);
     	        	options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
-    	        	_verifyAndStoreMyers(matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, duplexSeqNoWithinFile, true, options);
+    	        	_verifyAndStoreMyers(triplexHashes, matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, duplexSeqNoWithinFile, true, options);
     	        }
     	        eraseAll(gardenerForward);
     		}
@@ -4204,7 +4228,8 @@ namespace SEQAN_NAMESPACE_MAIN
     				SEQAN_PROTIMESTART(time_search);
     				_filterTriplexMyers(gardenerReverse, ttsSetReverse, index, tfoMotifSet, options);
     				options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
-    				_verifyAndStoreMyers(matches, potentials, gardenerReverse, tfoMotifSet, ttsSetReverse, duplexSeqNoWithinFile, false, options);
+    				triplexHashes.clear();
+    				_verifyAndStoreMyers(triplexHashes, matches, potentials, gardenerReverse, tfoMotifSet, ttsSetReverse, duplexSeqNoWithinFile, false, options);
     			}
     			eraseAll(gardenerReverse);
     		}

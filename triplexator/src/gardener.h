@@ -60,7 +60,7 @@ _Pragma(STRINGIFY(code))
 #define SEQAN_PRAGMA_IF_PARALLEL(code)
 #endif // SEQAN_ENABLE_PARALLELISM
 #endif // SEQAN_PRAGMA_IF_PARALLEL
-#define DEBUG
+//#define DEBUG
 using namespace seqan;
 
 namespace SEQAN_NAMESPACE_MAIN
@@ -1327,7 +1327,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 
 #ifdef DEBUG
-		cout << "getHaystackFiberSeqNo: " << m << "(from " << segmentMap.size() << ") for bPos: " << bPos << endl;
+		cout << "getHaystackFiberSeqNo: " << m << "(from " << segmentMap.size() << ") for bPos: " << bPos << std::flush << endl;
 #endif
 		return m;
 	}
@@ -1359,7 +1359,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		int eDim0;
 		int eDim1;
 
-		int localK = 1000; // should be inf but this is enough
+		int localK 			= 1000; // should be inf but this is enough
+		int toleratedError 	= 2;
 
 		bool isLeftZeroIncluded = false;
 		bool isRightEndIncluded = false;
@@ -1373,7 +1374,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		consecutiveMismatches = 0;
 		posFiber = getBeginDim0(seed);
 		posQuery = getBeginDim1(seed);
-		while (posFiber >= 0 && posQuery >= 0 && mismatches <= localK + 1
+		while (posFiber >= 0 && posQuery >= 0 && mismatches <= localK + toleratedError
 				&& consecutiveMismatches <= consErrors) {
 			if (fiber[posFiber] != query[posQuery]) {
 				lMmOffsets.push_back(getBeginDim0(seed) - posFiber);
@@ -1404,7 +1405,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		int endFiber = length(fiber);
 		int endQuery = length(query);
 		// only go until the second last element, the last one is added later if needed (end* - 1)
-		while (posFiber < endFiber && posQuery < endQuery && mismatches <= localK + 1
+		while (posFiber < endFiber && posQuery < endQuery && mismatches <= localK + toleratedError
 				&& consecutiveMismatches <= consErrors) {
 			if (fiber[posFiber] != query[posQuery]) {
 				rMmOffsets.push_back(posFiber - getEndDim0(seed));
@@ -1426,25 +1427,24 @@ namespace SEQAN_NAMESPACE_MAIN
 			rMmOffsets.push_back(std::min((int)(length(query) - getEndDim1(seed) - 1), (int)(length(fiber) - getEndDim0(seed) - 1)));
 		}
 
-#ifdef DEBUG
-		// ------------------------------------------------------------
-		// debug print
-		cout << "lMmOffsets: ";
-		for (int i = 0; i < lMmOffsets.size(); ++i) {
-			cout << lMmOffsets[i] << " ";
-		}
-		cout << endl << "rMmOffsets: ";
-		for (int i = 0; i < rMmOffsets.size(); ++i) {
-			cout << rMmOffsets[i] << " ";
-		}
-		cout << endl;
-#endif
 		// ============================================================================
 		// START REAL SHIT
 		// init left and right mismatch numbers
 		int lMmSize = lMmOffsets.size();
 		int rMmSize = rMmOffsets.size();
 		int previousR = -1;
+
+#ifdef DEBUG
+		cout << "lMmOffsets: " << endl << "\t";
+		for (int i = 0; i < lMmSize; i++) {
+			cout << lMmOffsets[i] << " ";
+		}
+		cout << endl << "rMmOffsets: " << endl << "\t";
+		for (int i = 0; i < rMmSize; i++) {
+			cout << rMmOffsets[i] << " ";
+		}
+		cout << endl << endl;
+#endif
 
 		for (int l = lMmSize - 1; l >= 0; --l) {
 			for (int r = rMmSize - 1; r >= 0; --r) {
@@ -1454,16 +1454,10 @@ namespace SEQAN_NAMESPACE_MAIN
 				eDim1 = getEndDim1(seed) + rMmOffsets[r];
         		int cnt = 0;
 
-//        		cout << "bDim0, bDim1:" << bDim0 << ", " << bDim1 << endl << std::flush;
-//        		cout << "eDim0, eDim1:" << eDim0 << ", " << eDim1 << endl << std::flush;
         		// skip beginning positions until match found
         		while (fiber[bDim0] != query[bDim1]) {
         			if (cnt) {
         				--l;
-//        				cout << "skip 1 bDim* with consequences, lower l: " << l << endl << std::flush;
-        			}
-        			else {
-//        				cout << "skip 1 bDim* for FREE, they differ" << endl << std::flush;
         			}
         			++bDim0;
         			++bDim1;
@@ -1474,10 +1468,6 @@ namespace SEQAN_NAMESPACE_MAIN
         		while (fiber[eDim0] != query[eDim1]) {
         			if (cnt) {
         				--r;
-//        				cout << "skip 1 eDim* with consequences" << endl << std::flush;
-        			}
-        			else {
-//        				cout << "skip 1 eDim* for FREE, they differ" << endl << std::flush;
         			}
         			--eDim0;
         			--eDim1;
@@ -1494,17 +1484,21 @@ namespace SEQAN_NAMESPACE_MAIN
         		cout << "bDim0, bDim1 after skipping:" << bDim0 << ", " << bDim1 << endl << std::flush;
         		cout << "diagonal (+1 incl.): " << diag << endl;
         		cout << "#mismatches " << mismatches << ", localK: " << localK << endl;
-        		cout << "previousR: " << previousR << endl;
+        		cout << "previousR: " << previousR  << std::flush << endl;
 #endif
 
         		// make sure #mismatches is valid
         		if (localK < mismatches) {
-//        			cout << "localK < mismatches" << endl;
+#ifdef DEBUG
+        			cout << "localK < mismatches" << endl;
+#endif
         			continue;
         		}
 
         		if (r <= previousR) {
-//        			cout << "r <= previousR: " << r << " <= " << previousR << endl;
+#ifdef DEBUG
+        			cout << "r <= previousR: " << r << " <= " << previousR << endl;
+#endif
         			continue;
         		}
 
@@ -1523,15 +1517,12 @@ namespace SEQAN_NAMESPACE_MAIN
         				extendedSeeds.push_back(TSeed(bDim0, bDim1, eDim0 + 1, eDim1 + 1));
         				addedSeedHashes.insert(hash);
         				previousR = r;
-//        				cout << "l: " << l << ", r: " << r << endl;
-//        				cout << "valid & new seed extension: " << extendedSeeds.back() << endl;
+#ifdef DEBUG
+        				cout << "valid & new seed extension: " << extendedSeeds.back() << endl;
+        				cout << "tts : " << infix(fiber, bDim0, eDim0 + 1) << endl;
+        				cout << "tfo : " << infix(query, bDim1, eDim1 + 1) << endl;
+#endif
         			}
-        			else {
-//        				cout << "Hmm, this is wrong... same hash already existing." << endl;
-        			}
-        		}
-        		else {
-//        			cout << "length of match is: " << eDim0 + 1 - bDim0 << " < " << minLength << endl;
         		}
 			}
 		}
@@ -1559,10 +1550,11 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		if (addedSeedHashes.count(hash)) {
 #ifdef DEBUG
-			std::cout << "== XXX >> Seed is already in map: " << seed << std::endl
+			std::cout
+					<< "== XXX >> Seed is already in map: " << seed << std::endl
 					<< "\thash: " << hash << std::endl
 					<< "\ttfoSeqNo: " << tfoSeqNo << std::endl
-					<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo << std::endl;
+					<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo  << std::flush << std::endl;
 #endif
 			return false;
 		}
@@ -1571,7 +1563,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		std::cout << "===>>> New seed is added to map: " << seed << std::endl
 				<< "\thash: " << hash << std::endl
 				<< "\ttfoSeqNo: " << tfoSeqNo << std::endl
-				<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo << std::endl;
+				<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo  << std::flush << std::endl;
 #endif
 		return true;
 	}
@@ -1649,13 +1641,14 @@ namespace SEQAN_NAMESPACE_MAIN
 	        maxSeedLength 		= 0;
 	        maxSeedMergedEnd	= 0;
 	        maxSeedQGramEnd 	= 0;
+	        maxSeedFiberEnd		= -1;
 	        haystackFiberSeqNo 	= getHaystackFiberSeqNo(bPos, segmentMap);
 	        assert(haystackFiberSeqNo >= 0);
 
 	        // make sure the found match doesn't span 2 different fibers in the original haystack
 	        if ((bPos - segmentMap[haystackFiberSeqNo]) + minLength > length(haystack[haystackFiberSeqNo])) {
 #ifdef DEBUG
-	        	cout << "Discarding Myers match because it spans over different fibers in original haystack." << endl;
+	        	cout << "Discarding Myers match because it spans over different fibers in original haystack."  << std::flush << endl;
 #endif
 	        	continue;
 	        }
@@ -1667,7 +1660,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	        /////////////////////////////
 	        // validate TODO check for # of consecutive mismatches
 	        int consecutiveMismatches = 0;
-	        for (int pos = ePos; pos > bPos && misM <= k; --pos) {
+	        for (int pos = ePos; pos > bPos && misM <= k + 1; --pos) {
 	        	if (mergedHaystack[pos] != suffixQGram[qPos--]) {
 	        		++misM;
 	        		++consecutiveMismatches;
@@ -1679,10 +1672,11 @@ namespace SEQAN_NAMESPACE_MAIN
 	        		consecutiveMismatches = 0;
 	        	}
 	        }
-	        // invalid alignment
-	        if (misM > k) {
+	        // invalid alignment. Note the k + 1, we want to be forgiving here because an extension might still
+	        // lower the error rate as wanted, so don't discard here just yet (will later, if it's not good).
+	        if (misM > k + 1) {
 #ifdef DEBUG
-	        	cout << "Discarding Myers match because there are more than allowed mismatches." << endl;
+	        	cout << "Discarding Myers match because there are more than allowed mismatches."  << std::flush << endl;
 #endif
 	        	continue;
 	        }
@@ -1692,7 +1686,7 @@ namespace SEQAN_NAMESPACE_MAIN
 //					<< "\tmismatches: " << misM << endl
 //	        		<< "haystackFiberSeqNo (in original haystack): " << haystackFiberSeqNo << endl
 	        cout
-	        		<< "Seed match is (Myers):" << endl << "\t";
+	        		<< "Seed match is (Myers):" << endl << std::flush  << "\t";
 	        for (int pos = bPos; pos <= ePos; ++pos) {
 	        	std::cout << mergedHaystack[pos];
 	        }
@@ -1700,7 +1694,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	        for (int pos = 0; pos < minLength; ++pos) {
 	        	std::cout << suffixQGram[pos];
 	        }
-	        std::cout << "\ttfo" << endl;
+	        std::cout << "\ttfo"  << std::flush << endl;
 
 #endif
 	        // find the largest seed within the q-gram
@@ -1722,15 +1716,19 @@ namespace SEQAN_NAMESPACE_MAIN
 	        	}
 	        }
 
+	        if (maxSeedFiberEnd == -1 || !maxSeedLength) {
+	        	cout << "BIG PROBLEM HERE, CAPTAIN! We have a seed of length 0?!!" << std::flush << endl;
+	        }
+
 #ifdef DEBUG
-	        cout << endl << "Max. seed: " << endl << "\t";
+	        cout << endl << "Max. seed: " << endl  << std::flush << "\t";
 	        for (int pos = maxSeedMergedEnd - maxSeedLength + 1; pos <= maxSeedMergedEnd; ++pos) {
 	        	cout << mergedHaystack[pos];
 	        	assert(mergedHaystack[pos] == haystack[haystackFiberSeqNo][pos - segmentMap[haystackFiberSeqNo]]);
 	        }
 	        cout 	<< endl << "MaxSeed Length: " << maxSeedLength << std::endl
 	        		<< "MaxSeed Position (mergedHaystack): " <<  maxSeedMergedEnd - maxSeedLength + 1
-					<< " - " << maxSeedMergedEnd << std::endl;
+					<< " - " << maxSeedMergedEnd << std::endl << std::flush ;
 #endif
 
 	        // found a valid match, extend for each tfo which had this q-gram suffix
@@ -1741,21 +1739,32 @@ namespace SEQAN_NAMESPACE_MAIN
 	            int qGramSeedEnd 	= maxSeedQGramEnd + qGramOffset;
 
 	            THitListKey seqNoKey(haystackFiberSeqNo, ndlSeqNo);
+	            // check if seqNoKey key exists
+		        if (!initMaxSeedHashMap.count(seqNoKey)) {
+		        	initMaxSeedHashMap[seqNoKey] = std::set<unsigned long long>();
+		        }
+	            if (!addedSeedHashMap.count(seqNoKey)) {
+	            	addedSeedHashMap[seqNoKey] = std::set<unsigned long long>();
+	            }
 
+	            // calculate hash for maxSeed
 		        unsigned long long maxSeedHash = maxSeedFiberEnd - maxSeedLength + 1;
 		        maxSeedHash = (((((maxSeedHash << 16) + maxSeedFiberEnd) << 16) + qGramSeedBegin) << 16) + qGramSeedEnd;
+
 		        if (initMaxSeedHashMap[seqNoKey].count(maxSeedHash)) {
 		        	continue;
 		        }
+
 		        initMaxSeedHashMap[seqNoKey].insert(maxSeedHash);
 
-	            TSeed seed(maxSeedFiberEnd - maxSeedLength + 1, qGramSeedBegin, maxSeedFiberEnd, qGramSeedEnd);
+		        TSeed seed(maxSeedFiberEnd - maxSeedLength + 1, qGramSeedBegin, maxSeedFiberEnd, qGramSeedEnd);
 #ifdef DEBUG
 	            std::cout << endl << "Original seed: " << seed << endl
 	            		<< "Actual right ends (including this pos.): " << getEndDim0(seed) << ", " << getEndDim1(seed) << endl
 	            		<< "seedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(seed), getEndDim0(seed) + 1) << "\n"
-						<< "seedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(seed), getEndDim1(seed) + 1) << "\n";
+						<< "seedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(seed), getEndDim1(seed) + 1) << "\n" << std::flush ;
 #endif
+
 	            extendSimpleSeedRevised(addedSeedHashMap[seqNoKey], seed, extendedSeeds, haystack[haystackFiberSeqNo],
 	            		needleSet[ndlSeqNo], errorRate, k, minLength, consErrors);
 
@@ -1764,12 +1773,12 @@ namespace SEQAN_NAMESPACE_MAIN
 	            	cout << "++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 					cout << "one seed after extension: " << *seed << endl;
 					cout << "Match: " << endl;
-	            	cout << "\tseedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(*seed), getEndDim0(*seed)) << endl;
+	            	cout << "\tseedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(*seed), getEndDim0(*seed)) << endl << std::flush ;
 					cout << "\tseedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(*seed), getEndDim1(*seed)) << endl;
 	            	cout << "needle (tfo - isparallel): " << isParallel(needleSet[ndlSeqNo]) << "\t\t\t" << needleSet[ndlSeqNo] << endl;
 	            	cout << "match length: " << getEndDim0(*seed) - getBeginDim0(*seed) << endl;
 	            	cout << "tfo sequence id (index): \t\t" << ndlSeqNo << endl;
-	            	cout << "+++++ ------- +++++++ ------ ++++++ will try to add new? seed" << endl;
+	            	cout << "+++++ ------- +++++++ ------ ++++++ will try to add new? seed" << endl << std::flush ;
 #endif
 	            	// if new seed, add to seedMap and to hitSet
 	            	if (addIfNewSeed(haystackFiberSeqNo, ndlSeqNo, *seed, addedSeedHashMap[seqNoKey])) {
@@ -1785,7 +1794,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	            		THitListKey matchKey(getBeginDim0(*seed), getEndDim0(*seed));
 #ifdef DEBUG
-	            		cout << "+++ adding new hit for matchKey<int,int> : " << matchKey.first << ", " << matchKey.second << endl;
+	            		cout << "+++ adding new hit for matchKey<int,int> : " << matchKey.first << ", " << matchKey.second << endl << std::flush ;
 #endif
 	            		((hitList[seqNoKey])[matchKey]).push_back(hit);
 	            	}
@@ -1818,8 +1827,8 @@ namespace SEQAN_NAMESPACE_MAIN
 
 #ifdef DEBUG
 		assert(totalLength == length(mergedHaystack));
-		std::cout 	<< "Merged haystack has length: " << totalLength << std::endl;
-		std::cout 	<< "Fibers in merged haystack: " << std::endl;
+		std::cout 	<< "Merged haystack has length: " << totalLength << std::endl << std::flush ;
+		std::cout 	<< "Fibers in merged haystack: " << std::endl << std::flush ;
 #endif
 
 		// resize merged haystack to totalLength
@@ -1832,7 +1841,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			segmentMap.push_back(totalLength);
 
 #ifdef DEBUG
-			std::cout 	<< "seq no: " << i << " (len = " << length(haystack[i]) << "): ";
+			std::cout 	<< "seq no: " << i << " (len = " << length(haystack[i]) << "): " << std::flush ;
 #endif
 			// fill mergedHaystack and Myers vector
 			for (int j = 0; j < length(haystack[i]); ++j) {
@@ -1842,7 +1851,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 			totalLength += length(haystack[i]);
 #ifdef DEBUG
-			std::cout 	<< haystack[i] << std::endl;
+			std::cout 	<< haystack[i] << std::endl << std::flush ;
 #endif
 		}
 
@@ -1922,6 +1931,9 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 					// check if dim0 indices overlap
 					if (nextBegDim0 >= currBegDim0 && nextBegDim0 < currEndDim0) {
+#ifdef DEBUG
+						cout << "matches overlap, will iterate over all hit pairs..." << endl;
+#endif
 						// iterate over all hit matches
 						for (THitIterator currHitIt = dim0It->second.begin(); currHitIt != dim0It->second.end();) {
 							bool incrementCurrHitIt = true;
@@ -1978,7 +1990,7 @@ namespace SEQAN_NAMESPACE_MAIN
 										cout << "AJJJAJAJ wrong assumption while overlapping!" << endl;
 									}
 #endif
-									while (hstkPos <= mergeEndPos) {
+									while (hstkPos < mergeEndPos) {
 										if (haystack[haystackFiberSeqNo][hstkPos] != needles[ndlSeqNo][ndlPos]) {
 											++mismatches;
 										}
@@ -1996,6 +2008,12 @@ namespace SEQAN_NAMESPACE_MAIN
 										nextHitIt = nextDim0It->second.erase(nextHitIt);
 									}
 									else {
+#ifdef DEBUG
+										cout << "damn mothafucka, we can NOT overlap these two because of the error rate?!" << endl;
+										cout << "\tmismatches: " << mismatches << endl;
+										cout << "\terror rate: " << errorRate << endl;
+										cout << "\terrorRate * overlappedLength: " << std::floor(errorRate * overlappedLength) << endl;
+#endif
 										++nextHitIt;
 									}
 								}
@@ -2057,7 +2075,10 @@ namespace SEQAN_NAMESPACE_MAIN
 			int const				&consErrors,
 			TWorker
 	){
-	    double t = sysTime();
+	    double t;
+	    double timeVerify 	= 0;
+	    double timeMyers	= 0;
+	    double timeMerge	= 0;
 		typedef typename Value<Gardener<TId, TSpec> >::Type		THitMap;
 		typedef typename Value<THitMap>::Type					THitMapEntry;
 		typedef typename Value<THitMapEntry,2>::Type			THitSetPointer;
@@ -2091,7 +2112,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		unsigned char bitQGram[minLength];
 
 	    int k 			 = ceil(errorRate * minLength);
-	    int cnt 		 = 0;
 		unsigned targetLength 	= 0;
 		unsigned alphabetSize	= 6;	// 4 + Y and N
 
@@ -2135,7 +2155,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	    	{
 	    		const TSAIter itBucketItem = saBegin + bucketBegin;
 	    		const TSAIter itEndBucket  = saBegin + bucketEnd;
-	    		cnt ++;
 	    		suffixQGram = suffix(indexText(index), *itBucketItem);
 
 	    		// transform query into index for Myers and update array
@@ -2144,16 +2163,13 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 
 	    		//calculate Myers distance - this yields putative matches in endLocations
+				t = sysTime();
 	    		edlibCalcEditDistance(bitQGram, minLength, bitTarget, targetLength, alphabetSize,
 	    				k + 1, EDLIB_MODE_HW, true, true, &score,
 						&endLocations, &startLocations, &numLocations,
 						&alignment, &alignmentLength);
-
+	    		timeMyers += sysTime() - t;
 #ifdef DEBUG
-//	    		cout 	<< endl << endl
-//	    				<< "----------------------------------------" << endl
-//	    				<< "----------- NEW QGRAM-SUFFIX -----------" << endl
-//	    				<< "----------------------------------------" << endl;
 //	    		std::cout << "current suffix (length == " << minLength << "): ";
 //	    		for (int i = 0; i < minLength; ++i) {
 //	    			printf("%c",(char)suffixQGram[i]);//(unsigned int)(char)(suf[i]));
@@ -2165,20 +2181,27 @@ namespace SEQAN_NAMESPACE_MAIN
 //	    		}
 	    		cout << endl << "Number of hits (numLocations): " << numLocations << endl;
 #endif
-	    		mergeMyersMatches();
+
+	    		t = sysTime();
 	    		verifyMatches(seedHashMap, initMaxSeedHashMap, hitList, haystack, mergedHaystack, segmentMap, needles,
 	    				suffixQGram, itBucketItem, itEndBucket, errorRate, numLocations,
 						endLocations, minLength, consErrors, THit(), THitListKey());
+	    		timeVerify += sysTime() - t;
 	    	}
 	    	bucketBegin = bucketEnd;
 	    }
 	    // keep only maximum segments, remove those included in larger hits
+		t = sysTime();
 	    mergeOverlappingHits(hitList, hitSetPointerMap, haystack, needles, errorRate, minLength, THit());
+	    timeMerge += sysTime() - t;
 	    // add hits to gardener
 	    for (int i = 0; i < length(haystack); ++i) {
 	    	insert(gardener.hits, i, hitSetPointerMap[i]);
 	    }
-	    delete bitTarget;
+	    delete[] bitTarget;
+	    cout << "timeVerify: " << timeVerify << endl;
+	    cout << "timeMyers: "  << timeMyers << endl;
+	    cout << "timeMerge: "  << timeMerge << endl;
 	}
 
 	/** 
