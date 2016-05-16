@@ -2110,26 +2110,27 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	// Search for triplexes given a set of duplexes and a set of TFOs
 	template<
+	typename TTimes,
 	typename TId,
 	typename TGardenerSpec,
 	typename THaystack,
 	typename TQGramIndex,
 	typename TQuery
 	>
-	inline void _filterTriplexMyers(Gardener< TId, TGardenerSpec>	&gardener,
-									   THaystack const				&haystack, // ttsSet
-									   TQGramIndex const			&index,
-									   TQuery						&tfoSet,
-									   Options const				&options
-									   ){
+	inline void _filterTriplexMyers(TTimes	&times,
+			Gardener< TId, TGardenerSpec>	&gardener,
+			THaystack const					&haystack, // ttsSet
+			TQGramIndex const				&index,
+			TQuery							&tfoSet,
+			Options const					&options
+	){
 
 		// adjust errorRate if maximalError is set and caps the errorRate setting wrt the minimum length constraint
 		double eR = options.errorRate;
 		if (options.maximalError >= 0){
 			eR = min(options.errorRate, max(double(options.maximalError)/options.minLength, 0.0));
 		}
-//		assert(tfoSet[0].isTFO);
-		plantMyers(gardener, haystack, index, tfoSet, eR, options.minLength, options.maxInterruptions, SINGLE_WORKER() );
+		plantMyers(times, gardener, haystack, index, tfoSet, eR, options.minLength, options.maxInterruptions, SINGLE_WORKER() );
 	}
 	
 	
@@ -4154,6 +4155,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef std::pair<unsigned, unsigned> 						TTriplexHashKey;
 		typedef std::map<TTriplexHashKey, std::set<unsigned long> > TTriplexHashes;
 
+		std::map<std::string, double> times;
 		TTriplexHashes triplexHashes;
 		// open duplex file
 		::std::ifstream file;
@@ -4215,7 +4217,7 @@ namespace SEQAN_NAMESPACE_MAIN
     			processDuplex(ttsSetForward, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
     	        if (length(ttsSetForward)>0) {
     	        	SEQAN_PROTIMESTART(time_search);
-    	        	_filterTriplexMyers(gardenerForward, ttsSetForward, index, tfoMotifSet, options);
+    	        	_filterTriplexMyers(times, gardenerForward, ttsSetForward, index, tfoMotifSet, options);
     	        	options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
     	        	_verifyAndStoreMyers(triplexHashes, matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, duplexSeqNoWithinFile, true, options);
     	        }
@@ -4226,7 +4228,7 @@ namespace SEQAN_NAMESPACE_MAIN
     			processDuplex(ttsSetReverse, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
     			if (length(ttsSetReverse)>0) {
     				SEQAN_PROTIMESTART(time_search);
-    				_filterTriplexMyers(gardenerReverse, ttsSetReverse, index, tfoMotifSet, options);
+    				_filterTriplexMyers(times, gardenerReverse, ttsSetReverse, index, tfoMotifSet, options);
     				options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
     				triplexHashes.clear();
     				_verifyAndStoreMyers(triplexHashes, matches, potentials, gardenerReverse, tfoMotifSet, ttsSetReverse, duplexSeqNoWithinFile, false, options);
@@ -4247,10 +4249,14 @@ namespace SEQAN_NAMESPACE_MAIN
         options.timeCollectSeedsLoop+= timeCollectSeedsLoop;
         options.timeCSFreeSpace		+= timeCSFreeSpace;
         options.cntCSFind			+= cntCSFind;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Function _seedMultiSeq was called " << ::std::setprecision(3) << cntFIQ_seedMultiProcessQgram << " times" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Function _seedMultiSeq pure qgram hit match " << ::std::setprecision(3) << cntFIQ_pureQgramMatches << " times" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time spent in _seedMultiSeq  " << ::std::setprecision(3) << time_seedMultiProcessQgram << " seconds" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time in _seedMultiSeq ONLY for index search " << ::std::setprecision(3) << time_seedMultiProcessQgramIndexSearch << " seconds" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time myers " << ::std::setprecision(3) << times["myers"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time verify " << ::std::setprecision(3) << times["verify"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time merge  " << ::std::setprecision(3) << times["merge"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time seedExtend " << ::std::setprecision(3) << times["seedextend"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time maxSeedFind " << ::std::setprecision(3) << times["maxseedfind"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time addIfNewSeed " << ::std::setprecision(3) << times["addifnewseed"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time consecutive & mismatches " << ::std::setprecision(3) << times["consmm"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time getHaystackFiberNo " << ::std::setprecision(3) << times["gethaystackfiberno"] << " sec" << ::std::endl;
 
         return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}

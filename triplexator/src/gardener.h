@@ -1572,6 +1572,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	 *
 	 */
 	template<
+	typename TTimes,
 	typename TSeedMap,
 	typename THitList,
 	typename THaystack,
@@ -1587,6 +1588,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename THitListKey
 	>
 	void verifyMatches(
+			TTimes					&times,
 			TSeedMap	   			&addedSeedHashMap,
 			TSeedMap	   			&initMaxSeedHashMap,
 			THitList				&hitList,
@@ -1610,6 +1612,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef std::vector< Seed<Simple, DefaultSeedConfig> > 			 TSeedList;
 		typedef std::vector< Seed<Simple, DefaultSeedConfig> >::iterator TSeedListIterator;
 
+		double t;
 	    int ePos;
 	    int bPos;
 	    int qPos;
@@ -1642,7 +1645,9 @@ namespace SEQAN_NAMESPACE_MAIN
 	        maxSeedMergedEnd	= 0;
 	        maxSeedQGramEnd 	= 0;
 	        maxSeedFiberEnd		= -1;
+	        t = sysTime();
 	        haystackFiberSeqNo 	= getHaystackFiberSeqNo(bPos, segmentMap);
+	        times["gethaystackfiberno"] += sysTime() - t;
 	        assert(haystackFiberSeqNo >= 0);
 
 	        // make sure the found match doesn't span 2 different fibers in the original haystack
@@ -1659,6 +1664,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	        /////////////////////////////
 	        // validate TODO check for # of consecutive mismatches
+	        t = sysTime();
 	        int consecutiveMismatches = 0;
 	        for (int pos = ePos; pos > bPos && misM <= k + 1; --pos) {
 	        	if (mergedHaystack[pos] != suffixQGram[qPos--]) {
@@ -1672,6 +1678,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	        		consecutiveMismatches = 0;
 	        	}
 	        }
+	        times["consmm"] += sysTime() - t;
 	        // invalid alignment. Note the k + 1, we want to be forgiving here because an extension might still
 	        // lower the error rate as wanted, so don't discard here just yet (will later, if it's not good).
 	        if (misM > k + 1) {
@@ -1698,6 +1705,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 #endif
 	        // find the largest seed within the q-gram
+	        t = sysTime();
 	        qPos = minLength - 1;
 	        for (int pos = ePos; pos > bPos && qPos >= 0; --pos, --qPos) {
 	        	int matchLength = 0;
@@ -1719,6 +1727,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	        if (maxSeedFiberEnd == -1 || !maxSeedLength) {
 	        	cout << "BIG PROBLEM HERE, CAPTAIN! We have a seed of length 0?!!" << std::flush << endl;
 	        }
+	        times["maxseedfind"] += sysTime() - t;
 
 #ifdef DEBUG
 	        cout << endl << "Max. seed: " << endl  << std::flush << "\t";
@@ -1765,8 +1774,10 @@ namespace SEQAN_NAMESPACE_MAIN
 						<< "seedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(seed), getEndDim1(seed) + 1) << "\n" << std::flush ;
 #endif
 
+	            t = sysTime();
 	            extendSimpleSeedRevised(addedSeedHashMap[seqNoKey], seed, extendedSeeds, haystack[haystackFiberSeqNo],
 	            		needleSet[ndlSeqNo], errorRate, k, minLength, consErrors);
+		        times["seedextend"] += sysTime() - t;
 
 	            for (TSeedListIterator seed = extendedSeeds.begin(); seed != extendedSeeds.end(); ++seed) {
 #ifdef DEBUG
@@ -1781,7 +1792,9 @@ namespace SEQAN_NAMESPACE_MAIN
 	            	cout << "+++++ ------- +++++++ ------ ++++++ will try to add new? seed" << endl << std::flush ;
 #endif
 	            	// if new seed, add to seedMap and to hitSet
+	            	t = sysTime();
 	            	if (addIfNewSeed(haystackFiberSeqNo, ndlSeqNo, *seed, addedSeedHashMap[seqNoKey])) {
+	        	        times["addifnewseed"] += sysTime() - t;
 	            		THit *hit = new THit(
 	            				haystackFiberSeqNo,
 								ndlSeqNo,
@@ -2056,6 +2069,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	 * TODO assume we have only one duplex sequence
 	 */
 	template<
+	typename TTimes,
 	typename THaystack,		 // haystack spec - double stranded sequences (tts)
 	typename TQGramIndex,	 // q-gram index - (tfo)
 	typename TQuerySet,		 // query set (needle) - single stranded sequences (tfo)
@@ -2066,6 +2080,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TWorker
 	>
 	void plantMyers(
+			TTimes 					&times,
 			Gardener<TId, TSpec>	&gardener,
 			THaystack const			&haystack, 			// TTS set
 			TQGramIndex				&index,				// q-gram index of tfoSet (for suffixes)
@@ -2076,9 +2091,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			TWorker
 	){
 	    double t;
-	    double timeVerify 	= 0;
-	    double timeMyers	= 0;
-	    double timeMerge	= 0;
 		typedef typename Value<Gardener<TId, TSpec> >::Type		THitMap;
 		typedef typename Value<THitMap>::Type					THitMapEntry;
 		typedef typename Value<THitMapEntry,2>::Type			THitSetPointer;
@@ -2168,7 +2180,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	    				k + 1, EDLIB_MODE_HW, true, true, &score,
 						&endLocations, &startLocations, &numLocations,
 						&alignment, &alignmentLength);
-	    		timeMyers += sysTime() - t;
+	    		times["myers"] += sysTime() - t;
 #ifdef DEBUG
 //	    		std::cout << "current suffix (length == " << minLength << "): ";
 //	    		for (int i = 0; i < minLength; ++i) {
@@ -2183,25 +2195,22 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 
 	    		t = sysTime();
-	    		verifyMatches(seedHashMap, initMaxSeedHashMap, hitList, haystack, mergedHaystack, segmentMap, needles,
+	    		verifyMatches(times, seedHashMap, initMaxSeedHashMap, hitList, haystack, mergedHaystack, segmentMap, needles,
 	    				suffixQGram, itBucketItem, itEndBucket, errorRate, numLocations,
 						endLocations, minLength, consErrors, THit(), THitListKey());
-	    		timeVerify += sysTime() - t;
+	    		times["verify"] += sysTime() - t;
 	    	}
 	    	bucketBegin = bucketEnd;
 	    }
 	    // keep only maximum segments, remove those included in larger hits
 		t = sysTime();
 	    mergeOverlappingHits(hitList, hitSetPointerMap, haystack, needles, errorRate, minLength, THit());
-	    timeMerge += sysTime() - t;
+	    times["merge"] += sysTime() - t;
 	    // add hits to gardener
 	    for (int i = 0; i < length(haystack); ++i) {
 	    	insert(gardener.hits, i, hitSetPointerMap[i]);
 	    }
 	    delete[] bitTarget;
-	    cout << "timeVerify: " << timeVerify << endl;
-	    cout << "timeMyers: "  << timeMyers << endl;
-	    cout << "timeMerge: "  << timeMerge << endl;
 	}
 
 	/** 
