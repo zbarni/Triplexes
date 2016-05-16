@@ -1298,39 +1298,39 @@ namespace SEQAN_NAMESPACE_MAIN
 		plant(gardener, pattern, queries, errorRate, minLength, xDrop, TWORKER() );
 	}
 
-	/**
-	 * Binary search in sorted haystack segment map / vector.
-	 * Returns the index (sequence number) of a duplex fiber in the haystack, given its starting
-	 * position (bPos) in the merged haystack.
-	 */
-	template< typename TSegment	>
-	int getHaystackFiberSeqNo(int bPos, TSegment segmentMap) {
-		int l = 0;
-		int r = segmentMap.size() - 1;
-		int m;
-
-		while (l <= r) {
-			m = (l + r) / 2;
-			if (bPos == segmentMap[m]) {
-				break;
-			}
-			if (bPos < segmentMap[m]) {
-				r = m - 1;
-			}
-			else {
-				l = m + 1;
-			}
-		}
-
-		if (segmentMap[m] > bPos) {
-			m--;
-		}
-
-#ifdef DEBUG
-		cout << "getHaystackFiberSeqNo: " << m << "(from " << segmentMap.size() << ") for bPos: " << bPos << std::flush << endl;
-#endif
-		return m;
-	}
+//	/**
+//	 * Binary search in sorted haystack segment map / vector.
+//	 * Returns the index (sequence number) of a duplex fiber in the haystack, given its starting
+//	 * position (bPos) in the merged haystack.
+//	 */
+//	template< typename TSegment	>
+//	int getHaystackFiberSeqNo(int bPos, TSegment segmentMap) {
+//		int l = 0;
+//		int r = segmentMap.size() - 1;
+//		int m;
+//
+//		while (l <= r) {
+//			m = (l + r) / 2;
+//			if (bPos == segmentMap[m]) {
+//				break;
+//			}
+//			if (bPos < segmentMap[m]) {
+//				r = m - 1;
+//			}
+//			else {
+//				l = m + 1;
+//			}
+//		}
+//
+//		if (segmentMap[m] > bPos) {
+//			m--;
+//		}
+//
+//#ifdef DEBUG
+//		cout << "getHaystackFiberSeqNo: " << m << "(from " << segmentMap.size() << ") for bPos: " << bPos << std::flush << endl;
+//#endif
+//		return m;
+//	}
 
 	template<
 	typename TSeedHashMap,
@@ -1578,6 +1578,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename THaystack,
 	typename TMergedHaystack,
 	typename TSegment,
+	typename TPosToFiberSeqNo,
 	typename TMotifSet,
 	typename TSuffix,
 	typename TSAIter,
@@ -1595,6 +1596,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			THaystack 		const 	&haystack,
 			TMergedHaystack const 	&mergedHaystack,
 			TSegment 		const 	&segmentMap,
+			TPosToFiberSeqNo const 	&posToFiberSeqNo,
 			TMotifSet 		const	&needleSet,
 			TSuffix 		const	&suffixQGram,
 			TSAIter 		const	&itStartBucket,
@@ -1646,14 +1648,15 @@ namespace SEQAN_NAMESPACE_MAIN
 	        maxSeedQGramEnd 	= 0;
 	        maxSeedFiberEnd		= -1;
 	        t = sysTime();
-	        haystackFiberSeqNo 	= getHaystackFiberSeqNo(bPos, segmentMap);
+	        haystackFiberSeqNo 	= posToFiberSeqNo[bPos];
 	        times["gethaystackfiberno"] += sysTime() - t;
 	        assert(haystackFiberSeqNo >= 0);
 
 	        // make sure the found match doesn't span 2 different fibers in the original haystack
 	        if ((bPos - segmentMap[haystackFiberSeqNo]) + minLength > length(haystack[haystackFiberSeqNo])) {
+//	        if (haystackFiberSeqNo != posToFiberSeqNo[bPos + minLength] || bPos + minLength >= posToFiberSeqNo.size()) {
 #ifdef DEBUG
-	        	cout << "Discarding Myers match because it spans over different fibers in original haystack."  << std::flush << endl;
+	        	cout << "Discarding Myers match because it spans over different fibers in original haystack." << std::flush << endl;
 #endif
 	        	continue;
 	        }
@@ -1822,12 +1825,14 @@ namespace SEQAN_NAMESPACE_MAIN
 	template<
 	typename THaystack,		// haystack spec - double stranded sequences (tts)
 	typename TMergedHaystack,
-	typename TSegmentMap
+	typename TSegmentMap,
+	typename TPosToFiberSeqNo
 	>
 	void mergeHaystack(
 			THaystack const 	&haystack,
 			TMergedHaystack 	&mergedHaystack,
 			TSegmentMap  		&segmentMap,
+			TPosToFiberSeqNo	&posToFiberSeqNo,
 			unsigned char  	   *&bitTarget,
 			unsigned int 		&totalLength
 			) {
@@ -1846,13 +1851,12 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// resize merged haystack to totalLength
 		resize(mergedHaystack, totalLength, Exact());
+		segmentMap.reserve(totalLength);
 		bitTarget = new unsigned char[totalLength];
 		totalLength = 0;
 
 		for (int i = 0; i < length(haystack); ++i) {
-			// add starting position in mergedHaystack for current fiber
 			segmentMap.push_back(totalLength);
-
 #ifdef DEBUG
 			std::cout 	<< "seq no: " << i << " (len = " << length(haystack[i]) << "): " << std::flush ;
 #endif
@@ -1861,6 +1865,9 @@ namespace SEQAN_NAMESPACE_MAIN
 				mergedHaystack[totalLength + j] = haystack[i][j];
 				// rewrite double stranded seq (tts) in a proper form for Myers (char -> index)
 				bitTarget[totalLength + j] = charToBit(haystack[i][j]);//static_cast<unsigned int>(haystack[i][j]);
+
+				// add starting position in mergedHaystack for current fiber
+				posToFiberSeqNo.push_back(i);
 			}
 			totalLength += length(haystack[i]);
 #ifdef DEBUG
@@ -1869,11 +1876,11 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 
 #ifdef DEBUG
-		std::cout << "Segment map / vector:\t";
-		for (unsigned i = 0; i < segmentMap.size(); ++i) {
-			cout << segmentMap[i] << " x ";
-		}
-		cout << endl;
+//		std::cout << "Segment map / vector:\t";
+//		for (unsigned i = 0; i < segmentMap.size(); ++i) {
+//			cout << segmentMap[i] << " ";
+//		}
+//		cout << endl;
 #endif
 	}
 
@@ -2106,7 +2113,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef Seed<Simple, DefaultSeedConfig>					TSeed;
 
 
-		typedef 		 std::vector<int>								TSegments;
+		typedef 		 std::vector<unsigned int>						TSegments;
 		typedef  		 String<char> 									TMergedHaystack;
 		typedef 		 std::map<int, THitSetPointer> 					THitSetPointerMap;
 		typedef			 std::pair<int, int> 							THitListKey;
@@ -2140,6 +2147,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	    TSuffix 		suffixQGram;	// q-gram of appropriate (minimum) length within suffix
 	    TSegments		segmentMap; 	// for duplex each segment, the map stores its starting
 	    								// position in the merged haystack; sorted --> binary search
+	    TSegments		posToFiberSeqNo;
 
 		THitSetPointerMap hitSetPointerMap; // for each query in queries (tfoSet), stores a
 											// hitSetPointer containing all corresponding hits
@@ -2150,7 +2158,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 
 	    // merge duplex segments
-	    mergeHaystack(haystack, mergedHaystack, segmentMap, bitTarget, targetLength);
+	    mergeHaystack(haystack, mergedHaystack, segmentMap, posToFiberSeqNo, bitTarget, targetLength);
 
 	    // reset SA iterators to beginning of index
 	    itBucketDir         = begin(indexDir(index), Standard());
@@ -2195,7 +2203,8 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 
 	    		t = sysTime();
-	    		verifyMatches(times, seedHashMap, initMaxSeedHashMap, hitList, haystack, mergedHaystack, segmentMap, needles,
+	    		verifyMatches(times, seedHashMap, initMaxSeedHashMap, hitList, haystack, mergedHaystack,
+	    				segmentMap, posToFiberSeqNo, needles,
 	    				suffixQGram, itBucketItem, itEndBucket, errorRate, numLocations,
 						endLocations, minLength, consErrors, THit(), THitListKey());
 	    		times["verify"] += sysTime() - t;
