@@ -4256,7 +4256,7 @@ namespace SEQAN_NAMESPACE_MAIN
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time maxSeedFind " << ::std::setprecision(3) << times["maxseedfind"] << " sec" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time addIfNewSeed " << ::std::setprecision(3) << times["addifnewseed"] << " sec" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time consecutive & mismatches " << ::std::setprecision(3) << times["consmm"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time getHaystackFiberNo " << ::std::setprecision(3) << times["gethaystackfiberno"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time processExtendesSeeds " << ::std::setprecision(3) << times["processextendesseeds"] << " sec" << ::std::endl;
 
         return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}

@@ -794,21 +794,8 @@ namespace SEQAN_NAMESPACE_MAIN
             options.timeFindTriplexes += SEQAN_PROTIMEDIFF(find_time);
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished searching (including IO) for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for triplex search only (search + verify - triplex.h) " << ::std::setprecision(3) << options.timeTriplexSearch << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for ds index creation only " << ::std::setprecision(3) << options.timeCreateTtssIndex << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIOReadingTts << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `verifyAndStore` function in triplex.h " << ::std::setprecision(3) << options.timeVerifyAndStore << " seconds (summed over all cpus)" << ::std::endl;
-
-            // finde_index_qgrams
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `find` function in qgram-Finder " << ::std::setprecision(3) << options.timeQgramFind << " seconds (summed over all cpus)" << ::std::endl;
-
-            // gardener
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds` function in gardener " << ::std::setprecision(3) << options.timeCollectSeeds << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds LOOP` function in gardener " << ::std::setprecision(3) << options.timeCollectSeedsLoop << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds FreeSpace` function in gardener " << ::std::setprecision(3) << options.timeCSFreeSpace << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds find loop cnt` function in gardener " << ::std::setprecision(3) << options.cntCSFind << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `_find` function in gardener " << ::std::setprecision(3) << options.timeGardenerFind << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `_putSeedsInMap` function in gardener " << ::std::setprecision(3) << options.timePutSeedsInMap << " seconds (summed over all cpus)" << ::std::endl;
-
             options.logFileHandle << std::endl;
         }
 
