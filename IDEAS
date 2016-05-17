@@ -14,3 +14,7 @@ Y 3) forward reverse stuff
 === WARNING !!! ===
 1. if mismatch occurs at the ends the initial seed, handle it! (although it's discarded at the end, possibly)
 2. TODO!! keep mad of max seeds as these are quite redundant, check before extending them
+
+
+=== OPTIMIZATIONS TO DO ===
+1. keep offset mismatch arrays for each tts-tfo pair after initially computing it

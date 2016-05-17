@@ -39,10 +39,10 @@ fi
 for TEST in {13..19}
 do
     echo "Running MYERS #${LARGE}${TEST}"
-    triplexator -ss "../data/tfo_${LARGE}${TEST}.data" -ds "../data/tts_${LARGE}${TEST}.data" -e 20 -c 1 -l 25 -L -1 -fm 1 -i  -o "myers_${LARGE}${TEST}.tpx" $VERBOSE  &> "myers_${LARGE}${TEST}.dbg"
+    triplexator -ss "../data/tfo_${LARGE}${TEST}.data" -ds "../data/tts_${LARGE}${TEST}.data" -e 20 -c 1 -l 30 -L -1 -fm 1 -i  -o "myers_${LARGE}${TEST}.tpx" $VERBOSE  &> "myers_${LARGE}${TEST}.dbg"
 
     echo "Running BRUTE FORCE #${LARGE}${TEST}"
-    triplexator -ss "../data/tfo_${LARGE}${TEST}.data" -ds "../data/tts_${LARGE}${TEST}.data" -e 20 -c 1 -l 25 -L -1 -o "brute_${LARGE}${TEST}.tpx" $VERBOSE &> "brute_${LARGE}${TEST}.dbg"
+    triplexator -ss "../data/tfo_${LARGE}${TEST}.data" -ds "../data/tts_${LARGE}${TEST}.data" -e 20 -c 1 -l 30 -L -1 -o "brute_${LARGE}${TEST}.tpx" $VERBOSE &> "brute_${LARGE}${TEST}.dbg"
 
     echo ""
     sort "myers_${LARGE}${TEST}.tpx" > "myers.tmp"

@@ -92,4 +92,4 @@ else
     echo "Comparing myers and brute-force... wait for failed?"
     cmp --silent ${MYERS_TMP} ${BRUTE_TMP} || echo "Test #${TEST} failed."
 fi
-rm -f ${MYERS_TMP} ${BRUTE_TMP}
+#rm -f ${MYERS_TMP} ${BRUTE_TMP}

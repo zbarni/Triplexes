@@ -255,10 +255,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			// tfo seq number
 			if (a.tfoNo < b.tfoNo) return true;
 			if (a.tfoNo > b.tfoNo) return false;
-			// tfo seq number
-			// TODO @barni remove this
-//			if (a.ttsNo < b.ttsNo) return true;
-//			if (a.ttsNo > b.ttsNo) return false;
 			// tts begin position
 			if (a.dBegin < b.dBegin) return true;
 			if (a.dBegin > b.dBegin) return false;

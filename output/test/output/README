@@ -3,3 +3,7 @@
     #15
     #17
     Case where myers doesn't find any seed in the region because all subsegments of minlength have > k mismatches, yet an extended segment fits the error rate.
+
+2. QGRAM vs BRUTE
+    #23
+    #24
