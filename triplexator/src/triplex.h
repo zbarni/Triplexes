@@ -2130,7 +2130,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		if (options.maximalError >= 0){
 			eR = min(options.errorRate, max(double(options.maximalError)/options.minLength, 0.0));
 		}
-		plantMyers(times, gardener, haystack, index, tfoSet, eR, options.minLength, options.maxInterruptions, SINGLE_WORKER() );
+		plantMyers(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER() );
 	}
 	
 	
@@ -3878,7 +3878,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				THost tfo = infix(ttsString(tfoSet[hit.getNdlSeqNo()]), hit.getNdlPos(), hit.getNdlPos() + hit.getHitLength());
 				THost triplex(infix(ttsString(value(ttsSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
 
-#ifdef TRIPLEX_DEBUG
+#ifndef TRIPLEX_DEBUG
 				cout << "============ HIT ============ " << endl << std::flush;
 				cout << "Seed gardener: " << endl << '\t'
 						<< hit.getHstkPos() << ", " << hit.getHstkPos() + hit.getHitLength()
@@ -3923,7 +3923,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					bool reduceSet = false; // don't merge overlapping triplexes
 					totalNumberOfMatches += _filterWithGuanineAndErrorRate(triplexSet, ttsfilter, 'G', 'Y', reduceSet, TRIPLEX_ORIENTATION_BOTH, options, TTS());
 				}
-#ifdef TRIPLEX_DEBUG
+#ifndef TRIPLEX_DEBUG
 				::std::cerr << "totalNumberOfMatches:" << totalNumberOfMatches << ::std::endl;
 #endif
 				// skip parts below if no matches have been detected
@@ -3989,12 +3989,12 @@ namespace SEQAN_NAMESPACE_MAIN
 								 );
 					appendValue(matches, match);
 
-//					cout << "====+++===== MATCH?! ====+++===== " << endl << std::flush;
-//					cout << "Seed gardener: " << endl << '\t'
-//							<< ttsStart << ", " << ttsEnd
-//							<< " - " <<  tfoStart << ", " <<  tfoEnd << endl << std::flush;
-//					cout << "TFO: " << infix(ttsString(tfoSet[hit.getNdlSeqNo()]), tfoStart, tfoEnd) << endl
-//							<< "TTS: " << infix(ttsString(ttsSet[duplexId]), ttsStart, ttsEnd) << endl << endl;
+					cout << "====+++===== MATCH?! ====+++===== " << endl << std::flush;
+					cout << "Seed gardener: " << endl << '\t'
+							<< ttsStart << ", " << ttsEnd
+							<< " - " <<  tfoStart << ", " <<  tfoEnd << endl << std::flush;
+					cout << "TFO: " << infix(ttsString(tfoSet[hit.getNdlSeqNo()]), tfoStart, tfoEnd) << endl
+							<< "TTS: " << infix(ttsString(ttsSet[duplexId]), ttsStart, ttsEnd) << endl << endl;
 				}
 				// save potential
 				TPotKey pkey(getSequenceNo(value(tfoSet,hit.getNdlSeqNo())), getSequenceNo(value(ttsSet,hit.getHstId())));
