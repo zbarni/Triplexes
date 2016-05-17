@@ -255,6 +255,10 @@ namespace SEQAN_NAMESPACE_MAIN
 			// tfo seq number
 			if (a.tfoNo < b.tfoNo) return true;
 			if (a.tfoNo > b.tfoNo) return false;
+			// tfo seq number
+			// TODO @barni remove this
+//			if (a.ttsNo < b.ttsNo) return true;
+//			if (a.ttsNo > b.ttsNo) return false;
 			// tts begin position
 			if (a.dBegin < b.dBegin) return true;
 			if (a.dBegin > b.dBegin) return false;
@@ -4252,7 +4256,7 @@ namespace SEQAN_NAMESPACE_MAIN
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time maxSeedFind " << ::std::setprecision(3) << times["maxseedfind"] << " sec" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time addIfNewSeed " << ::std::setprecision(3) << times["addifnewseed"] << " sec" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time consecutive & mismatches " << ::std::setprecision(3) << times["consmm"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time processExtendesSeeds " << ::std::setprecision(3) << times["processextendesseeds"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time getHaystackFiberNo " << ::std::setprecision(3) << times["gethaystackfiberno"] << " sec" << ::std::endl;
 
         return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}
