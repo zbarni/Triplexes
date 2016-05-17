@@ -1,3 +1,0 @@
-Error-rate, minimum length and qgram-threshold settings do not allow for efficient filtering with q-grams of weight >= 5 (currently 4).
-Consider disabling filtering-mode (brute-force approach)
-Exiting ...
