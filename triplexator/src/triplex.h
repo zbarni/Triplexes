@@ -255,10 +255,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			// tfo seq number
 			if (a.tfoNo < b.tfoNo) return true;
 			if (a.tfoNo > b.tfoNo) return false;
-			// tfo seq number
-			// TODO @barni remove this
-//			if (a.ttsNo < b.ttsNo) return true;
-//			if (a.ttsNo > b.ttsNo) return false;
 			// tts begin position
 			if (a.dBegin < b.dBegin) return true;
 			if (a.dBegin > b.dBegin) return false;
@@ -3878,7 +3874,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				THost tfo = infix(ttsString(tfoSet[hit.getNdlSeqNo()]), hit.getNdlPos(), hit.getNdlPos() + hit.getHitLength());
 				THost triplex(infix(ttsString(value(ttsSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
 
-#ifndef TRIPLEX_DEBUG
+#ifdef TRIPLEX_DEBUG
 				cout << "============ HIT ============ " << endl << std::flush;
 				cout << "Seed gardener: " << endl << '\t'
 						<< hit.getHstkPos() << ", " << hit.getHstkPos() + hit.getHitLength()
@@ -3988,13 +3984,13 @@ namespace SEQAN_NAMESPACE_MAIN
 								 guanines
 								 );
 					appendValue(matches, match);
-
-					cout << "====+++===== MATCH?! ====+++===== " << endl << std::flush;
-					cout << "Seed gardener: " << endl << '\t'
-							<< ttsStart << ", " << ttsEnd
-							<< " - " <<  tfoStart << ", " <<  tfoEnd << endl << std::flush;
-					cout << "TFO: " << infix(ttsString(tfoSet[hit.getNdlSeqNo()]), tfoStart, tfoEnd) << endl
-							<< "TTS: " << infix(ttsString(ttsSet[duplexId]), ttsStart, ttsEnd) << endl << endl;
+//
+//					cout << "====+++===== MATCH?! ====+++===== " << endl << std::flush;
+//					cout << "Seed gardener: " << endl << '\t'
+//							<< ttsStart << ", " << ttsEnd
+//							<< " - " <<  tfoStart << ", " <<  tfoEnd << endl << std::flush;
+//					cout << "TFO: " << infix(ttsString(tfoSet[hit.getNdlSeqNo()]), tfoStart, tfoEnd) << endl
+//							<< "TTS: " << infix(ttsString(ttsSet[duplexId]), ttsStart, ttsEnd) << endl << endl;
 				}
 				// save potential
 				TPotKey pkey(getSequenceNo(value(tfoSet,hit.getNdlSeqNo())), getSequenceNo(value(ttsSet,hit.getHstId())));
