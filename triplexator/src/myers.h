@@ -1,37 +1,3 @@
-// ==========================================================================
-//                                triplexator
-// ==========================================================================
-// Copyright (c) 2011,2012, Fabian Buske, UQ
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Fabian Buske or the University of Queensland nor 
-//       the names of its contributors may be used to endorse or promote products 
-//       derived from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ==========================================================================
-// Author: Fabian Buske <fbuske@uq.edu.au>
-// ==========================================================================
-
 #ifndef FBUSKE_APPS_TRIPLEXATOR_HEADER_MYERS_H
 #define FBUSKE_APPS_TRIPLEXATOR_HEADER_MYERS_H
 
@@ -91,8 +57,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TVector					&rMmOffsets,
 			TVector					&lGuanines,
 			TVector					&rGuanines,
-			TOptions		const &options
-	)
+			TOptions		const &options)
 	{
 		int posFiber;
 		int posQuery;
@@ -100,7 +65,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		int consecutiveMismatches;
 		unsigned int guanine;
 		unsigned int localK = 1000;
-		int k = ceil(errorRate * options.minLength);
+		int k = floor(errorRate * options.minLength);
 
 		bool isLeftZeroIncluded = false;
 		bool isRightEndIncluded = false;
@@ -200,6 +165,26 @@ namespace SEQAN_NAMESPACE_MAIN
 
 			rMmOffsets.push_back(std::min((int)(length(query) - getEndDim1(seed) - 1), (int)(length(fiber) - getEndDim0(seed) - 1)));
 		}
+
+#ifdef DEBUG
+		cout << "lMmOffsets: " << endl << "\t";
+		for (int i = 0; i < lMmOffsets.size(); i++) {
+			cout << lMmOffsets[i] << " ";
+		}
+		cout << endl << "rMmOffsets: " << endl << "\t";
+		for (int i = 0; i < rMmOffsets.size(); i++) {
+			cout << rMmOffsets[i] << " ";
+		}
+		cout << endl << "lGuanines: " << endl << "\t";
+		for (int i = 0; i < lGuanines.size(); i++) {
+			cout << lGuanines[i] << " ";
+		}
+		cout << endl << "rGuanines: " << endl << "\t";
+		for (int i = 0; i < rGuanines.size(); i++) {
+			cout << rGuanines[i] << " ";
+		}
+		cout << endl << endl << std::flush;
+#endif
 	}
 
 	/**
@@ -229,7 +214,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		// initial check
 		if (initGuanines >= ceil((seedDim.eDim0 - seedDim.bDim0 + 1) * options.minGuanineRate)) {
 #ifdef DEBUG
-			cout << "Guanine rate satisfied at the beginning already." << endl;
+			cout << "Guanine rate satisfied at the beginning already." << endl << std::flush;
 #endif
 			guaninePotentials.push_back(SeedDimStruct(seedDim.bDim0, seedDim.bDim1, seedDim.eDim0, seedDim.eDim1));
 			return true;
@@ -241,12 +226,12 @@ namespace SEQAN_NAMESPACE_MAIN
 		TDim tmp_bDim1 = seedDim.bDim1;
 
 #ifdef DEBUG
-		cout << "Guanine adjustment started.." << endl;
-		cout << "initial seedDim: " << endl << seedDim << endl;
-		cout << "\ttts : " << infix(fiber, seedDim.bDim0, seedDim.eDim0 + 1) << endl;
-		cout << "\ttfo : " << infix(query, seedDim.bDim1, seedDim.eDim1 + 1) << endl;
-		cout << "\tdiagonal including end points [REAL] : " << diag << endl;
-		cout << "\tInit guanine rate: " << initGuanines << " vs " << ceil(diag * options.minGuanineRate) << endl;
+		cout << "Guanine adjustment started.." << endl << std::flush;
+		cout << "initial seedDim: " << endl << seedDim << endl << std::flush;
+		cout << "\ttts : " << infix(fiber, seedDim.bDim0, seedDim.eDim0 + 1) << endl << std::flush;
+		cout << "\ttfo : " << infix(query, seedDim.bDim1, seedDim.eDim1 + 1) << endl << std::flush;
+		cout << "\tdiagonal including end points [REAL] : " << diag << endl << std::flush;
+		cout << "\tInit guanine rate: " << initGuanines << " vs " << ceil(diag * options.minGuanineRate) << endl << std::flush;
 #endif
 
 		while (fiber[tmp_bDim0] == query[tmp_bDim1]	&& seedDim.eDim0 > tmp_bDim0)
@@ -289,8 +274,8 @@ namespace SEQAN_NAMESPACE_MAIN
 				max_diag = tmp_diag;
 				guaninePotentials.push_back(SeedDimStruct(tmp_bDim0, tmp_bDim1, tmp_bDim0 + max_diag - 1, tmp_bDim1 + max_diag - 1));
 #ifdef DEBUG
-				cout << "\tIndices have been adjusted for guanine rate." << endl;
-				cout << "\tAdded new guaninePotential: " << guaninePotentials.back() << endl;
+				cout << "\tIndices have been adjusted for guanine rate." << endl << std::flush;
+				cout << "\tAdded new guaninePotential: " << guaninePotentials.back() << endl << std::flush;
 #endif
 			}
 
@@ -311,6 +296,79 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 
 		return guaninePotentials.size() > 0;
+	}
+
+	void shiftSeedToRight(SeedDimStruct &extSeedDim) {
+		++extSeedDim.bDim0;
+		++extSeedDim.eDim0;
+		++extSeedDim.bDim1;
+		++extSeedDim.eDim1;
+	}
+
+	/**
+	 * Tries to minimize the window size so that maxLength is satisfied. Returns true is this is
+	 * possible, and false otherwise. Also, the leftmost such window is returned in the parameters.
+	 */
+	template<
+	typename THaystackFiber,
+	typename TQuery,
+	typename TDiag,
+	typename TGuanine,
+	typename TOptions
+	>
+	bool validLengthFound(
+			SeedDimStruct &extSeedDim,
+			THaystackFiber 	const 	&fiber,
+			TQuery			const	&query,
+			TDiag					&diag,
+			TGuanine				&guanineRate,
+			TOptions 		const	&options)
+	{
+		if (options.maxLength == -1) {
+			return true;
+		}
+		// find max diag that satisfies maxLength by reducing the right end
+		while (diag > options.maxLength
+				&& fiber[extSeedDim.eDim0 - 1] == query[extSeedDim.eDim1 - 1]) {
+			if (isGuanine(fiber[extSeedDim.eDim0])) {
+				--guanineRate;
+			}
+			--extSeedDim.eDim0;
+			--extSeedDim.eDim1;
+			--diag;
+#ifdef DEBUG
+			cout 	<< "options.maxLength is violated, continue to reduce right end" << endl
+					<< "\tdiag:" << diag << endl
+					<< "\textSeedDim:" << endl << extSeedDim << endl << std::flush;
+#endif
+		}
+
+		// couldn't find valid diag from the right (reached a mismatch before constraint could be satisfied), search from left;
+		if (diag > options.maxLength) {
+#ifdef DEBUG
+			cout << "options.maxLength is DEFINITELY right-violated, try left; length: " << diag << endl << std::flush;
+#endif
+			// find max diag that satisfies maxLength by reducing the right end
+			while (diag > options.maxLength && fiber[extSeedDim.bDim0 + 1] == query[extSeedDim.bDim1 + 1]) {
+				if (isGuanine(fiber[extSeedDim.bDim0])) {
+					--guanineRate;
+				}
+				++extSeedDim.bDim0;
+				++extSeedDim.bDim1;
+				--diag;
+#ifdef DEBUG
+				cout << "options.maxLength is violated, continue to increase left end" << endl
+					<< "\tdiag:" << diag << endl
+					<< "\textSeedDim:" << endl << extSeedDim << endl << std::flush;
+#endif
+			}
+
+			// couldn't find valid diag from the left; break and continue
+			if (diag > options.maxLength) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	template<
@@ -356,27 +414,10 @@ namespace SEQAN_NAMESPACE_MAIN
 		int lMmSize = lMmOffsets.size();
 		int rMmSize = rMmOffsets.size();
 
-#ifdef DEBUG
-		cout << "lMmOffsets: " << endl << "\t";
-		for (int i = 0; i < lMmSize; i++) {
-			cout << lMmOffsets[i] << " ";
-		}
-		cout << endl << "rMmOffsets: " << endl << "\t";
-		for (int i = 0; i < rMmSize; i++) {
-			cout << rMmOffsets[i] << " ";
-		}
-		cout << endl << "lGuanines: " << endl << "\t";
-		for (int i = 0; i < lGuanines.size(); i++) {
-			cout << lGuanines[i] << " ";
-		}
-		cout << endl << "rGuanines: " << endl << "\t";
-		for (int i = 0; i < rGuanines.size(); i++) {
-			cout << rGuanines[i] << " ";
-		}
-		cout << endl << endl << std::flush;
-#endif
-
 		for (int l = lMmSize - 1; l >= 0; --l) {
+#ifdef DEBUG
+			cout << "Started / lowered l to: " << l << endl << std::flush;
+#endif
 			int cnt = 0;
 			extSeedDim.bDim0 = getBeginDim0(seed) - lMmOffsets[l];
 			extSeedDim.bDim1 = getBeginDim1(seed) - lMmOffsets[l];
@@ -392,9 +433,14 @@ namespace SEQAN_NAMESPACE_MAIN
 
 			TSeedDimVector guaninePotentials;
 			bool extensionFound = false;
+			const int init_bDim0 = extSeedDim.bDim0;
+			const int init_bDim1 = extSeedDim.bDim1;
 			for (int r = rMmSize - 1; r >= 0 && !extensionFound; --r) {
 				extSeedDim.eDim0 = getEndDim0(seed) + rMmOffsets[r];
 				extSeedDim.eDim1 = getEndDim1(seed) + rMmOffsets[r];
+				// reset bdim
+				extSeedDim.bDim0 = init_bDim0;
+				extSeedDim.bDim1 = init_bDim1;
 
 				cnt = 0;
 				while (fiber[extSeedDim.eDim0] != query[extSeedDim.eDim1]) {
@@ -406,73 +452,100 @@ namespace SEQAN_NAMESPACE_MAIN
 					++cnt;
 				}
 
-				// seedDim->bDim* and seedDim->eDim* include the respective elements as match
-				int diag 	= extSeedDim.eDim0 - extSeedDim.bDim0 + 1; //
-				localK		= std::max((int)floor(diag * errorRate), k);
-				mismatches 	= l + r;
+#ifdef DEBUG
+				cout << "Testing potential match: " << endl << extSeedDim << endl << std::flush;
+#endif
 
+				// if diag is < minLength, no reason to continue
+				int diag 	= extSeedDim.eDim0 - extSeedDim.bDim0 + 1;
 				if (diag < options.minLength) {
 #ifdef DEBUG
-					cout << "potential extension too small already, continue:" << diag << endl;
-					cout << "l: " << l << ", r: " << r << endl;
+					cout << "potential extension too small already, continue:" << diag << endl << std::flush;
+					cout << "l: " << l << ", r: " << r << endl << std::flush;
 #endif
 					continue;
 				}
 
+				guanineRate = lGuanines[l] + rGuanines[r] + seedGuanine;
+				if (!validLengthFound(extSeedDim, fiber, query, diag, guanineRate, options)) {
+					continue;
+				}
+
+				localK		= std::max((int)floor(diag * errorRate), k);
+				mismatches 	= l + r;
 				// make sure #mismatches is valid
 				if (localK < mismatches) {
 #ifdef DEBUG
-					cout << "localK < mismatches" << endl;
+					cout << "localK < mismatches, continue resizing window (--r): " << localK << "; " << mismatches << endl << std::flush;
 #endif
 					continue;
 				}
-
-				// check guanine rate
-				guanineRate 	= lGuanines[l] + rGuanines[r] + seedGuanine;
-				bool guanineOK 	= adjustForGuanineRate(fiber, query, extSeedDim, guaninePotentials, guanineRate, options, int());
-				if (!guanineOK)
-				{
 #ifdef DEBUG
-					cout << "Discarding extended seed due to low guanine rate, adjustment failed." << endl;
-
-#endif
-					continue;
+				else {
+					cout 	<< "mismatch constraint satisfied, proceed. "
+							<< "(localK, k, mismatches)" << localK << "; " << k << "; " << mismatches << endl << std::flush;
 				}
-
-				// iterate over each guanine potentials
-				for (TSeedDimVector::iterator seedDim = guaninePotentials.begin(); seedDim != guaninePotentials.end(); ++seedDim)
-				{
+#endif
+				// valid diag window, now shift this window to the left and check for valid seeds at each window position
+				// diag, mismatches don't change in this loop!
+				while (extSeedDim.eDim0 < length(fiber) && extSeedDim.eDim1 < length(query)
+						&& fiber[extSeedDim.bDim0] == query[extSeedDim.bDim1] && fiber[extSeedDim.eDim0] == query[extSeedDim.eDim1]) {
 #ifdef DEBUG
-					cout << "Guanine rate should be okay: " << guanineRate << " vs " << ceil((seedDim->eDim0 - seedDim->bDim0) * options.minGuanineRate) << endl;
-					cout << "\tl: " << l << "; r: " << r << endl;
-					cout << "\tnew? tts : " << infix(fiber, seedDim->bDim0, seedDim->eDim0 + 1) << endl;
-					cout << "\tnew? tfo : " << infix(query, seedDim->bDim1, seedDim->eDim1 + 1) << endl;
-					cout << "\tAfter guanine rate: " << guanineRate << " vs " << ceil((seedDim->eDim0 - seedDim->bDim0) * options.minGuanineRate) << endl;
+					cout << "shifting diag window over valid positions: " << diag << endl << std::flush;
+#endif
+					// check guanine rate
+					bool guanineOK 	= adjustForGuanineRate(fiber, query, extSeedDim, guaninePotentials, guanineRate, options, int());
+					if (guanineOK)
+					{
+						// iterate over each guanine potentials
+						for (TSeedDimVector::iterator seedDim = guaninePotentials.begin(); seedDim != guaninePotentials.end(); ++seedDim)
+						{
+#ifdef DEBUG
+							cout << "Guanine rate should be okay: " << guanineRate << " vs " << ceil((seedDim->eDim0 - seedDim->bDim0) * options.minGuanineRate) << endl << std::flush;
+							cout << "\tl: " << l << "; r: " << r << endl << std::flush;
+							cout << "\tnew? tts : " << infix(fiber, seedDim->bDim0, seedDim->eDim0 + 1) << endl << std::flush;
+							cout << "\tnew? tfo : " << infix(query, seedDim->bDim1, seedDim->eDim1 + 1) << endl << std::flush;
+							cout << "\tAfter guanine rate: " << guanineRate << " vs " << ceil((seedDim->eDim0 - seedDim->bDim0) * options.minGuanineRate) << endl << std::flush;
 #endif
 
-					// seedDim->eDim* still include the last match, to report we add +1
-					if (seedDim->eDim0 + 1 - seedDim->bDim0 >= options.minLength) {
-						if (seedDim->bDim0 >= 65536 || seedDim->bDim1 >= 65536 || seedDim->eDim0 >= 65536 || seedDim->eDim0 >= 65536) {
-							cout << "YOU SUCK! find a new hash function." << endl << std::flush;
-							exit(-1);
-						}
-						long long hash = seedDim->bDim0;
-						hash = (((((hash << 16) + seedDim->eDim0) << 16) + seedDim->bDim1) << 16) + seedDim->eDim1;
+							// seedDim->eDim* still include the last match, to report we add +1
+							if (seedDim->eDim0 + 1 - seedDim->bDim0 >= options.minLength) {
+								if (seedDim->bDim0 >= 65536 || seedDim->bDim1 >= 65536 || seedDim->eDim0 >= 65536 || seedDim->eDim0 >= 65536) {
+									cout << "YOU SUCK! find a new hash function." << endl << std::flush;
+									exit(-1);
+								}
+								long long hash = seedDim->bDim0;
+								hash = (((((hash << 16) + seedDim->eDim0) << 16) + seedDim->bDim1) << 16) + seedDim->eDim1;
 
-						// if new match
-						if (!addedSeedHashes.count(hash)) {
-							// add +1 to endDim*, it's how seeds / matches are reported
-							extendedSeeds.push_back(TSeed(seedDim->bDim0, seedDim->bDim1, seedDim->eDim0 + 1, seedDim->eDim1 + 1));
-							addedSeedHashes.insert(hash);
+								// if new match
+								if (!addedSeedHashes.count(hash)) {
+									// add +1 to endDim*, it's how seeds / matches are reported
+									extendedSeeds.push_back(TSeed(seedDim->bDim0, seedDim->bDim1, seedDim->eDim0 + 1, seedDim->eDim1 + 1));
+									addedSeedHashes.insert(hash);
 #ifdef DEBUG
-							cout << "valid & new seed extension: " << extendedSeeds.back() << endl;
-							cout << "\ttts : " << infix(fiber, seedDim->bDim0, seedDim->eDim0 + 1) << endl;
-							cout << "\ttfo : " << infix(query, seedDim->bDim1, seedDim->eDim1 + 1) << endl;
+									cout << "valid & new seed extension: " << extendedSeeds.back() << endl << std::flush;
+									cout << "\ttts : " << infix(fiber, seedDim->bDim0, seedDim->eDim0 + 1) << endl << std::flush;
+									cout << "\ttfo : " << infix(query, seedDim->bDim1, seedDim->eDim1 + 1) << endl << std::flush;
 #endif
-//							extensionFound = true;
-						}
+								}
+							} // end if
+						} // end for over guaninePotentials
 					}
-				}
+#ifdef DEBUG
+					else {
+						cout << "Discarding extended seed due to low guanine rate, adjustment failed." << endl << std::flush;
+					}
+#endif
+					// shift seed to the right
+					shiftSeedToRight(extSeedDim);
+					// update temp guanine numbers within current / updated seed
+					if (isGuanine(fiber[extSeedDim.eDim0])) {
+						++guanineRate;
+					}
+					if (isGuanine(fiber[extSeedDim.bDim0 - 1])) {
+						--guanineRate;
+					}
+				} // end while window shift left
 			}
 		}
 	}
@@ -498,19 +571,19 @@ namespace SEQAN_NAMESPACE_MAIN
 		if (addedSeedHashes.count(hash)) {
 	#ifdef DEBUG
 			std::cout
-					<< "== XXX >> Seed is already in map: " << seed << std::endl
+					<< "== XXX >> Seed is already in map: " << seed << std::endl << std::flush
 					<< "\thash: " << hash << std::endl
 					<< "\ttfoSeqNo: " << tfoSeqNo << std::endl
-					<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo  << std::flush << std::endl;
+					<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo  << std::flush << std::endl << std::flush;
 	#endif
 			return false;
 		}
 		addedSeedHashes.insert(hash);
 	#ifdef DEBUG
-		std::cout << "===>>> New seed is added to map: " << seed << std::endl
+		std::cout << "===>>> New seed is added to map: " << seed << std::endl << std::flush
 				<< "\thash: " << hash << std::endl
 				<< "\ttfoSeqNo: " << tfoSeqNo << std::endl
-				<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo  << std::flush << std::endl;
+				<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo  << std::flush << std::endl << std::flush;
 	#endif
 		return true;
 	}
@@ -576,7 +649,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		int maxSeedMergedEnd;	// global position in merged haystack
 		int maxSeedQGramEnd;	// local position in
 		int maxSeedFiberEnd; 	// local begin position in fiber (elem in haystack)
-		int k = ceil(errorRate * options.minLength); // #mismatches allowed
+		int k = floor(errorRate * options.minLength); // #mismatches allowed
 		unsigned int guanine;
 		TSAIter itSB, itEB;
 		TSeedList extendedSeeds;
@@ -750,14 +823,14 @@ namespace SEQAN_NAMESPACE_MAIN
 
 				for (TSeedListIterator seed = extendedSeeds.begin(); seed != extendedSeeds.end(); ++seed) {
 	#ifdef DEBUG
-					cout << "++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+					cout << "++++++++++++++++++++++++++++++++++++++++++++++++" << endl << std::flush;
 					cout << "one seed after extension: " << *seed << endl;
-					cout << "Match: " << endl;
+					cout << "Match: " << endl << std::flush;
 					cout << "\tseedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(*seed), getEndDim0(*seed)) << endl << std::flush ;
-					cout << "\tseedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(*seed), getEndDim1(*seed)) << endl;
-					cout << "needle (tfo - isparallel): " << isParallel(needleSet[ndlSeqNo]) << "\t\t\t" << needleSet[ndlSeqNo] << endl;
-					cout << "match length: " << getEndDim0(*seed) - getBeginDim0(*seed) << endl;
-					cout << "tfo sequence id (index): \t\t" << ndlSeqNo << endl;
+					cout << "\tseedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(*seed), getEndDim1(*seed)) << endl << std::flush;
+					cout << "needle (tfo - isparallel): " << isParallel(needleSet[ndlSeqNo]) << "\t\t\t" << needleSet[ndlSeqNo] << endl << std::flush;
+					cout << "match length: " << getEndDim0(*seed) - getBeginDim0(*seed) << endl << std::flush;
+					cout << "tfo sequence id (index): \t\t" << ndlSeqNo << endl << std::flush;
 					cout << "+++++ ------- +++++++ ------ ++++++ will try to add new? seed" << endl << std::flush ;
 	#endif
 					// if new seed, add to seedMap and to hitSet
@@ -840,14 +913,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			std::cout 	<< haystack[i] << std::endl << std::flush ;
 	#endif
 		}
-
-	#ifdef DEBUG
-	//		std::cout << "Segment map / vector:\t";
-	//		for (unsigned i = 0; i < segmentMap.size(); ++i) {
-	//			cout << segmentMap[i] << " ";
-	//		}
-	//		cout << endl;
-	#endif
 	}
 
 	template<typename TChar>
@@ -869,15 +934,16 @@ namespace SEQAN_NAMESPACE_MAIN
 		typename THaystack,
 		typename TNeedles,
 		typename TError,
+		typename TOptions,
 		typename THit
 	>
-	void mergeOverlappingHits(
+	void mergeOverlappingHits (
 			THitList 					&hitList,
 			THitSetPointerMap 			&hitSetMap,
 			THaystack 			const 	&haystack,
 			TNeedles  			const	&needles,
 			TError				const	&errorRate,
-			int 				const	&minLength,
+			TOptions			const	&options,
 			THit)
 	{
 		typedef std::pair<int,int>										THitListKey;
@@ -933,10 +999,20 @@ namespace SEQAN_NAMESPACE_MAIN
 										<< "n Hit: hstkPos - ndlPos = " << nextHit->hstkPos - nextHit->ndlPos << endl;
 	#endif
 								if (currHit->hstkPos - currHit->ndlPos != nextHit->hstkPos - nextHit->ndlPos) {
-									++nextHitIt;
 	#ifdef DEBUG
 									cout << "hits overlap but they are not aligned" << endl;
 	#endif
+									++nextHitIt;
+									continue;
+								}
+
+								int mergeEndPos = nextHit->hstkPos + nextHit->hitLength;
+								int overlappedLength = mergeEndPos - currHit->hstkPos;
+								if (overlappedLength > options.maxLength) {
+#ifdef DEBUG
+								cout << "overlapped length longer than maxLength, ignoring possible merge" << endl;
+#endif
+									++nextHitIt;
 									continue;
 								}
 
@@ -945,7 +1021,7 @@ namespace SEQAN_NAMESPACE_MAIN
 										&& currHit->ndlPos + currHit->hitLength >= nextHit->ndlPos + nextHit->hitLength)
 								{
 	#ifdef DEBUG
-									cout << "current hit contains next hit, delete next" << std::flush;
+									cout << "current hit contains next hit, delete next" << endl << std::flush;
 	#endif
 									delete nextHit;
 									nextHitIt = nextDim0It->second.erase(nextHitIt);
@@ -953,10 +1029,10 @@ namespace SEQAN_NAMESPACE_MAIN
 
 								// case II: nextHit contains currHit
 								else if (currHit->ndlPos >= nextHit->ndlPos
-										&& currHit->ndlPos + currHit->hitLength <= nextHit->ndlPos + nextHit->hitLength
-								) {
+										&& currHit->ndlPos + currHit->hitLength <= nextHit->ndlPos + nextHit->hitLength)
+								{
 	#ifdef DEBUG
-									cout << "next hit contains current hit, just delete current and skip to next current" << std::flush;
+									cout << "next hit contains current hit, just delete current and skip to next current" << endl << std::flush;
 	#endif
 									delete currHit;
 									currHitIt = dim0It->second.erase(currHitIt);
@@ -966,10 +1042,8 @@ namespace SEQAN_NAMESPACE_MAIN
 								//  case III: hits overlap and are aligned, check if merge can be done
 								else {
 									int mismatches  = 0;
-									int mergeEndPos = nextHit->hstkPos + nextHit->hitLength;
 									int hstkPos = currHit->hstkPos;
 									int ndlPos 	= currHit->ndlPos;
-									int overlappedLength = mergeEndPos - currHit->hstkPos;
 	#ifdef DEBUG
 									cout << "trying to merge, overlapped segment len:" << overlappedLength << endl;
 									if (mergeEndPos <= currHit->hstkPos + currHit->hitLength) {

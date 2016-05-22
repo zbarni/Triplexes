@@ -1442,7 +1442,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	    }
 	    // keep only maximum segments, remove those included in larger hits
 		t = sysTime();
-	    mergeOverlappingHits(hitList, hitSetPointerMap, haystack, needles, errorRate, options.minLength, THit());
+	    mergeOverlappingHits(hitList, hitSetPointerMap, haystack, needles, errorRate, options, THit());
 	    times["merge"] += sysTime() - t;
 
 	    // add hits to gardener

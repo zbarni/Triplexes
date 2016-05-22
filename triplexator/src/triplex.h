@@ -3919,7 +3919,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					bool reduceSet = false; // don't merge overlapping triplexes
 					totalNumberOfMatches += _filterWithGuanineAndErrorRate(triplexSet, ttsfilter, 'G', 'Y', reduceSet, TRIPLEX_ORIENTATION_BOTH, options, TTS());
 				}
-#ifndef TRIPLEX_DEBUG
+#ifdef TRIPLEX_DEBUG
 				::std::cerr << "totalNumberOfMatches:" << totalNumberOfMatches << ::std::endl;
 #endif
 				// skip parts below if no matches have been detected
@@ -3984,7 +3984,7 @@ namespace SEQAN_NAMESPACE_MAIN
 								 guanines
 								 );
 					appendValue(matches, match);
-//
+
 //					cout << "====+++===== MATCH?! ====+++===== " << endl << std::flush;
 //					cout << "Seed gardener: " << endl << '\t'
 //							<< ttsStart << ", " << ttsEnd
