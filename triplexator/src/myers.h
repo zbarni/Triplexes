@@ -107,7 +107,7 @@ namespace SEQAN_NAMESPACE_MAIN
 //		unsigned int lastGuanine = (lGuanines.size()) ? guanine : 0;
 		// add corresponding end points if required
 		if ((posFiber == -1 || posQuery == -1) && !isLeftZeroIncluded) {
-			lGuanines.push_back((lGuanines.size()) ? guanine : 0);
+			lGuanines.push_back(guanine);
 			lMmOffsets.push_back(std::min((int)(getBeginDim0(seed)),(int)(getBeginDim1(seed))));
 		}
 
@@ -148,7 +148,9 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// add corresponding end points if required
 		if ((posFiber == endFiber || posQuery == endNeedle) && !isRightEndIncluded) {
-			rGuanines.push_back((rGuanines.size()) ? guanine : 0);
+//			int rightmostGuanine = (isGuanine(fiber[posFiber - 1])) ? 1 : 0;
+//			rGuanines.push_back((rGuanines.size()) ? guanine : rightmostGuanine);
+			rGuanines.push_back(guanine);
 			rMmOffsets.push_back(std::min((int)(endNeedle - getEndDim1(seed) - 1), (int)(endFiber - getEndDim0(seed) - 1)));
 		}
 
@@ -855,9 +857,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	#endif
 						((hitList[seqNoKey])[matchKey]).push_back(hit);
 					}
-				}
-				if (ndlSeqNo == 42 && haystackFiberSeqNo == 0) {
-					cout << "@@@ --- it just got fuckin' cold out here --- @@@" << endl;
 				}
 			}
 		}
