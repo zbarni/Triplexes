@@ -40,6 +40,9 @@ namespace SEQAN_NAMESPACE_MAIN
 					<< "\tbDim1, eDim1: " << s.bDim1 << ", " << s.eDim1;
 	}
 
+	/**
+	 *
+	 */
 	template<
 	typename THaystackFiber,
 	typename TQuery,
@@ -48,10 +51,10 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TVector,
 	typename TOptions
 	>
-	void getMismatchOffsets(
+	void calcMismatchOffsets(
 			TSeed 			const 	&seed,
 			THaystackFiber 	const 	&fiber,
-			TQuery 			const 	&query,
+			TQuery 			const 	&needle,
 			TError  		const	&errorRate,
 			TVector					&lMmOffsets,
 			TVector					&rMmOffsets,
@@ -62,7 +65,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		int posFiber;
 		int posQuery;
 		int mismatches;
-		int consecutiveMismatches;
+		int consecutiveMm;
 		unsigned int guanine;
 		unsigned int localK = 1000;
 		int k = floor(errorRate * options.minLength);
@@ -71,15 +74,15 @@ namespace SEQAN_NAMESPACE_MAIN
 		bool isRightEndIncluded = false;
 
 		// go left
-		guanine 				= 0;
-		mismatches 				= 0;
-		consecutiveMismatches 	= 0;
+		guanine 		= 0;
+		mismatches 		= 0;
+		consecutiveMm 	= 0;
 		posFiber = getBeginDim0(seed);
 		posQuery = getBeginDim1(seed);
 
 		while (posFiber >= 0 && posQuery >= 0 && mismatches <= localK + TOLERATED_ERROR
-				&& consecutiveMismatches <= options.maxInterruptions) {
-			if (fiber[posFiber] != query[posQuery]) {
+				&& consecutiveMm <= options.maxInterruptions) {
+			if (fiber[posFiber] != needle[posQuery]) {
 				// update guanine counts (left from seed, not including those within seed)
 				lGuanines.push_back(guanine);
 				lMmOffsets.push_back(getBeginDim0(seed) - posFiber);
@@ -87,10 +90,10 @@ namespace SEQAN_NAMESPACE_MAIN
 				if (posFiber == 0 || posQuery == 0) {
 					isLeftZeroIncluded = true;
 				}
-				++consecutiveMismatches;
+				++consecutiveMm;
 			}
 			else {
-				consecutiveMismatches = 0;
+				consecutiveMm = 0;
 
 				if (isGuanine(fiber[posFiber])) {
 					++guanine;
@@ -105,7 +108,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		// add corresponding end points if required
 		if ((posFiber == -1 || posQuery == -1) && !isLeftZeroIncluded) {
 			if ((posFiber == -1 && isGuanine(fiber[0])) ||
-				(posQuery == -1 && isGuanine(query[0])))
+				(posQuery == -1 && isGuanine(needle[0])))
 			{
 				lGuanines.push_back(lastGuanine + 1);
 			}
@@ -119,28 +122,28 @@ namespace SEQAN_NAMESPACE_MAIN
 		// go right
 		guanine 				= 0;
 		mismatches 				= 0;
-		consecutiveMismatches 	= 0;
+		consecutiveMm 	= 0;
 		posFiber = getEndDim0(seed);
 		posQuery = getEndDim1(seed);
 
-		int endFiber = length(fiber);
-		int endQuery = length(query);
+		const int endFiber  = length(fiber);
+		const int endNeedle = length(needle);
 
 		// only go until the second last element, the last one is added later if needed (end* - 1)
-		while (posFiber < endFiber && posQuery < endQuery && mismatches <= localK + TOLERATED_ERROR
-				&& consecutiveMismatches <= options.maxInterruptions) {
-			if (fiber[posFiber] != query[posQuery]) {
+		while (posFiber < endFiber && posQuery < endNeedle && mismatches <= localK + TOLERATED_ERROR
+				&& consecutiveMm <= options.maxInterruptions) {
+			if (fiber[posFiber] != needle[posQuery]) {
 				// update guanine counts (left from seed, not including those within seed)
 				rGuanines.push_back(guanine);
 				rMmOffsets.push_back(posFiber - getEndDim0(seed));
 				mismatches++;
-				if (posFiber == endFiber - 1 || posQuery == endQuery - 1) {
+				if (posFiber == endFiber - 1 || posQuery == endNeedle - 1) {
 					isRightEndIncluded = true;
 				}
-				++consecutiveMismatches;
+				++consecutiveMm;
 			}
 			else {
-				consecutiveMismatches = 0;
+				consecutiveMm = 0;
 
 				if (isGuanine(fiber[posFiber])) {
 					++guanine;
@@ -153,9 +156,9 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		lastGuanine = (rGuanines.size()) ? guanine : 0;
 		// add corresponding end points if required
-		if ((posFiber == endFiber || posQuery == endQuery) && !isRightEndIncluded) {
+		if ((posFiber == endFiber || posQuery == endNeedle) && !isRightEndIncluded) {
 			if ((posFiber == endFiber && isGuanine(fiber[endFiber - 1])) ||
-				(posQuery == endQuery && isGuanine(query[endQuery - 1])))
+				(posQuery == endNeedle && isGuanine(needle[endNeedle - 1])))
 			{
 				rGuanines.push_back(lastGuanine + 1);
 			}
@@ -163,7 +166,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				rGuanines.push_back(lastGuanine);
 			}
 
-			rMmOffsets.push_back(std::min((int)(length(query) - getEndDim1(seed) - 1), (int)(length(fiber) - getEndDim0(seed) - 1)));
+			rMmOffsets.push_back(std::min((int)(endNeedle - getEndDim1(seed) - 1), (int)(endFiber - getEndDim0(seed) - 1)));
 		}
 
 #ifdef DEBUG
@@ -387,7 +390,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TSeed 			const &seed,
 			TSeedList			  &extendedSeeds,
 			THaystackFiber 	const &fiber,
-			TQuery 			const &query,
+			TQuery 			const &needle,
 			TError  		const &errorRate,
 			int				const &k,
 			unsigned int	const &seedGuanine,
@@ -403,7 +406,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		TVector lGuanines;
 		TVector rGuanines;
 
-		getMismatchOffsets(seed, fiber, query, errorRate, lMmOffsets, rMmOffsets, lGuanines, rGuanines, options);
+		calcMismatchOffsets(seed, fiber, needle, errorRate, lMmOffsets, rMmOffsets, lGuanines, rGuanines, options);
 
 		SeedDimStruct extSeedDim;
 		int mismatches;
@@ -413,8 +416,10 @@ namespace SEQAN_NAMESPACE_MAIN
 		// ============================================================================
 		// START REAL SHIT
 		// init left and right mismatch numbers
-		int lMmSize = lMmOffsets.size();
-		int rMmSize = rMmOffsets.size();
+		int lMmSize  	= lMmOffsets.size();
+		int rMmSize  	= rMmOffsets.size();
+		int fiberSize 	= length(fiber);
+		int needleSize	= length(needle);
 
 		for (int l = lMmSize - 1; l >= 0; --l) {
 #ifdef DEBUG
@@ -424,7 +429,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			extSeedDim.bDim0 = getBeginDim0(seed) - lMmOffsets[l];
 			extSeedDim.bDim1 = getBeginDim1(seed) - lMmOffsets[l];
 			// skip beginning positions until match found
-			while (fiber[extSeedDim.bDim0] != query[extSeedDim.bDim1]) {
+			while (fiber[extSeedDim.bDim0] != needle[extSeedDim.bDim1]) {
 				if (cnt) {
 					--l;
 				}
@@ -444,7 +449,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				extSeedDim.bDim1 = init_bDim1;
 
 				cnt = 0;
-				while (fiber[extSeedDim.eDim0] != query[extSeedDim.eDim1]) {
+				while (fiber[extSeedDim.eDim0] != needle[extSeedDim.eDim1]) {
 					if (cnt) {
 						--r;
 					}
@@ -468,7 +473,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 
 				guanineRate = lGuanines[l] + rGuanines[r] + seedGuanine;
-				if (!resizeWindowToMaxLength(extSeedDim, fiber, query, diag, guanineRate, options)) {
+				if (!resizeWindowToMaxLength(extSeedDim, fiber, needle, diag, guanineRate, options)) {
 					continue;
 				}
 
@@ -489,13 +494,13 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 				// valid diag window, now shift this window to the left and check for valid seeds at each window position
 				// diag, mismatches don't change in this loop!
-				while (extSeedDim.eDim0 < length(fiber) && extSeedDim.eDim1 < length(query)
-						&& fiber[extSeedDim.bDim0] == query[extSeedDim.bDim1] && fiber[extSeedDim.eDim0] == query[extSeedDim.eDim1]) {
+				while (extSeedDim.eDim0 < fiberSize && extSeedDim.eDim1 < needleSize
+						&& fiber[extSeedDim.bDim0] == needle[extSeedDim.bDim1] && fiber[extSeedDim.eDim0] == needle[extSeedDim.eDim1]) {
 #ifdef DEBUG
 					cout << "shifting diag window over valid positions: " << diag << endl << std::flush;
 #endif
 					// check guanine rate
-					bool guanineOK 	= adjustForGuanineRate(fiber, query, extSeedDim, guaninePotentials, guanineRate, options, int());
+					bool guanineOK 	= adjustForGuanineRate(fiber, needle, extSeedDim, guaninePotentials, guanineRate, options, int());
 					if (guanineOK)
 					{
 						// iterate over each guanine potentials
@@ -505,7 +510,7 @@ namespace SEQAN_NAMESPACE_MAIN
 							cout << "Guanine rate should be okay: " << guanineRate << " vs " << ceil((seedDim->eDim0 - seedDim->bDim0) * options.minGuanineRate) << endl << std::flush;
 							cout << "\tl: " << l << "; r: " << r << endl << std::flush;
 							cout << "\tnew? tts : " << infix(fiber, seedDim->bDim0, seedDim->eDim0 + 1) << endl << std::flush;
-							cout << "\tnew? tfo : " << infix(query, seedDim->bDim1, seedDim->eDim1 + 1) << endl << std::flush;
+							cout << "\tnew? tfo : " << infix(needle, seedDim->bDim1, seedDim->eDim1 + 1) << endl << std::flush;
 							cout << "\tAfter guanine rate: " << guanineRate << " vs " << ceil((seedDim->eDim0 - seedDim->bDim0) * options.minGuanineRate) << endl << std::flush;
 #endif
 
@@ -526,7 +531,7 @@ namespace SEQAN_NAMESPACE_MAIN
 #ifdef DEBUG
 									cout << "valid & new seed extension: " << extendedSeeds.back() << endl << std::flush;
 									cout << "\ttts : " << infix(fiber, seedDim->bDim0, seedDim->eDim0 + 1) << endl << std::flush;
-									cout << "\ttfo : " << infix(query, seedDim->bDim1, seedDim->eDim1 + 1) << endl << std::flush;
+									cout << "\ttfo : " << infix(needle, seedDim->bDim1, seedDim->eDim1 + 1) << endl << std::flush;
 #endif
 								}
 							} // end if
@@ -874,42 +879,41 @@ namespace SEQAN_NAMESPACE_MAIN
 			TSegmentMap  		&segmentMap,
 			TPosToFiberSeqNo	&posToFiberSeqNo,
 			unsigned char  	   *&bitTarget,
-			unsigned int 		&totalLength
-			) {
-		assert(!length(mergedHaystack));
+			unsigned int 		&totalHaystackLength)
+	{
 
 		// calculate total length of segments in haystack
 		for (int i = 0; i < length(haystack); ++i) {
-			totalLength += length(haystack[i]);
+			totalHaystackLength += length(haystack[i]);
 		}
 
 	#ifdef DEBUG
-		assert(totalLength == length(mergedHaystack));
-		std::cout 	<< "Merged haystack has length: " << totalLength << std::endl << std::flush ;
+		assert(totalHaystackLength == length(mergedHaystack));
+		std::cout 	<< "Merged haystack has length: " << totalHaystackLength << std::endl << std::flush ;
 		std::cout 	<< "Fibers in merged haystack: " << std::endl << std::flush ;
 	#endif
 
 		// resize merged haystack to totalLength
-		resize(mergedHaystack, totalLength, Exact());
-		segmentMap.reserve(totalLength);
-		bitTarget = new unsigned char[totalLength];
-		totalLength = 0;
+		resize(mergedHaystack, totalHaystackLength, Exact());
+		segmentMap.reserve(totalHaystackLength);
+		bitTarget = new unsigned char[totalHaystackLength];
+		totalHaystackLength = 0;
 
 		for (int i = 0; i < length(haystack); ++i) {
-			segmentMap.push_back(totalLength);
+			segmentMap.push_back(totalHaystackLength);
 	#ifdef DEBUG
 			std::cout 	<< "seq no: " << i << " (len = " << length(haystack[i]) << "): " << std::flush ;
 	#endif
 			// fill mergedHaystack and Myers vector
 			for (int j = 0; j < length(haystack[i]); ++j) {
-				mergedHaystack[totalLength + j] = haystack[i][j];
+				mergedHaystack[totalHaystackLength + j] = haystack[i][j];
 				// rewrite double stranded seq (tts) in a proper form for Myers (char -> index)
-				bitTarget[totalLength + j] = charToBit(haystack[i][j]);//static_cast<unsigned int>(haystack[i][j]);
+				bitTarget[totalHaystackLength + j] = charToBit(haystack[i][j]);//static_cast<unsigned int>(haystack[i][j]);
 
 				// add starting position in mergedHaystack for current fiber
 				posToFiberSeqNo.push_back(i);
 			}
-			totalLength += length(haystack[i]);
+			totalHaystackLength += length(haystack[i]);
 	#ifdef DEBUG
 			std::cout 	<< haystack[i] << std::endl << std::flush ;
 	#endif
@@ -927,6 +931,31 @@ namespace SEQAN_NAMESPACE_MAIN
 		case 'N': return 5;
 		default: assert(false && "Invalid character.");
 		}
+	}
+
+	template<
+	typename TFiber,
+	typename TNeedle,
+	typename TPos,
+	typename TLength
+	>
+	int calcGuanines (
+			TFiber	const 	&fiber,
+			TNeedle	const	&needle,
+			TPos			fiberPos,
+			TPos			ndlPos,
+			TLength	const	&mergedLength)
+	{
+		int guanines = 0;
+		for (int i = 0; i < mergedLength; ++i) {
+			if (isGuanine(fiber[fiberPos + i]) && fiber[fiberPos + i] == needle[ndlPos + i]) {
+				++guanines;
+			}
+		}
+#ifdef DEBUG
+		cout << "#guanines in overlapped segment: " << guanines << endl << std::flush;
+#endif
+		return guanines;
 	}
 
 	template<
@@ -990,6 +1019,7 @@ namespace SEQAN_NAMESPACE_MAIN
 						// iterate over all hit matches
 						for (THitIterator currHitIt = dim0It->second.begin(); currHitIt != dim0It->second.end();) {
 							bool incrementCurrHitIt = true;
+
 							for (THitIterator nextHitIt = nextDim0It->second.begin(); nextHitIt != nextDim0It->second.end();) {
 								THit *currHit = *currHitIt;
 								THit *nextHit = *nextHitIt;
@@ -1018,8 +1048,7 @@ namespace SEQAN_NAMESPACE_MAIN
 								}
 
 								// case I: currHit contains nextHit
-								if (currHit->ndlPos <= nextHit->ndlPos
-										&& currHit->ndlPos + currHit->hitLength >= nextHit->ndlPos + nextHit->hitLength)
+								if (currHit->ndlPos <= nextHit->ndlPos && currHit->ndlPos + currHit->hitLength >= nextHit->ndlPos + nextHit->hitLength)
 								{
 	#ifdef DEBUG
 									cout << "current hit contains next hit, delete next" << endl << std::flush;
@@ -1058,8 +1087,11 @@ namespace SEQAN_NAMESPACE_MAIN
 										++hstkPos;
 										++ndlPos;
 									}
+									int guanines = calcGuanines(haystack[haystackFiberSeqNo], needles[ndlSeqNo], currHit->hstkPos, currHit->ndlPos, overlappedLength);
 									// should merge overlapping segments, errorRate isn't changed
-									if (mismatches <= std::floor(errorRate * overlappedLength)) {
+									if (mismatches <= std::floor(errorRate * overlappedLength)
+											&& guanines >= ceil(overlappedLength * options.minGuanineRate))
+									{
 	#ifdef DEBUG
 										cout << "okay, we can overlap these two..." << endl;
 	#endif
@@ -1070,9 +1102,10 @@ namespace SEQAN_NAMESPACE_MAIN
 									}
 									else {
 	#ifdef DEBUG
-										cout << "damn mothafucka, we can NOT overlap these two because of the error rate?!" << endl;
+										cout << "damn mothafucka, we can NOT overlap these two; error rate / guanine rate vioalted?!" << endl;
 										cout << "\tmismatches: " << mismatches << endl;
 										cout << "\terror rate: " << errorRate << endl;
+										cout << "\tguanines: " << guanines << endl;
 										cout << "\terrorRate * overlappedLength: " << std::floor(errorRate * overlappedLength) << endl;
 	#endif
 										++nextHitIt;
