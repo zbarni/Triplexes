@@ -57,7 +57,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TVector					&rMmOffsets,
 			TVector					&lGuanines,
 			TVector					&rGuanines,
-			TOptions		const &options)
+			TOptions		const 	&options)
 	{
 		int posFiber;
 		int posQuery;
@@ -188,8 +188,9 @@ namespace SEQAN_NAMESPACE_MAIN
 	}
 
 	/**
-	 * Adjust initially extended seed so that the Guanine is satisfied. Returns all subsegments
-	 * of the initial seed which satisfy the Guanine rate constraint.
+	 * Adjust initially extended seed so that the Guanine rate is satisfied. Returns all subsegments
+	 * of the initial seed which satisfy the Guanine rate constraint, in guaninePotentials array.
+	 * Returns true if any potential was found, false otherwise.
 	 * WARNING!: all seed dimensions are contained in the respective seeds, unlike the end output!
 	 */
 	template<
@@ -202,8 +203,8 @@ namespace SEQAN_NAMESPACE_MAIN
 	>
 	bool adjustForGuanineRate(
 			THaystackFiber	const	&fiber,
-			TQuery			const 	&query,
-			SeedDimStruct	const	&seedDim,
+			TQuery			const 	&needle,
+			SeedDimStruct	const	&extSeedDim,
 			TGuaninePotentials 		&guaninePotentials,
 			TGuanine		const	&initGuanines,
 			TOptions		const	&options,
@@ -211,93 +212,91 @@ namespace SEQAN_NAMESPACE_MAIN
 	{
 		guaninePotentials.clear();
 
-		// initial check
-		if (initGuanines >= ceil((seedDim.eDim0 - seedDim.bDim0 + 1) * options.minGuanineRate)) {
+		// if guanineRate already satisfied
+		if (initGuanines >= ceil((extSeedDim.eDim0 - extSeedDim.bDim0 + 1) * options.minGuanineRate)) {
 #ifdef DEBUG
 			cout << "Guanine rate satisfied at the beginning already." << endl << std::flush;
 #endif
-			guaninePotentials.push_back(SeedDimStruct(seedDim.bDim0, seedDim.bDim1, seedDim.eDim0, seedDim.eDim1));
+			// add current (initial) seed and return
+			guaninePotentials.push_back(SeedDimStruct(extSeedDim.bDim0, extSeedDim.bDim1, extSeedDim.eDim0, extSeedDim.eDim1));
 			return true;
 		}
 
-		TDim max_diag = -1;
-		TDim diag = seedDim.eDim0 - seedDim.bDim0 + 1;
-		TDim tmp_bDim0 = seedDim.bDim0;
-		TDim tmp_bDim1 = seedDim.bDim1;
+		TDim maxDiag 	= -1;
+		TDim diag	 	= extSeedDim.eDim0 - extSeedDim.bDim0 + 1;
+		TDim tmp_bDim0 	= extSeedDim.bDim0;
+		TDim tmp_bDim1 	= extSeedDim.bDim1;
 
 #ifdef DEBUG
 		cout << "Guanine adjustment started.." << endl << std::flush;
-		cout << "initial seedDim: " << endl << seedDim << endl << std::flush;
-		cout << "\ttts : " << infix(fiber, seedDim.bDim0, seedDim.eDim0 + 1) << endl << std::flush;
-		cout << "\ttfo : " << infix(query, seedDim.bDim1, seedDim.eDim1 + 1) << endl << std::flush;
+		cout << "initial extSeedDim: " << endl << extSeedDim << endl << std::flush;
+		cout << "\ttts : " << infix(fiber, extSeedDim.bDim0, extSeedDim.eDim0 + 1) << endl << std::flush;
+		cout << "\ttfo : " << infix(needle, extSeedDim.bDim1, extSeedDim.eDim1 + 1) << endl << std::flush;
 		cout << "\tdiagonal including end points [REAL] : " << diag << endl << std::flush;
 		cout << "\tInit guanine rate: " << initGuanines << " vs " << ceil(diag * options.minGuanineRate) << endl << std::flush;
 #endif
 
-		while (fiber[tmp_bDim0] == query[tmp_bDim1]	&& seedDim.eDim0 > tmp_bDim0)
+		while (fiber[tmp_bDim0] == needle[tmp_bDim1] && extSeedDim.eDim0 > tmp_bDim0)
 		{
-			bool isLastPotential = true;
-			TDim tmp_eDim0 	= seedDim.eDim0;
-			TDim tmp_eDim1 	= seedDim.eDim1;
+			TDim tmp_eDim0 	= extSeedDim.eDim0;
+			TDim tmp_eDim1 	= extSeedDim.eDim1;
 			TDim tmp_diag	= tmp_eDim0 - tmp_bDim0 + 1;
-//			cout << "foo" << endl;
 
-			while (fiber[tmp_eDim0 - 1] == query[tmp_eDim1 - 1]
-					&& !isGuanine(fiber[tmp_eDim0])
-					&& tmp_eDim0 > tmp_bDim0			// to stay in valid index range
+			// adjust right end until needed
+			while (fiber[tmp_eDim0 - 1] == needle[tmp_eDim1 - 1]// as long as we have matches only
+					&& !isGuanine(fiber[tmp_eDim0])				// stop if 'G' reached
+					&& tmp_eDim0 > tmp_bDim0					// to stay in valid index range
 					&& initGuanines < ceil(tmp_diag * options.minGuanineRate))
 			{
-				isLastPotential = false;
-//				cout << "bar" << endl;
 				--tmp_eDim0;
 				--tmp_eDim1;
 				--tmp_diag;
 			}
 
-//			cout << "qux" << endl;
 			// if we reached a mismatch it's not a valid adjustment
-			if (fiber[tmp_eDim0] != query[tmp_eDim1]) {
+			if (fiber[tmp_eDim0] != needle[tmp_eDim1]) {
 				++tmp_bDim0;
 				++tmp_bDim1;
 				--diag;
-//				cout << "asd" << endl;
 				continue;
 			}
 
-//			cout << "qwe" << endl;
-			if (initGuanines >= ceil(tmp_diag * options.minGuanineRate)	&& tmp_diag >= max_diag) {
-				if (tmp_diag > max_diag) {
+			// if valid adjustment, add to guaninePotentials
+			if (initGuanines >= ceil(tmp_diag * options.minGuanineRate)	&& tmp_diag >= maxDiag) {
+				// if it's a new max, discard earlier ones
+				if (tmp_diag > maxDiag) {
 					guaninePotentials.clear();
-//					cout << "myfuck" << endl;
 				}
-//				cout << "ert" << endl;
-				max_diag = tmp_diag;
-				guaninePotentials.push_back(SeedDimStruct(tmp_bDim0, tmp_bDim1, tmp_bDim0 + max_diag - 1, tmp_bDim1 + max_diag - 1));
+				maxDiag = tmp_diag;
+				guaninePotentials.push_back(SeedDimStruct(tmp_bDim0, tmp_bDim1, tmp_bDim0 + maxDiag - 1, tmp_bDim1 + maxDiag - 1));
 #ifdef DEBUG
 				cout << "\tIndices have been adjusted for guanine rate." << endl << std::flush;
 				cout << "\tAdded new guaninePotential: " << guaninePotentials.back() << endl << std::flush;
 #endif
 			}
 
+			// adjust left end (+1) and diag to find all matches
 			++tmp_bDim0;
 			++tmp_bDim1;
 			--diag;
 
 			// break if previous was Guanine, since we'd skip it in next step
 			if (isGuanine(fiber[tmp_bDim0 - 1])) {
-//				cout << "yourfuck" << endl;
 				break;
 			}
-//			cout << "enditer" << endl;
 		}
 
-		if (!guaninePotentials.size() && initGuanines >= ceil((seedDim.eDim0 - seedDim.bDim0 + 1) * options.minGuanineRate)) {
-			guaninePotentials.push_back(SeedDimStruct(seedDim.bDim0, seedDim.bDim1, seedDim.eDim0, seedDim.eDim1));
+		if (!guaninePotentials.size() && initGuanines >= ceil((extSeedDim.eDim0 - extSeedDim.bDim0 + 1) * options.minGuanineRate)) {
+			guaninePotentials.push_back(SeedDimStruct(extSeedDim.bDim0, extSeedDim.bDim1, extSeedDim.eDim0, extSeedDim.eDim1));
 		}
 
+		// true if any potential was found
 		return guaninePotentials.size() > 0;
 	}
 
+	/**
+	 * Shifts a seed window to the right by 1 positions.
+	 */
 	void shiftSeedToRight(SeedDimStruct &extSeedDim) {
 		++extSeedDim.bDim0;
 		++extSeedDim.eDim0;
@@ -307,29 +306,31 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	/**
 	 * Tries to minimize the window size so that maxLength is satisfied. Returns true is this is
-	 * possible, and false otherwise. Also, the leftmost such window is returned in the parameters.
+	 * possible, and false otherwise. Also, the leftmost such window is returned extSeedDim.
 	 */
 	template<
 	typename THaystackFiber,
-	typename TQuery,
+	typename TNeedle,
 	typename TDiag,
 	typename TGuanine,
 	typename TOptions
 	>
-	bool validLengthFound(
-			SeedDimStruct &extSeedDim,
+	bool resizeWindowToMaxLength(
+			SeedDimStruct 			&extSeedDim,
 			THaystackFiber 	const 	&fiber,
-			TQuery			const	&query,
+			TNeedle			const	&needle,
 			TDiag					&diag,
 			TGuanine				&guanineRate,
 			TOptions 		const	&options)
 	{
+		// if no limit on max length, return here
 		if (options.maxLength == -1) {
 			return true;
 		}
+
 		// find max diag that satisfies maxLength by reducing the right end
-		while (diag > options.maxLength
-				&& fiber[extSeedDim.eDim0 - 1] == query[extSeedDim.eDim1 - 1]) {
+		while (diag > options.maxLength && fiber[extSeedDim.eDim0 - 1] == needle[extSeedDim.eDim1 - 1]) {
+			// adjust guanineRate if skipping a 'G'
 			if (isGuanine(fiber[extSeedDim.eDim0])) {
 				--guanineRate;
 			}
@@ -349,7 +350,8 @@ namespace SEQAN_NAMESPACE_MAIN
 			cout << "options.maxLength is DEFINITELY right-violated, try left; length: " << diag << endl << std::flush;
 #endif
 			// find max diag that satisfies maxLength by reducing the right end
-			while (diag > options.maxLength && fiber[extSeedDim.bDim0 + 1] == query[extSeedDim.bDim1 + 1]) {
+			while (diag > options.maxLength && fiber[extSeedDim.bDim0 + 1] == needle[extSeedDim.bDim1 + 1]) {
+				// adjust guanineRate if skipping a 'G'
 				if (isGuanine(fiber[extSeedDim.bDim0])) {
 					--guanineRate;
 				}
@@ -363,7 +365,7 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 			}
 
-			// couldn't find valid diag from the left; break and continue
+			// couldn't find valid diag from the left
 			if (diag > options.maxLength) {
 				return false;
 			}
@@ -405,7 +407,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		SeedDimStruct extSeedDim;
 		int mismatches;
-		int localK 			= 1000; // should be inf but this is enough
+		int localK = 1000; // should be inf but this is enough
 		int guanineRate;
 
 		// ============================================================================
@@ -432,10 +434,9 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 
 			TSeedDimVector guaninePotentials;
-			bool extensionFound = false;
 			const int init_bDim0 = extSeedDim.bDim0;
 			const int init_bDim1 = extSeedDim.bDim1;
-			for (int r = rMmSize - 1; r >= 0 && !extensionFound; --r) {
+			for (int r = rMmSize - 1; r >= 0; --r) {
 				extSeedDim.eDim0 = getEndDim0(seed) + rMmOffsets[r];
 				extSeedDim.eDim1 = getEndDim1(seed) + rMmOffsets[r];
 				// reset bdim
@@ -467,7 +468,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 
 				guanineRate = lGuanines[l] + rGuanines[r] + seedGuanine;
-				if (!validLengthFound(extSeedDim, fiber, query, diag, guanineRate, options)) {
+				if (!resizeWindowToMaxLength(extSeedDim, fiber, query, diag, guanineRate, options)) {
 					continue;
 				}
 
