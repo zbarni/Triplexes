@@ -10,9 +10,9 @@ MYERS=false
 BRUTE=false
 TRUNCATED=0
 eLow=5
-eHigh=15
-cLow=1
-cHigh=1
+eHigh=5
+cLow=2
+cHigh=2
 
 while getopts ":mbl:c:t:" opt; do
     case ${opt} in

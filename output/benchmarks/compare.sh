@@ -1,11 +1,11 @@
 #!/bin/bash
 
-l=25
+l=15
 chr=1
 eLow=10
-eHigh=20
-cLow=1
-cHigh=3
+eHigh=10
+cLow=2
+cHigh=2
 
 ROOT_DIR=$PWD/..
 MYERS_TMP="${ROOT_DIR}/myers.tmp"
