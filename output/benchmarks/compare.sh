@@ -1,11 +1,11 @@
 #!/bin/bash
 
-l=15
+l=25
 chr=1
 eLow=10
-eHigh=10
-cLow=2
-cHigh=2
+eHigh=20
+cLow=1
+cHigh=3
 
 ROOT_DIR=$PWD/..
 MYERS_TMP="${ROOT_DIR}/myers.tmp"
@@ -32,9 +32,9 @@ for ((e=$eLow;e<=$eHigh;e+=5)); do
     for ((c=$cLow;c<=$cHigh;c+=1)); do
         echo "Comparing l: ${l}, c: ${c}, e: ${e}..."
 
-        OUTPUT="chr${chr}_myers_l${l}_c${c}_e${e}"
+        OUTPUT="myers/chr${chr}_myers_l${l}_c${c}_e${e}"
         sort ${OUTPUT}.tpx > ${MYERS_TMP} 
-        OUTPUT="../mm9/original/chr${chr}_brute_l${l}_c${c}_e${e}"
+        OUTPUT="brute/chr${chr}_brute_l${l}_c${c}_e${e}"
         sort ${OUTPUT}.tpx > ${BRUTE_TMP}
 
         if [ ! -f ${MYERS_TMP} ]; then
