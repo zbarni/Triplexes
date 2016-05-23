@@ -1,2 +1,0 @@
-# Sequence-ID	TFO start	TFO end	Duplex-ID	TTS start	TTS end	Score	Error-rate	Errors	Motif	Strand	Orientation	Guanine-rate
-TCONS_00011596	0	25	chr1_truncated	2	27	22	0.12	t1t14t16	Y	-	P	0.6

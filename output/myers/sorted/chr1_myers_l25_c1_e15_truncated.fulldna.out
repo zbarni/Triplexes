@@ -1,4 +1,0 @@
-# Sequence-ID	TFO start	TFO end	Duplex-ID	TTS start	TTS end	Score	Error-rate	Errors	Motif	Strand	Orientation	Guanine-rate
-TCONS_00011596	0	26	chr1	136546345	136546371	26	0		Y	-	P	0.73
-TCONS_00011596	0	26	chr1	58687855	58687881	26	0		Y	+	P	0.73
-TCONS_00011596	1	26	chr1	23434164	23434189	25	0		Y	-	P	0.72
