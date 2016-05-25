@@ -773,8 +773,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			me.count_Y += count;
 		else if (motif=='M')
 			me.count_M += count;
-		// TODO @barni remove
-		assert(false);
 	}
 	
 	template <typename TId>

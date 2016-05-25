@@ -427,7 +427,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			const int init_bDim0 = extSeedDim.bDim0;
 			const int init_bDim1 = extSeedDim.bDim1;
 			for (int r = rMmSize - 1; r >= 0; --r) {
-//				cout << "wth" << endl << std::flush;
 				extSeedDim.eDim0 = getEndDim0(seed) + rMmOffsets[r];
 				extSeedDim.eDim1 = getEndDim1(seed) + rMmOffsets[r];
 				// reset bdim
@@ -489,7 +488,6 @@ namespace SEQAN_NAMESPACE_MAIN
 					bool guanineOK 	= adjustForGuanineRate(fiber, needle, extSeedDim, guaninePotentials, guanineRate, options, int());
 					if (guanineOK)
 					{
-//						cout << "asd" << endl << std::flush;
 						// iterate over each guanine potentials
 						for (TSeedDimVector::iterator seedDim = guaninePotentials.begin(); seedDim != guaninePotentials.end(); ++seedDim)
 						{
@@ -521,11 +519,8 @@ namespace SEQAN_NAMESPACE_MAIN
 									cout << "\ttfo : " << infix(needle, seedDim->bDim1, seedDim->eDim1 + 1) << endl << std::flush;
 #endif
 								}
-//								cout << "foo" << endl << std::flush;
 							} // end if
-//							cout << "bar" << endl << std::flush;
 						} // end for over guaninePotentials
-//						cout << "qux" << endl << std::flush;
 					}
 #ifdef DEBUG
 					else {
@@ -542,9 +537,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					if (extSeedDim.bDim0 > 0 && isGuanine(fiber[extSeedDim.bDim0 - 1])) {
 						--guanineRate;
 					}
-//					cout << "booya" << endl << std::flush;
 				} // end while window shift left
-//				cout << "gone" << endl << std::flush;
 			}
 		}
 	}
@@ -790,22 +783,24 @@ namespace SEQAN_NAMESPACE_MAIN
 
 				THitListKey seqNoKey(haystackFiberSeqNo, ndlSeqNo);
 				// check if seqNoKey key exists
-				if (!initMaxSeedHashMap.count(seqNoKey)) {
-					initMaxSeedHashMap[seqNoKey] = std::set<unsigned long long>();
-				}
+//				if (!initMaxSeedHashMap.count(seqNoKey)) {
+//					initMaxSeedHashMap[seqNoKey] = std::set<unsigned long long>();
+//				}
+
+//				TODO @barni fix this
 				if (!addedSeedHashMap.count(seqNoKey)) {
 					addedSeedHashMap[seqNoKey] = std::set<unsigned long long>();
 				}
 
 				// calculate hash for maxSeed
-				unsigned long long maxSeedHash = maxSeedFiberEnd - maxSeedLength + 1;
-				maxSeedHash = (((((maxSeedHash << 16) + maxSeedFiberEnd) << 16) + qGramSeedBegin) << 16) + qGramSeedEnd;
-
-				if (initMaxSeedHashMap[seqNoKey].count(maxSeedHash)) {
-					continue;
-				}
-
-				initMaxSeedHashMap[seqNoKey].insert(maxSeedHash);
+//				unsigned long long maxSeedHash = maxSeedFiberEnd - maxSeedLength + 1;
+//				maxSeedHash = (((((maxSeedHash << 16) + maxSeedFiberEnd) << 16) + qGramSeedBegin) << 16) + qGramSeedEnd;
+//
+//				if (initMaxSeedHashMap[seqNoKey].count(maxSeedHash)) {
+//					continue;
+//				}
+//
+//				initMaxSeedHashMap[seqNoKey].insert(maxSeedHash);
 
 				TSeed seed(maxSeedFiberEnd - maxSeedLength + 1, qGramSeedBegin, maxSeedFiberEnd, qGramSeedEnd);
 	#ifdef DEBUG
@@ -1136,6 +1131,7 @@ namespace SEQAN_NAMESPACE_MAIN
 							<< "seed eDim1: " << (*hit)->ndlPos + (*hit)->hitLength << endl;
 	#endif
 					add((*hitSetMap[haystackFiberSeqNo]), **hit);
+					delete *hit;
 				}
 			} // end dim0It for loop
 		} // end tts-tfo match for loop

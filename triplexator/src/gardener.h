@@ -1320,8 +1320,8 @@ namespace SEQAN_NAMESPACE_MAIN
 			TTimes 					&times,
 			Gardener<TId, TSpec>	&gardener,
 			THaystack 		const	&haystack, 			// TTS set
-			TQGramIndex				&index,				// q-gram index of tfoSet (for suffixes)
-			TQuerySet				&needles,			// TFO set
+			TQGramIndex		const	&index,				// q-gram index of tfoSet (for suffixes)
+			TQuerySet		const	&needles,			// TFO set
 			TError 			const	&errorRate,
 			TOptions		const	&options,
 			TWorker
@@ -1436,6 +1436,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	    				fiberStartPos, posToFiberSeqNo, needles,
 	    				suffixQGram, itBucketItem, itEndBucket, errorRate, numLocations,
 						endLocations, options, THit(), THitListKey());
+	    		free(endLocations);
 	    		times["verify"] += sysTime() - t;
 	    	}
 	    	bucketBegin = bucketEnd;
