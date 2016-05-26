@@ -5,7 +5,7 @@
 *************************************************************
 *** Version 1.3.2 (30/03/2012) SeqAn Revision: 1225
 *** COMMAND:
->/home/zbarni/code/triplexator/output/myers/../../triplexator/bin/triplexator -ss /home/zbarni/code/triplexator/output/myers/../../data/rna/CDP_merged.fa -ds /home/zbarni/code/triplexator/output/myers/../../data/dna/mm9/mm9.chr1.fa -o chr1_myers_l15_c1_e10.tpx -i -fm 1 -v -l 15 -c 1 -e 10 
+>/home/zbarni/code/triplexator/output/benchmarks/../../triplexator/bin/triplexator -ss /home/zbarni/code/triplexator/output/benchmarks/../../data/rna/CDP_merged.fa -ds /home/zbarni/code/triplexator/output/benchmarks/../../data/dna/mm9/mm9.chr1.fa -o chr1_myers_l15_c1_e10.tpx -i -fm 1 -v -l 15 -c 1 -e 10 
 *************************************************************
 *** INPUT:
 - single-stranded file supplied : Yes
@@ -55,29 +55,29 @@
 - runtime mode : 0 = serial
 *************************************************************
 *** Log messages:
-[05/23/16 02:06:38] * Started checking duplex file
-[05/23/16 02:06:38] * Finished checking duplex file
-[05/23/16 02:06:38] * Started reading single-stranded file:/home/zbarni/code/triplexator/output/myers/../../data/rna/CDP_merged.fa
-[05/23/16 02:06:38] * Finished reading single-stranded file (311 sequences read)
-[05/23/16 02:06:38] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
-[05/23/16 02:06:38] * Finished detecting TFOs within 0.102 seconds (1158 TFOs detected)
-[05/23/16 02:06:38] * Started searching for triplexes (Myers)
-[05/23/16 02:06:38] * Processing /home/zbarni/code/triplexator/output/myers/../../data/dna/mm9/mm9.chr1.fa
-[05/23/16 02:06:38] - Myers Qgram index creation.
-[05/23/16 02:27:59] @earlybird time myers 817.618 sec
-[05/23/16 02:27:59] @earlybird time verify 380.636 sec
-[05/23/16 02:27:59] @earlybird time merge  0.811 sec
-[05/23/16 02:27:59] @earlybird time seedExtend 22.861 sec
-[05/23/16 02:27:59] @earlybird time maxSeedFind 5.359 sec
-[05/23/16 02:27:59] @earlybird time addIfNewSeed 0.284 sec
-[05/23/16 02:27:59] @earlybird time consecutive & mismatches 49.369 sec
-[05/23/16 02:27:59] @earlybird time getHaystackFiberNo 51.694 sec
-[05/23/16 02:27:59] * Finished processing /home/zbarni/code/triplexator/output/myers/../../data/dna/mm9/mm9.chr1.fa
+[05/25/16 13:11:11] * Started checking duplex file
+[05/25/16 13:11:11] * Finished checking duplex file
+[05/25/16 13:11:11] * Started reading single-stranded file:/home/zbarni/code/triplexator/output/benchmarks/../../data/rna/CDP_merged.fa
+[05/25/16 13:11:11] * Finished reading single-stranded file (311 sequences read)
+[05/25/16 13:11:11] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
+[05/25/16 13:11:11] * Finished detecting TFOs within 0.166 seconds (1158 TFOs detected)
+[05/25/16 13:11:11] * Started searching for triplexes (Myers)
+[05/25/16 13:11:11] * Processing /home/zbarni/code/triplexator/output/benchmarks/../../data/dna/mm9/mm9.chr1.fa
+[05/25/16 13:11:11] - Myers Qgram index creation.
+[05/25/16 13:32:28] @earlybird time myers 808.245 sec
+[05/25/16 13:32:28] @earlybird time verify 394.869 sec
+[05/25/16 13:32:28] @earlybird time merge  0.826 sec
+[05/25/16 13:32:28] @earlybird time seedExtend 32.847 sec
+[05/25/16 13:32:28] @earlybird time maxSeedFind 5.478 sec
+[05/25/16 13:32:28] @earlybird time addIfNewSeed 0.272 sec
+[05/25/16 13:32:28] @earlybird time consecutive & mismatches 52.251 sec
+[05/25/16 13:32:28] @earlybird time getHaystackFiberNo 50.759 sec
+[05/25/16 13:32:28] * Finished processing /home/zbarni/code/triplexator/output/benchmarks/../../data/dna/mm9/mm9.chr1.fa
 
-[05/23/16 02:27:59] * Finished searching (including IO) for triplexes  within 1281.476 seconds (summed over all cpus)
-[05/23/16 02:27:59] * Time for triplex search only (search + verify - triplex.h) 1203.905 seconds (summed over all cpus)
-[05/23/16 02:27:59] * Time for ds IO reading/processing only 1281.237 seconds (summed over all cpus)
-[05/23/16 02:27:59] * Time for `verifyAndStore` function in triplex.h 13.568 seconds (summed over all cpus)
+[05/25/16 13:32:28] * Finished searching (including IO) for triplexes  within 1276.561 seconds (summed over all cpus)
+[05/25/16 13:32:28] * Time for triplex search only (search + verify - triplex.h) 1205.938 seconds (summed over all cpus)
+[05/25/16 13:32:28] * Time for ds IO reading/processing only 1276.411 seconds (summed over all cpus)
+[05/25/16 13:32:28] * Time for `verifyAndStore` function in triplex.h 9.282 seconds (summed over all cpus)
 
-[05/23/16 02:27:59] * Exit without errors 
-[05/23/16 02:27:59] * Finished program within 1281.598 seconds
+[05/25/16 13:32:28] * Exit without errors 
+[05/25/16 13:32:28] * Finished program within 1276.747 seconds
