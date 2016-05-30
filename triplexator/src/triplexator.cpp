@@ -87,7 +87,7 @@ namespace SEQAN_NAMESPACE_MAIN
         addOption(parser, addArgumentText(CommandLineOption("ss",  "single-strand-file",    "File in FASTA format that is searched for TFOs (e.g. RNA or DNA)", OptionType::String), "<FILE>"));
         addOption(parser, addArgumentText(CommandLineOption("ds", "duplex-file",            "File in FASTA format that is searched for TTSs (e.g. DNA)", OptionType::String), "<FILE>"));
         addSection(parser, "Main Options:");
-        addOption(parser, CommandLineOption("i",  "inverted-preprocessing",                 "inverted mode where DNA is preprocessed and RNA is the pattern", OptionType::Boolean));
+        addOption(parser, CommandLineOption("bp",  "bit-parallel",                 			"use bit-parallel computation when searching for triplex pairs", OptionType::Boolean));
         addOption(parser, CommandLineOption("l",  "lower-length-bound",                     "minimum triplex feature length required", OptionType::Int| OptionType::Label, options.minLength));
         addOption(parser, CommandLineOption("L",  "upper-length-bound",                     "maximum triplex feature length permitted, -1 = unrestricted ", OptionType::Int | OptionType::Label, options.maxLength ));
         addOption(parser, CommandLineOption("e",  "error-rate",                             "set the maximal error-rate in % tolerated", OptionType::Double | OptionType::Label, (100.0 * options.errorRate)));
@@ -181,7 +181,7 @@ namespace SEQAN_NAMESPACE_MAIN
         
         //////////////////////////////////////////////////////////////////////////////
         // Extract options
-        options.invertedPp = isSetLong(parser, "inverted-preprocessing");
+        options.bitParallel = isSetLong(parser, "bit-parallel");
 
         getOptionValueLong(parser, "error-rate", options.errorRate);
         getOptionValueLong(parser, "maximal-error", options.maximalError);
@@ -376,8 +376,8 @@ namespace SEQAN_NAMESPACE_MAIN
             options.showHelp = true;
             return 0;
         }
-        if ((options.runmode != TRIPLEX_TRIPLEX_SEARCH && options.invertedPp) && (stop = true))
-            ::std::cerr << "Preprocessing inversion enabled but running mode is not triplex search." << ::std::endl;
+        if ((options.runmode != TRIPLEX_TRIPLEX_SEARCH && options.bitParallel) && (stop = true))
+            ::std::cerr << "Bit parallel mode enabled but running mode is not triplex search." << ::std::endl;
         if ((options.errorRate > 20 || options.errorRate < 0) && (stop = true))
             ::std::cerr << "Error-rate must be a value between 0 and 20" << ::std::endl;
         if ((options.minGuanineRate < 0 || options.minGuanineRate > 100) && (stop = true))
@@ -434,7 +434,7 @@ namespace SEQAN_NAMESPACE_MAIN
         
         //  optimizing shape/q-gram for threshold >= 2 
         if (options.filterMode == FILTERING_GRAMS && options.runmode==TRIPLEX_TRIPLEX_SEARCH){
-        	if (!options.invertedPp) {
+        	if (!options.bitParallel) {
         		int qgram = _calculateShape(options);
         		if (qgram <= 4 && (stop = true)){
         			::std::cerr << "Error-rate, minimum length and qgram-threshold settings do not allow for efficient filtering with q-grams of weight >= 5 (currently " << qgram << ")." << ::std::endl;
@@ -536,8 +536,8 @@ namespace SEQAN_NAMESPACE_MAIN
         }       
         options.logFileHandle << "*************************************************************" << ::std::endl;
         options.logFileHandle << "*** Main Options:" << ::std::endl;
-        options.logFileHandle << "- consider forward strand in duplex : " << (options.forward?"Yes":"No") << ::std::endl;
-        options.logFileHandle << "- consider reverse strand in duplex : " << (options.reverse?"Yes":"No") << ::std::endl;
+	//	options.logFileHandle << "- consider forward strand in duplex : " << (options.forward?"Yes":"No") << ::std::endl;
+	//	options.logFileHandle << "- consider reverse strand in duplex : " << (options.reverse?"Yes":"No") << ::std::endl;
         options.logFileHandle << "- maximum error-rate : " << (options.errorRate*100) << "%" << ::std::endl;
         if (options.maximalError>=0)
             options.logFileHandle << "- maximum total error : " << (options.maximalError) << ::std::endl;   
@@ -594,162 +594,135 @@ namespace SEQAN_NAMESPACE_MAIN
         options.logFileHandle << "*************************************************************" << ::std::endl;
         options.logFileHandle << "*** Filtration Options :" << ::std::endl;
 
-        options.logFileHandle << "- filter repeats : " << (options.filterRepeats?"Yes":"No") << ::std::endl;
-        if (options.filterRepeats){
-            options.logFileHandle << "- minimum repeat length : " << options.minRepeatLength << ::std::endl;
-            options.logFileHandle << "- maximum repeat period : " << options.maxRepeatPeriod << ::std::endl;
-        }
-        options.logFileHandle << "- duplicate cutoff : " << options.duplicatesCutoff << ::std::endl;
-        if (options.runmode == TRIPLEX_TRIPLEX_SEARCH){
-            if (options.filterMode == FILTERING_GRAMS){
-                options.logFileHandle << "- filtering : qgrams" << ::std::endl;
-                options.logFileHandle << "- weight : " << length(options.shape) << ::std::endl;
-                options.logFileHandle << "- min. threshold specified: (qgramThreshold)" << options.qgramThreshold << ::std::endl;
-                int minSeedsThreshold = static_cast<int>(options.minLength+1-(min(static_cast<int>(ceil(options.errorRate*options.minLength)), options.maximalError)+1)*length(options.shape));
-                options.logFileHandle << "- min. threshold actual (minSeedsThreshold): " << minSeedsThreshold << ::std::endl;
-            } else {
-                options.logFileHandle << "- filtering : none - brute force" << ::std::endl;
-            }
-        }
-        options.logFileHandle << "*************************************************************" << ::std::endl;
-        options.logFileHandle << "*** Runtime mode:" << ::std::endl;
-        options.logFileHandle << "- OpenMP support : ";
-    #if SEQAN_ENABLE_PARALLELISM    
-        options.logFileHandle << "Yes" << ::std::endl;
-    #endif 
-    #ifndef SEQAN_ENABLE_PARALLELISM    
-        options.logFileHandle << "No" << ::std::endl;
-    #endif  
-        
-        options.logFileHandle << "- runtime mode : ";
-        switch (options.runtimeMode) {
-            case RUN_SERIAL:
-                options.logFileHandle << RUN_SERIAL << " = serial" << ::std::endl;
-                break;
-    #if SEQAN_ENABLE_PARALLELISM            
-            case RUN_PARALLEL_TRIPLEX:
-                options.logFileHandle << RUN_PARALLEL_TRIPLEX << " = parallel (target sites) - " << options.processors << " processors" << ::std::endl;
-                break;
-            case RUN_PARALLEL_STRANDS:
-                options.logFileHandle << RUN_PARALLEL_STRANDS << " = parallel (strands) - " << options.processors << " processors" << ::std::endl;
-                break;
-            case RUN_PARALLEL_DUPLEX:
-                options.logFileHandle << RUN_PARALLEL_DUPLEX << " = parallel (duplex sequences) - " << options.processors << " processors" << ::std::endl;
-                break;
-    #endif
-            default:
-                break;
-        }
-        options.logFileHandle << "*************************************************************" << ::std::endl;
-        options.logFileHandle << "*** Log messages:" << ::std::endl;
-    }
+		options.logFileHandle << "- filter repeats : " << (options.filterRepeats?"Yes":"No") << ::std::endl;
+		if (options.filterRepeats){
+			options.logFileHandle << "- minimum repeat length : " << options.minRepeatLength << ::std::endl;
+			options.logFileHandle << "- maximum repeat period : " << options.maxRepeatPeriod << ::std::endl;
+		}
+		options.logFileHandle << "- duplicate cutoff : " << options.duplicatesCutoff << ::std::endl;
+		if (options.runmode == TRIPLEX_TRIPLEX_SEARCH){
+			if (options.filterMode == FILTERING_GRAMS){
+				options.logFileHandle << "- filtering : qgrams" << ::std::endl;
+				options.logFileHandle << "- weight : " << length(options.shape) << ::std::endl;
+				options.logFileHandle << "- min. threshold specified: " << options.qgramThreshold << ::std::endl;
+				int minSeedsThreshold = static_cast<int>(options.minLength+1-(min(static_cast<int>(ceil(options.errorRate*options.minLength)), options.maximalError)+1)*length(options.shape));
+				options.logFileHandle << "- min. threshold actual: " << minSeedsThreshold << ::std::endl;			
+			} else {
+				options.logFileHandle << "- filtering : none - brute force" << ::std::endl;
+			}
+		}
+		options.logFileHandle << "*************************************************************" << ::std::endl;
+		options.logFileHandle << "*** Runtime mode:" << ::std::endl;
+		options.logFileHandle << "- OpenMP support : ";
+	#if SEQAN_ENABLE_PARALLELISM	
+		options.logFileHandle << "Yes" << ::std::endl;
+	#endif 
+	#ifndef SEQAN_ENABLE_PARALLELISM	
+		options.logFileHandle << "No" << ::std::endl;
+	#endif 	
+		
+		options.logFileHandle << "- runtime mode : ";
+		switch (options.runtimeMode) {
+			case RUN_SERIAL:
+				options.logFileHandle << RUN_SERIAL << " = serial" << ::std::endl;
+				break;
+	#if SEQAN_ENABLE_PARALLELISM			
+			case RUN_PARALLEL_TRIPLEX:
+				options.logFileHandle << RUN_PARALLEL_TRIPLEX << " = parallel (target sites) - " << options.processors << " processors" << ::std::endl;
+				break;
+			case RUN_PARALLEL_STRANDS:
+				options.logFileHandle << RUN_PARALLEL_STRANDS << " = parallel (strands) - " << options.processors << " processors" << ::std::endl;
+				break;
+			case RUN_PARALLEL_DUPLEX:
+				options.logFileHandle << RUN_PARALLEL_DUPLEX << " = parallel (duplex sequences) - " << options.processors << " processors" << ::std::endl;
+				break;
+	#endif
+			default:
+				break;
+		}
+		options.logFileHandle << "*************************************************************" << ::std::endl;
+		options.logFileHandle << "*** Log messages:" << ::std::endl;
+	}
 
-    //////////////////////////////////////////////////////////////////////////////
-    // Find triplexes in many duplex sequences (import from Fasta)
-    template <
-    typename TMotifSet,
-    typename TFile,
-    typename TShape>
-    int _findTriplex(TMotifSet                      &tfoMotifSet,
-                     StringSet<CharString> const    &tfoNames,
-                     TFile                          &outputfile,
-                     Options                        &options,
-                     TShape const                   &shape)
-    {
-        typedef Index<TMotifSet, IndexQGram<TShape, OpenAddressing> >               TQGramIndex;
-        typedef Pattern<TQGramIndex, QGramsLookup< TShape, Standard_QGramsLookup > >TPattern;
-        typedef typename Iterator<TMotifSet, Standard>::Type    					TIterMotifSet;
-        
-        typedef __int64                            TId;
-        typedef Gardener<TId, GardenerUngapped>    TGardener;
-        
-        unsigned errorCode = TRIPLEX_NORMAL_PROGAM_EXIT;
-        options.timeCreateTtssIndex = 0;
-        options.timeTriplexSearch 	= 0;
-        options.timeIOReadingTts 	= 0;
-        options.timeQgramFind		= 0;
-        
-        SEQAN_PROTIMESTART(find_time);
-        options.logFileHandle << _getTimeStamp() << " * Started searching for triplexes" << ::std::endl;
-        
-        TId duplexSeqNo = 0;
-        // open duplex file
-        options.logFileHandle << _getTimeStamp() << " * Processing " << options.duplexFileNames[0] << ::std::endl;
-    #if SEQAN_ENABLE_PARALLELISM    
-        // run in parallel if requested
-        if (options.runtimeMode==RUN_PARALLEL_DUPLEX){
-            if (options.filterMode == FILTERING_GRAMS){
-                // create index
-                if (options._debugLevel >= 1)
-                    options.logFileHandle << _getTimeStamp() <<  " - Started creating q-gram index for all TFOs" << ::std::endl;
-                TQGramIndex index_qgram(tfoMotifSet);
-                resize(indexShape(index_qgram), weight(shape));
-                // create pattern   
-                TPattern pattern(index_qgram,shape);
-                options.timeFindTriplexes = 0;
-                // create index
-                if (options._debugLevel >= 1)
-                    options.logFileHandle << _getTimeStamp() <<  " - Finised creating q-gram index for all TFOs" << ::std::endl;
-                
-                // TODO @barni remove
-                ::std::cerr << "printing all tfo segments (" << length(tfoMotifSet) << ")" << ::std::endl;
-                for (unsigned i =0; i < length(tfoMotifSet); ++i){
-                    ::std::cerr << "tfo pattern [" << i << "]" << tfoMotifSet[i] << " length: "<< length(tfoMotifSet[i]) << ::std::endl;
-                }
-                
-                errorCode = startTriplexSearchParallelDuplex(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, TGardener());
-            } else {
+	//////////////////////////////////////////////////////////////////////////////
+	// Find triplexes in many duplex sequences (import from Fasta)
+	template <
+	typename TMotifSet,
+	typename TFile,
+	typename TShape>
+	int _findTriplex(TMotifSet						&tfoMotifSet,
+					 StringSet<CharString> const	&tfoNames,
+					 TFile							&outputfile,
+					 Options						&options,
+					 TShape const					&shape)
+	{
+		typedef Index<TMotifSet, IndexQGram<TShape, OpenAddressing> >				TQGramIndex;
+		typedef Pattern<TQGramIndex, QGramsLookup< TShape, Standard_QGramsLookup > > TPattern;
+		
+		typedef __int64															TId;
+		typedef Gardener<TId, GardenerUngapped>									TGardener;
+		
+		unsigned errorCode = TRIPLEX_NORMAL_PROGAM_EXIT;
+		
+		SEQAN_PROTIMESTART(find_time);
+		options.logFileHandle << _getTimeStamp() << " * Started searching for triplexes" << ::std::endl;
+		
+		TId duplexSeqNo = 0;
+		// open duplex file
+		options.logFileHandle << _getTimeStamp() << " * Processing " << options.duplexFileNames[0] << ::std::endl;
+	#if SEQAN_ENABLE_PARALLELISM	
+		// run in parallel if requested
+		if (options.runtimeMode==RUN_PARALLEL_DUPLEX){
+			if (options.filterMode == FILTERING_GRAMS){
+				// create index
+				if (options._debugLevel >= 1)
+					options.logFileHandle << _getTimeStamp() <<  " - Started creating q-gram index for all TFOs" << ::std::endl;
+				TQGramIndex index_qgram(tfoMotifSet);
+				resize(indexShape(index_qgram), weight(shape));
+				// create pattern	
+				TPattern pattern(index_qgram,shape);
+				options.timeFindTriplexes = 0;
+				// create index
+				if (options._debugLevel >= 1)
+					options.logFileHandle << _getTimeStamp() <<  " - Finised creating q-gram index for all TFOs" << ::std::endl;
+				
+				errorCode = startTriplexSearchParallelDuplex(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, TGardener());
+			} else {
                 TQGramIndex pattern;
-                errorCode = startTriplexSearchParallelDuplex(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, BruteForce());
-            }
-        } else {
-        // otherwise go for serial processing
-    #endif  
-            if (options.filterMode == FILTERING_GRAMS){
-                // create index
-                if (options._debugLevel >= 1) {
-                    options.logFileHandle << _getTimeStamp() <<  " - Started creating q-gram index for all TFOs" << ::std::endl;
-                }
-                TQGramIndex index_qgram(tfoMotifSet);
-                resize(indexShape(index_qgram), weight(shape));
-                // create pattern   
-                TPattern pattern(index_qgram,shape);
-                options.timeFindTriplexes = 0;
-                // create index
-                if (options._debugLevel >= 1) {
-                    options.logFileHandle << _getTimeStamp() <<  " - Finised creating q-gram index for all TFOs" << ::std::endl;
-                }
-                errorCode = startTriplexSearchSerial(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, TGardener());
-            } else {
+				errorCode = startTriplexSearchParallelDuplex(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, BruteForce());
+			}
+		} else {
+		// otherwise go for serial processing
+	#endif	
+			if (options.filterMode == FILTERING_GRAMS){
+				// create index
+				if (options._debugLevel >= 1)
+					options.logFileHandle << _getTimeStamp() <<  " - Started creating q-gram index for all TFOs" << ::std::endl;
+				TQGramIndex index_qgram(tfoMotifSet);
+				resize(indexShape(index_qgram), weight(shape));
+				// create pattern	
+				TPattern pattern(index_qgram,shape);
+				options.timeFindTriplexes = 0;
+				// create index
+				if (options._debugLevel >= 1)
+					options.logFileHandle << _getTimeStamp() <<  " - Finised creating q-gram index for all TFOs" << ::std::endl;
+				
+				errorCode = startTriplexSearchSerial(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, TGardener());
+			} else {
                 TQGramIndex pattern;
-                errorCode = startTriplexSearchSerial(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, BruteForce());
-            }   
-    #if SEQAN_ENABLE_PARALLELISM    
-        }
-    #endif
-        
-        if (errorCode == TRIPLEX_NORMAL_PROGAM_EXIT){
-            options.logFileHandle << _getTimeStamp() << " * Finished processing " << options.duplexFileNames[0] << ::std::endl; 
-            options.logFileHandle << std::endl;
-            options.timeFindTriplexes += SEQAN_PROTIMEDIFF(find_time);  
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished searching for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for triplex search only (search + verify - triplex.h) " << ::std::setprecision(3) << options.timeTriplexSearch << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIOReadingTts << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `verifyAndStore` function in triplex.h " << ::std::setprecision(3) << options.timeVerifyAndStore << " seconds (summed over all cpus)" << ::std::endl;
-
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `find` function in qgram-Finder " << ::std::setprecision(3) << options.timeQgramFind << " seconds (summed over all cpus)" << ::std::endl;
-
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds` function in gardener " << ::std::setprecision(3) << options.timeCollectSeeds << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds LOOP` function in gardener " << ::std::setprecision(3) << options.timeCollectSeedsLoop << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds FreeSpace` function in gardener " << ::std::setprecision(3) << options.timeCSFreeSpace << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `collectSeeds find loop cnt` function in gardener " << ::std::setprecision(3) << options.cntCSFind << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `_find` function in gardener " << ::std::setprecision(3) << options.timeGardenerFind << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `_putSeedsInMap` function in gardener " << ::std::setprecision(3) << options.timePutSeedsInMap << " seconds (summed over all cpus)" << ::std::endl;
-
-            options.logFileHandle << std::endl;
-        }
-        return errorCode;
-    }
+				errorCode = startTriplexSearchSerial(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, BruteForce());
+			}	
+	#if SEQAN_ENABLE_PARALLELISM	
+		}
+	#endif
+		
+		if (errorCode == TRIPLEX_NORMAL_PROGAM_EXIT){
+			options.logFileHandle << _getTimeStamp() << " * Finished processing " << options.duplexFileNames[0] << ::std::endl; 
+			options.timeFindTriplexes += SEQAN_PROTIMEDIFF(find_time);	
+			options.logFileHandle << _getTimeStamp() << " * Finished searching for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
+		}
+		return errorCode;
+	}
 
     //////////////////////////////////////////////////////////////////////////////
     // Inverted. Find triplexes in many duplex sequences (import from Fasta)
@@ -1661,7 +1634,7 @@ namespace SEQAN_NAMESPACE_MAIN
         } else if (options.runmode == TRIPLEX_TFO_SEARCH){ // investigate TFO only
             result = investigateTFO<TTriplexSet, TMotifSet>(options);
         } else if (options.runmode == TRIPLEX_TRIPLEX_SEARCH){ // map TFO and TTSs
-            result = options.invertedPp ? mapTriplexesMyers<TTriplexSet, TMotifSet>(options) : mapTriplexes<TTriplexSet, TMotifSet>(options);
+            result = options.bitParallel ? mapTriplexesMyers<TTriplexSet, TMotifSet>(options) : mapTriplexes<TTriplexSet, TMotifSet>(options);
         } else {
             cerr << "Exiting ... invalid runmode" << endl;
             options.logFileHandle << "ERROR: Exit due to invalid options " << ::std::endl;  

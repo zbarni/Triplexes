@@ -255,6 +255,9 @@ namespace SEQAN_NAMESPACE_MAIN
 			// tfo seq number
 			if (a.tfoNo < b.tfoNo) return true;
 			if (a.tfoNo > b.tfoNo) return false;
+			// tfo seq number
+			if (a.ttsNo < b.ttsNo) return true;
+			if (a.ttsNo > b.ttsNo) return false;
 			// tts begin position
 			if (a.dBegin < b.dBegin) return true;
 			if (a.dBegin > b.dBegin) return false;
@@ -472,7 +475,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		// 1..TRIPLEX_TTS_SEARCH
 		// 2..TRIPLEX_TFO_SEARCH
 		// 3..TRIPLEX_TRIPLEX_SEARCH
-        bool        invertedPp;         // inverted preprocessing: double strand is indexed and used as pattern
+        bool        bitParallel;         // inverted preprocessing: double strand is indexed and used as pattern
 		bool		ttsFileSupplied;  	// indicates that at least one file as triplex target has been specified
 		bool		tfoFileSupplied;  	// indicates that one file as triplex source has been specified
 		bool		forward;			// compute forward oriented read matches
@@ -1497,50 +1500,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 		}
 	}
-	
-	// Output triplex matches inverted
-		template <
-		typename TMatches,
-		typename TDuplexSet,
-		typename TMotifSet,
-		typename TFile
-		>
-		void printTriplexEntryInverted(TMatches				&matches,			// forward/reverse matches
-							   TDuplexSet 					&duplexSetNames,
-							   TMotifSet const				&tfoSet,	// set of tfos
-							   StringSet<CharString> const	&tfoNames,	// tfo names (read from Fasta file, currently unused)
-							   TFile		&filehandle,				// output file
-							   Options		&options
-							   ){
-			typedef typename Iterator<TMatches, Standard>::Type		TIter;
-			typedef typename Value<TMatches>::Type					TMatch;
-			typedef ::std::list<TMatch>								TMatchList;
-			typedef unsigned										TKey;
-
-			char _sep_ = '\t';
-			for (TIter it = begin(matches, Standard()); it != end(matches, Standard());++it){
-				TMatch match = (*it);
-				TKey seqNo = value(tfoSet,match.tfoNo).seqNo;
-				switch (options.outputFormat)
-				{
-					case 0:	// brief Triplex Format
-						filehandle << tfoNames[seqNo] << _sep_ << match.oBegin << _sep_ << match.oEnd << _sep_ ;
-						filehandle << duplexSetNames[match.ttsSeqNo].first << _sep_ << match.dBegin << _sep_ << match.dEnd << _sep_ ;
-						filehandle << match.mScore << _sep_ << ::std::setprecision(2) << (1.0-match.mScore/(match.dEnd-match.dBegin)) << _sep_ ;
-						filehandle << _errorString(match, duplexSetNames[match.ttsSeqNo].second, tfoSet, options) << _sep_ << match.motif << _sep_ << match.strand << _sep_ <<  (match.parallel?'P':'A') << _sep_ <<  (match.guanines/(match.dEnd-match.dBegin)) << ::std::endl;
-						break;
-					case 1:	// extended Triplex Format
-						filehandle << tfoNames[seqNo] << _sep_ << match.oBegin << _sep_ << match.oEnd << _sep_ ;
-						filehandle << duplexSetNames[match.ttsSeqNo].first << _sep_ << match.dBegin << _sep_ << match.dEnd << _sep_ ;
-						filehandle << match.mScore << _sep_ << ::std::setprecision(2) << (1.0-match.mScore/(match.dEnd-match.dBegin)) << _sep_ ;
-						filehandle << _errorString(match, duplexSetNames[match.ttsSeqNo].second, tfoSet, options) << _sep_ << match.motif << _sep_ << match.strand << _sep_ <<  (match.parallel?'P':'A') << _sep_ <<  (match.guanines/(match.dEnd-match.dBegin)) << ::std::endl;
-						dumpAlignment(match, duplexSetNames[match.ttsSeqNo].second, tfoSet, filehandle, options);
-						break;
-					default:
-						break;
-				}
-			}
-		}
 
 	// output single TTS hit
 	template<typename TFile, typename TEntry, typename TDuplexNames>
@@ -1828,41 +1787,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		options.summaryFileHandle.flush();
 	}
 	
-	// Output summary entries
-		template <
-		typename TPotentials,
-		typename TDuplexSet,
-		typename TSeqNames
-		>
-		void dumpSummaryInverted(TPotentials			&tpots,
-						 TDuplexSet						&duplexSeqNames,	// tts name (read from Fasta file)
-						 StringSet<TSeqNames> const		&tfoNames,		// tfo names (read from Fasta file)
-						 Options						&options,
-						 TPX
-						 )
-		{
-			typedef typename Iterator<TPotentials>::Type	TPotIter;
-			typedef typename Value<TPotentials>::Type		TPotValue;
-			typedef typename Key<TPotValue>::Type			TPotKey;
-			typedef typename Cargo<TPotValue>::Type			TPotCargo;
-
-			// summary
-			char _sep_ = '\t';
-
-			for(TPotIter it = begin(tpots); it != end(tpots); ++it){
-				TPotValue tpotvalue = *it;
-				TPotCargo tpot = cargo(tpotvalue);
-				// skip entries without counts to save disk space
-				if (hasCount(tpot)){
-					options.summaryFileHandle << duplexSeqNames[getKey(tpot).i2].first << _sep_ << tfoNames[getKey(tpot).i1] << _sep_ << getCounts(tpot) << _sep_ << ::std::setprecision(3) << (getCounts(tpot)/getNorm(tpot)) << _sep_;
-					options.summaryFileHandle << getCount(tpot,'R') << _sep_ << ::std::setprecision(3) << (getCount(tpot,'R')/getNorm(tpot)) << _sep_;
-					options.summaryFileHandle << getCount(tpot,'Y') << _sep_ << ::std::setprecision(3) << (getCount(tpot,'Y')/getNorm(tpot)) << _sep_;
-					options.summaryFileHandle << getCount(tpot,'M') << _sep_ << ::std::setprecision(3) << (getCount(tpot,'M')/getNorm(tpot)) << _sep_ << ::std::endl;
-				}
-			}
-			options.summaryFileHandle.flush();
-		}
-
 // ============================================================================
 // Functions - related to search
 // ============================================================================
@@ -1918,7 +1842,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		TString valid   = "TCY";   // the valid characters
 		TString invalid = "GARN";  // the interrupting characters
 		
-		// TODO@barni this is done unnecessarily at each function call, even if it's always the same. Profile this part
 		// create parser
 		TGraph parser;
 		_makeParser(parser, valid, invalid, options);
@@ -2320,20 +2243,19 @@ namespace SEQAN_NAMESPACE_MAIN
 			TGardener gardener_forward;
 			TDuplexModSet ttsSet_forward;
 			// prefilter for putative TTSs
-			SEQAN_PROTIMESTART(time_ds_io);
 			processDuplex(ttsSet_forward, duplexString, duplexId, true, reduceSet, options);
-			options.timeIOReadingTts += SEQAN_PROTIMEDIFF(time_ds_io);
+#ifdef TRIPLEX_DEBUG
+			typedef typename Iterator<TDuplexModSet>::Type  TIterMotifSet;
+			::std::cerr << "printing all tts segments (forward)" << ::std::endl;
+			for (TIterMotifSet itr=begin(ttsSet_forward); itr != end(ttsSet_forward);++itr){
+				::std::cerr << "tts: " << ttsString(*itr) << " type: " << (*itr).motif << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << " " << ::std::endl;
+			}
+#endif
 
-	        SEQAN_PROTIMESTART(time_search);
 			if (length(ttsSet_forward)>0){
 				_filterTriplex(gardener_forward, pattern, ttsSet_forward, options);
 				_verifyAndStore(matches, potentials, gardener_forward, pattern, ttsSet_forward, duplexId, true, options);
-			}
-			options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
-			options.timeQgramFind 		+= gardener_forward.timeQgramFind;
-			options.timeCollectSeeds	+= gardener_forward.timeCollectSeeds;
-			options.timeGardenerFind	+= gardener_forward.timeGardenerFind;
-			options.timePutSeedsInMap	+= gardener_forward.timePutSeedsInMap;
+			}			
 			eraseAll(gardener_forward);
 		}
 
@@ -2341,20 +2263,18 @@ namespace SEQAN_NAMESPACE_MAIN
 			TGardener gardener_reverse;
 			TDuplexModSet ttsSet_reverse;
 			// prefilter for putative TTSs
-			SEQAN_PROTIMESTART(time_ds_io);
 			processDuplex(ttsSet_reverse, duplexString, duplexId, false, reduceSet, options);
-			options.timeIOReadingTts += SEQAN_PROTIMEDIFF(time_ds_io);
-
-			SEQAN_PROTIMESTART(time_search);
+#ifdef TRIPLEX_DEBUG
+			typedef typename Iterator<TDuplexModSet>::Type  TIterMotifSet;
+			::std::cerr << "printing all tts segments (reverse)" << ::std::endl;
+			for (TIterMotifSet itr=begin(ttsSet_reverse); itr != end(ttsSet_reverse);++itr){
+				::std::cerr << "tts: " << ttsString(*itr) << " type: " << (*itr).motif << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << " " << ::std::endl;
+			}
+#endif
 			if (length(ttsSet_reverse)>0){
 				_filterTriplex(gardener_reverse, pattern, ttsSet_reverse, options);
 				_verifyAndStore(matches, potentials, gardener_reverse, pattern, ttsSet_reverse, duplexId, false, options);
 			}
-			options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
-	        options.timeQgramFind 		+= gardener_reverse.timeQgramFind;
-			options.timeCollectSeeds	+= gardener_reverse.timeCollectSeeds;
-			options.timeGardenerFind	+= gardener_reverse.timeGardenerFind;
-	        options.timePutSeedsInMap	+= gardener_reverse.timePutSeedsInMap;
 			eraseAll(gardener_reverse);
 		}
 	}
@@ -3581,7 +3501,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	//////////////////////////////////////////////////////////////////////////////
 	// Create a parser object using an automaton that allows segments with up to
 	// options.maxInterruptions interruptions of invalid characters
-	// TODO@barni try bit parallel automaton?
 	template <typename TGraph, typename TString>
 	int _makeParser(TGraph			&parser, 	// the automaton to be created
 					TString			&valids,	// the valid characters
@@ -3653,7 +3572,6 @@ namespace SEQAN_NAMESPACE_MAIN
 						 bool	const					plusstrand,
 						 Options						&options
 						 ){
-		SEQAN_PROTIMESTART(time_verify);
 		typedef Gardener<TId, TGardenerSpec>				TGardener;
 		typedef typename Value<TGardener>::Type				THitMap;
 		typedef typename Value<THitMap>::Type				THitMapEntry;
@@ -3778,13 +3696,9 @@ namespace SEQAN_NAMESPACE_MAIN
 								 strand,
 								 guanines
 								 );
-
 					appendValue(matches, match);
 					
 #ifdef TRIPLEX_DEBUG
-					::std::cout << "@zb triplex match original verify: ****\n";
-					match.print();
-					::std::cout << "@zb **** END\n";
  					::std::cerr << "tts: " << ttsString(*itr) << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << "-" <<endPosition(*itr) << " " << infix(triplex, beginPosition(*itr), endPosition(*itr)) << ::std::endl;
 					THost ftfo = infix(ttsString(getSequenceByNo(hit.getNdlSeqNo(),needle(pattern))), tfoStart, tfoEnd);
 					THost ftts = infix(ttsString(value(ttsSet,hit.getHstId())), ttsStart, ttsEnd);
@@ -3807,7 +3721,6 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 			}
 		}
-		options.timeVerifyAndStore += SEQAN_PROTIMEDIFF(time_verify);
 	}
 	
 	// Store all matches in a vector and convert the references accordingly
@@ -4109,7 +4022,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		return (seqCount > 0);
 	}
 		
-
 	//////////////////////////////////////////////////////////////////////////////
 	// Inverted. Find triplexes in many duplex sequences (import from Fasta) in parallel
 	// by reading in all duplex sequences and storing the results on memory
@@ -4268,7 +4180,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	>
 	int inline startTriplexSearchSerial(TMotifSet					&tfoMotifSet,
 										StringSet<CharString> const	&tfoNames,
-										TPattern const				&pattern,		// tfo set
+										TPattern const				&pattern,
 										TFile						&outputfile,
 										TId							duplexSeqNo,
 										Options						&options,
@@ -4310,8 +4222,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TPotentials potentials;
 			TDuplex	duplexSeq;
 			CharString duplexName;
-
-	        SEQAN_PROTIMESTART(time_ds_io);
+			//readID(file, id, Fasta());			// read Fasta id
 			readShortID(file, duplexName, Fasta());	// read Fasta id up to first whitespace
 			if (options._debugLevel >= 2)
 				::std::cerr << "Processing:\t" << duplexName << "\t(seq " << duplexSeqNoWithinFile << ")\r" << ::std::flush;
@@ -4328,7 +4239,6 @@ namespace SEQAN_NAMESPACE_MAIN
 					replace(duplexSeq, repeat.beginPosition, repeat.endPosition, replacement);
 				}
 			}
-			options.timeIOReadingTts += SEQAN_PROTIMEDIFF(time_ds_io);
 			
 #if SEQAN_ENABLE_PARALLELISM
 			// run in parallel if requested and both strands are actually searched
@@ -4346,13 +4256,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			clear(matches);
 		}
 		file.close();
-        options.timeCollectSeedsLoop+= timeCollectSeedsLoop;
-        options.timeCSFreeSpace		+= timeCSFreeSpace;
-        options.cntCSFind			+= cntCSFind;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Function _seedMultiSeq was called " << ::std::setprecision(3) << cntFIQ_seedMultiProcessQgram << " times" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Function _seedMultiSeq pure qgram hit match " << ::std::setprecision(3) << cntFIQ_pureQgramMatches << " times" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time spent in _seedMultiSeq  " << ::std::setprecision(3) << time_seedMultiProcessQgram << " seconds" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird Time in _seedMultiSeq ONLY for index search " << ::std::setprecision(3) << time_seedMultiProcessQgramIndexSearch << " seconds" << ::std::endl;
 		return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}
 	

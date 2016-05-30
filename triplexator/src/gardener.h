@@ -229,7 +229,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		~Gardener<TId, TGardenerSpec>()
 		{
 		}
-
 	};
 
 	// seed comparator
@@ -374,7 +373,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline bool
 	hasAnyHit(Gardener<TId, TSpec> &gardener, 
 			  TId &queryid
-			  ){ ENTER
+			  ){
 		if (hasKey(gardener.hits, queryid))
 			return true;
 		else
@@ -388,7 +387,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline typename Iterator<typename Gardener<TId, TSpec>::THitSet>::Type 
 	harvestBegin(Gardener<TId, TSpec> &gardener, 
 				 TId &queryid
-				 ){ ENTER
+				 ){
 		if (hasKey(gardener.hits, queryid))
 			return begin(*cargo(gardener.hits, queryid));
 		else
@@ -404,7 +403,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline typename Iterator<typename Gardener<TId, TSpec>::THitSet>::Type 
 	harvestEnd(Gardener<TId, TSpec> &gardener, 
 			   TId &queryid
-			   ){ ENTER
+			   ){
 		if (hasKey(gardener.hits, queryid))
 			return end(*cargo(gardener.hits, queryid));
 		else
@@ -420,7 +419,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline typename Size<typename Gardener<TId, TSpec>::THitSet>::Type 
 	length(Gardener<TId, TSpec> &gardener, 
 		   TId &queryid
-		   ){ ENTER
+		   ){
 		if (hasKey(gardener.hits, queryid))
 			return length(*cargo(gardener.hits, queryid));
 		else
@@ -524,7 +523,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	_isEpsMatch(Triple<TPos, TPos, TPos> const &left,
 				Triple<TPos, TPos, TPos> const &right,
 				TError &errorRate
-				) { ENTER
+				) {
 		SEQAN_CHECKPOINT
 		// compute mismatches and length
 		TPos errors = right.i3 - left.i3 - (right.i2 - right.i1);
@@ -542,7 +541,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline TPos
 	_countMatches(Triple<TPos, TPos, TPos> const &left,
 				  Triple<TPos, TPos, TPos> const &right
-				  ) { ENTER
+				  ) {
 		SEQAN_CHECKPOINT
 		// compute mismatches and length
 		TPos errors = right.i3 - left.i3 - (right.i2 - right.i1);
@@ -565,7 +564,7 @@ namespace SEQAN_NAMESPACE_MAIN
 								 TSeed				&seed,
 								 TPos const			&matchMinLength,
 								 TError	const		&errorRate
-								 ){ ENTER
+								 ){
 		SEQAN_CHECKPOINT
 		// Preprocessing: compute and store mismatch and lengths
 		// A run is a triple of mismatch begin position, mismatch end position, 
@@ -640,7 +639,7 @@ namespace SEQAN_NAMESPACE_MAIN
 									TError		&errorRate,
 									TSize		&minLength,
 									SINGLE_WORKER const & 
-									){ ENTER
+									){
 		typedef typename Iterator<TSeedSet, Rooted>::Type	TIter;
 		typedef typename Value<TSeedSet>::Type				TSeed;
 		typedef typename Position<TSeed>::Type				TPos;
@@ -808,7 +807,6 @@ namespace SEQAN_NAMESPACE_MAIN
 						popFront(seedset);
 #ifdef TRIPLEX_DEBUG
 						::std::cout << "seed_1:" << getBeginDim0(seed) << ":" << getEndDim0(seed) << " " << getBeginDim1(seed) << ":" << getEndDim1(seed) << ::std::endl;
-						cout << seed << endl;
 #endif
 						
 						while (!empty(seedset) and isOverlapping(seed, front(seedset))){
@@ -822,14 +820,12 @@ namespace SEQAN_NAMESPACE_MAIN
 						
 #ifdef TRIPLEX_DEBUG
 						::std::cout << "seed_2:" << getBeginDim0(seed) << ":" << getEndDim0(seed) << " " << getBeginDim1(seed) << ":" << getEndDim1(seed) << ::std::endl;
-						cout << seed << endl;
 #endif
 						// extend seed to both sides as far as possible
 						extendSeed(seed, tmp, getSequenceByNo(seqno,needle(pattern)), EXTEND_BOTH, scoreMatrix, scoreDropOff, UnGappedXDrop());
 
 #ifdef TRIPLEX_DEBUG
 						::std::cout << "seed_3:" << getBeginDim0(seed) << ":" << getEndDim0(seed) << " " << getBeginDim1(seed) << ":" << getEndDim1(seed) << ::std::endl;
-						cout << seed << endl;
 #endif
 						
 						// merge overlapping windows
@@ -847,12 +843,11 @@ namespace SEQAN_NAMESPACE_MAIN
 					
 					// add all now non-overlapping windows to hitlist
 					while(!empty(newset)){
-//						std::cout << "Diagonal: " << diag << std::endl;
 						// create a new hit and append it to the gardeners hit list
-						THit hit(queryid,				// hstId
+						THit hit(queryid,
 								 seqno,					// needle seq. number            
-								 getBeginDim0(front(newset)),      // begin in haystack (hstkPos)
-								 getBeginDim1(front(newset)),		// needle position 	(ndlPos)
+								 getBeginDim0(front(newset)),      // begin in haystack      
+								 getBeginDim1(front(newset)),		// needle position
 								 diag,					// the diagonal
 								 0,
 								 getEndDim0(front(newset))-getBeginDim0(front(newset))
@@ -894,7 +889,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline void _adjustSeeds(TSeedSet					&seedset, 
 							 Segment<TSequence, TSpec>	&sequence, 
 							 TSize						dim
-							 ){ ENTER
+							 ){
 		typedef typename Iterator<TSeedSet>::Type					TSeedSetIter;
 		typedef typename Position<Segment<TSequence, TSpec> >::Type	TPos;
 		
@@ -926,8 +921,6 @@ namespace SEQAN_NAMESPACE_MAIN
 							   TDiag const	&diag,
 							   TSet		&posSet
 							   ){
-        SEQAN_PROTIMESTART(time_putseeds);
-
 		typedef typename Value<TMap>::Type				TMapPair;
 		typedef typename Cargo<TMapPair>::Type			TDiagMapPointer;
 		typedef typename Value<TDiagMapPointer>::Type 	TDiagMap;
@@ -990,7 +983,6 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 			}
 		}	
-        timePutSeedsInMap += SEQAN_PROTIMEDIFF(time_putseeds);
 	}
 	
 	//____________________________________________________________________________
@@ -1012,7 +1004,6 @@ namespace SEQAN_NAMESPACE_MAIN
 							  TPos const									&minLength,
 							  TMap											&seqmap
 							  ){
-        SEQAN_PROTIMESTART(time_collectseeds);
 		typedef typename Value<TMap>::Type				TMapPair;
 		typedef typename Key<TMapPair>::Type			TId;
 		typedef typename Cargo<TMapPair>::Type			TDMPointer;
@@ -1034,14 +1025,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		
 		TSeqMap tmpSeqmap;
 		while (find(finder, pattern)) {
-			cntCSFind++;
-	        SEQAN_PROTIMESTART(time_collectseeds_loop);
 #ifdef TRIPLEX_DEBUG
-//	        ::std::cout << "\n_collectSeeds(): new seed found: ******************************\n";
-//			::std::cout << "Q (inv = tfo):" << infix(finder) << ::std::endl; // The Infix of the match in the haystack.
-//			::std::cout << "T (inv = tts):" << infix(pattern, *finder.curHit) << ::std::endl;
-//			::std::cout << "H:" << (*finder.curHit).hstkPos << "-N" << (*finder.curHit).ndlSeqNo << ":P" << (*finder.curHit).ndlPos << ":D" << (*finder.curHit).diag << ::std::endl;
-            //TODO@barni remove
             ::std::cout << "Q:" << infix(finder) << ::std::endl;
             ::std::cout << "T:" << infix(pattern, *finder.curHit) << ::std::endl;
             ::std::cout << "H:" << (*finder.curHit).hstkPos << "-N" << (*finder.curHit).ndlSeqNo << ":P" << (*finder.curHit).ndlPos << ":D" << (*finder.curHit).diag << ::std::endl;
@@ -1050,7 +1034,6 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif			
 			// new needle sequence that has no entries yet -- add new needle, and seedset corresponding to diagonal
 			if ( ! hasKey(tmpSeqmap, (*finder.curHit).ndlSeqNo)){
-				cntCSNewNeedle ++;
 				// create new needle map
 				{
 					TDiagMap* diagMapPointer = new TDiagMap;
@@ -1097,12 +1080,10 @@ namespace SEQAN_NAMESPACE_MAIN
 					}
 				}
 			}
-			timeCollectSeedsLoop += SEQAN_PROTIMEDIFF(time_collectseeds_loop);
 		}
 
 		// housekeeping
 		// empty tmp seqmap properly
-		SEQAN_PROTIMESTART(time_delete);
 		for (TIterM sit=begin(tmpSeqmap); sit != end(tmpSeqmap); ++sit){
 			TDiagMap* diagmapPointer = (*sit).i2;
 			for (TIterD dit=begin(*diagmapPointer); dit != end(*diagmapPointer); ++dit){
@@ -1110,8 +1091,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 			delete diagmapPointer;
 		}
-		timeCSFreeSpace 	+= SEQAN_PROTIMEDIFF(time_delete);
-		timeCollectSeeds 	+= SEQAN_PROTIMEDIFF(time_collectseeds);
 	}
 
 		
@@ -1143,11 +1122,10 @@ namespace SEQAN_NAMESPACE_MAIN
 					  Pattern<TIndex,  TSpec > const	&pattern,
 					  TError const						&errorRate,
 					  TPos const						&minLength,
-					  TPos const						&seedsThreshold, // q-gram lemma
+					  TPos const						&seedsThreshold,
 					  TDrop const						&xDrop,
 					  TId								&queriyid
 					  ){
-        SEQAN_PROTIMESTART(time_find);
 		// used datastructure: Map < NeedleSeqNo, < Map < diagonal, SeedSet > > 
 		// for each needle all q-gram hits are stored according to the diagonal they reside in
 		typedef int											TScore;
@@ -1189,10 +1167,9 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 				delete diagmapPointer;
 			}
-			timeGardenerFind += SEQAN_PROTIMEDIFF(time_find);
+			
 			return true;
 		} else
-			timeGardenerFind += SEQAN_PROTIMEDIFF(time_find);
 			return false;
 	}
 	
@@ -1212,7 +1189,7 @@ namespace SEQAN_NAMESPACE_MAIN
 						   Pattern<TIndex, TPatternSpec> const	&pattern,
 						   TQuerySet							&queries,
 						   TId									&queryid
-						   ){ ENTER
+						   ){
 		typedef Gardener<TId, TSpec>						TGardener;
 		typedef typename Iterator<TGardener >::Type			TIter;
 		typedef typename Value<TGardener>::Type				THitMap;
@@ -1240,7 +1217,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	template< 
 	typename THit 
 	>	
-	inline void _printHit(THit	&hit){ ENTER
+	inline void _printHit(THit	&hit){
 		::std::cout << hit.ndlSeqNo << "("<< hit.ndlPos <<":" << (hit.ndlPos+hit.hitLength) << ")\t";
 		::std::cout << hit.hstId << "("<< hit.hstkPos <<":" << (hit.hstkPos+hit.hitLength) << ")\t";
 		::std::cout << "d:" << hit.diag << "\t";
@@ -1275,7 +1252,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			   TDrop const				&xDrop,
 			   TShape const				&shape,
 			   TWORKER
-			   ){ ENTER
+			   ){
 		typedef StringSet<TMotif>													TTargetSet;
 		typedef Index<TTargetSet, IndexQGram<TShape, OpenAddressing> >				TQGramIndex;
 		// configure Pattern
@@ -1472,18 +1449,13 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TWorker
 	>
 	void plant(Gardener<TId, TSpec>	&gardener,
-			   Pattern<TIndex, QGramsLookup< TShape, TPatternSpec> > const	&pattern, // index of tfoSet patterns (originally), now tts
-			   TQuerySet			&queries,   // tts
+			   Pattern<TIndex, QGramsLookup< TShape, TPatternSpec> > const	&pattern,
+			   TQuerySet			&queries,
 			   TError const			&errorRate,
 			   TSize const			&minLength,
 			   TDrop const			&xDrop,
 			   TWorker
 			   ){
-		// reset local timers
-		timeCollectSeeds = 0.0;
-		timeGardenerFind = 0.0;
-		timePutSeedsInMap = 0.0;
-
 		typedef typename Iterator<TQuerySet>::Type									TQueryIter;
 		typedef typename Value<Gardener<TId, TSpec> >::Type							THitMap;
 		typedef typename Value<THitMap>::Type										THitMapEntry;
@@ -1493,37 +1465,26 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef Finder<TSequence, QGramsLookup< TShape, Standard_QGramsLookup > >	TFinder;
 		typedef typename Position<TFinder>::Type									TPos;
 
-		typedef Pattern<TIndex, QGramsLookup< TShape, TPatternSpec> >			 	TPattern;
-		typedef typename Iterator< TPattern >::Type									TPatternIter;
-		
 		// q-gram lemma
 		// w+1-(k+1)q | w=minimum length, k=errors, q=weight(q-grams)
 		TPos minSeedsThreshold = static_cast<TPos>(minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape));
 #ifdef TRIPLEX_DEBUG
-        ::std::cout << "\n\nPlant called ------------------------------ ==============================================\n";
-        std::cout << "min length: " << minLength << std::endl
-        		<< "errors (k): " << ceil(errorRate*minLength)+1 << std::endl
-        		<< "weight (q-grams): " << weight(pattern.shape) << std::endl;
+		::std::cout << "minLength:" << minLength << " errorRate:" << errorRate << " qgram:" << weight(pattern.shape) << ::std::endl;
+		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
 #endif						
 		
 		// serial processing
 		TId querylen = (TId)length(queries);
 		for (TId queryid=0; queryid<querylen; ++queryid){
-#ifdef TRIPLEX_DEBUG
-			::std::cout << "TTS (originally, now TFO) " << queryid << " : " << queries[queryid] << ::std::endl;
-			::std::cout << "TTS (originally, now TFO) as ttsString: " << queryid << " : " << ttsString(queries[queryid]) << ::std::endl;
-			_printHits(gardener, pattern, queries, queryid);
-#endif
-
 			THitSetPointer hitsPointer = new THitSet;
 			TFinder finder(queries[queryid]); 
 			_find(*hitsPointer, finder, pattern, errorRate, (TPos) minLength, minSeedsThreshold, xDrop, queryid );	
 			insert(gardener.hits, queryid, hitsPointer);
-			gardener.timeQgramFind += finder.timeFind;
-		}		
-		gardener.timeCollectSeeds += timeCollectSeeds;
-		gardener.timeGardenerFind += timeGardenerFind;
-		gardener.timePutSeedsInMap+= timePutSeedsInMap;
+#ifdef TRIPLEX_DEBUG
+			::std::cout << "TTS " << queryid << " : " << queries[queryid] << ::std::endl;
+			_printHits(gardener, pattern, queries, queryid);
+#endif
+		}
 	}
 		
 	/** 
@@ -1610,7 +1571,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			   TSize const			&minLength,
 			   TDrop const			&xDrop,
 			   MULTIPLE_WORKER
-			   ){ ENTER
+			   ){
 		typedef typename Iterator<TQuerySet>::Type									TQueryIter;
 		typedef typename Value<Gardener<TId, TSpec> >::Type							THitMap;
 		typedef typename Value<THitMap>::Type										THitMapEntry;
@@ -1626,7 +1587,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		// w+1−(k+1)q | w=minimum length, k=errors, q=weight(q-grams)
 		TPos minSeedsThreshold = static_cast<TPos>(minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape));
 #ifdef TRIPLEX_DEBUG
-        std::cout << "bla\n";
 		::std::cout << "minLength:" << minLength << " errorRate:" << errorRate << " qgram:" << weight(pattern.shape) << ::std::endl;
 		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
 #endif		
@@ -1688,7 +1648,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		// w+1−(k+1)q | w=minimum length, k=errors, q=weight(q-grams)
 		TPos minSeedsThreshold = static_cast<TPos>(minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape));
 #ifdef TRIPLEX_DEBUG
-        std::cout << "qwe\n";
 		::std::cout << "minLength:" << minLength << " errorRate:" << errorRate << " qgram:" << weight(pattern.shape) << ::std::endl;
 		::std::cout << (ceil(errorRate*minLength)+1) << " " << ((ceil(errorRate*minLength)+1)*weight(pattern.shape)) << " " << minLength+1-(ceil(errorRate*minLength)+1)*weight(pattern.shape) << ::std::endl;
 #endif	
