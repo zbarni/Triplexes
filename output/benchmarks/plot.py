@@ -68,14 +68,16 @@ for f in os.listdir(os.getcwd() + "/" + PATH_MYERS):
 #pp.pprint(data)
 ###############################################
 linestyles = { 1 : '--', 2 : '-', 3 : ':'} 
+scales = { 15 : 60000, 25 : 25000, 30 : 10000 }
+markers = { 1 : 'o', 2 : 'v', 3 : '*' }
 if True:
-    plt.figure(figsize=(10, 10))
-
-    cnt = 211
+    cnt = 111
+    plt.rcParams.update({'font.size': 23})
     for l, l_data in data.iteritems():
-        ax = plt.subplot(cnt)
+        plt.figure(figsize=(13, 10))
+        ax = plt.subplot(111)
         ax.set_yscale('log')
-        plt.ylim(50,25000)
+        plt.ylim(50, scales[l])
 
         plt.title("Runtime: brute-force vs. bit-parallel (l : " + str(l) + ')')
         cnt += 1
@@ -103,22 +105,22 @@ if True:
                 ts_myers.append(l_data[e_val][c][total_search].myers)
 
 
-
-            plt.plot(errors, ts_brute, label="c="+str(c), linestyle=linestyles[c], marker="o", color="red")
-            plt.plot(errors, ts_myers, label="c="+str(c), linestyle=linestyles[c], marker="o", color="green")
-            for (x,y) in zip(errors, ts_brute):
-                    # Annotate the points 5 _points_ above and to the left of the vertex
-                ax.annotate('{}'.format(int(y)), xy=(x,y), xytext=(-5, offset), ha='right', textcoords='offset points', color="red")
+            plt.plot(errors, ts_brute, label="c="+str(c), linestyle=linestyles[c], markersize=12, marker=markers[c], color="red")
+            plt.plot(errors, ts_myers, label="c="+str(c), linestyle=linestyles[c], markersize=12, marker=markers[c], color="green")
+#            for (x,y) in zip(errors, ts_brute):
+#                    # Annotate the points 5 _points_ above and to the left of the vertex
+#                ax.annotate('{}'.format(int(y)), xy=(x,y), xytext=(-5, offset), ha='right', textcoords='offset points', color="red")
             
-            for (x,y) in zip(errors, ts_myers):
-                    # Annotate the points 5 _points_ above and to the left of the vertex
-                ax.annotate('{}'.format(int(y)), xy=(x,y), xytext=(+5, offset), ha='left', textcoords='offset points', color="green")
+#            for (x,y) in zip(errors, ts_myers):
+#                    # Annotate the points 5 _points_ above and to the left of the vertex
+#                ax.annotate('{}'.format(int(y)), xy=(x,y), xytext=(+5, offset), ha='left', textcoords='offset points', color="green")
 
             offset += 5
 
-    plt.legend(loc='upper right')
-    plt.savefig("plots/total_search.png", dpi = 100)
-    exit()
+        #plt.legend(loc='lower right')
+        #plt.legend(bbox_to_anchor=(1.05, 1), loc=3, borderaxespad=0.)
+        ax.legend(bbox_to_anchor=(1.1, 0.85))
+        plt.savefig("plots/runtime_l"+str(l), dpi = 100)
 
 ###############################################
 # total search
