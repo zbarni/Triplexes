@@ -1,0 +1,68 @@
+Sender: LSF System <lsfadmin@linuxbcsc66>
+Subject: Job 28496558: <mm9_myers> in cluster <rcc> Done
+
+Job <mm9_myers> was submitted from host <cluster> by user <bz107942> in cluster <rcc>.
+Job was executed on host(s) <linuxbcsc66>, in queue <normal>, as user <bz107942> in cluster <rcc>.
+</home/bz107942> was used as the home directory.
+</home/bz107942/triplexator/output/cluster/myers> was used as the working directory.
+Started at Fri May 27 17:25:56 2016
+Results reported on Fri May 27 20:30:58 2016
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/usr/bin/env zsh
+### Job name
+#BSUB -J mm9_myers
+
+##BSUB -P lect0008
+ 
+### File / path where STDOUT & STDERR will be written
+### %J is the job ID, %I is the array ID
+#BSUB -o mm9_chr1_l20_c3_e15.LOWMEM.log.%J.%I
+ 
+### Request the time you need for execution in minutes
+### The format for the parameter is: [hour:]minute,
+### that means for 80 minutes you could also use this: 1:20
+#BSUB -W 24:00
+ 
+### Request memory you need for your job in TOTAL in MB
+#BSUB -M 32000
+ 
+### Change to the work directory
+C=$LSB_JOBINDEX
+cd /home/bz107942/triplexator/output/cluster/myers
+
+source /home/bz107942/.zshrc
+
+### Execute your application
+/rwthfs/rz/cluster/home/bz107942/triplexator/triplexator/bin/triplexator -ss /home/bz107942/triplexator/output/cluster/../../data/rna/CDP_merged.fa -ds /home/bz107942/triplexator/output/cluster/../../data/dna/mm9/mm9.chr1.fa -o chr1_myers_l20_c3_e15.LOWMEM.tpx -i -v -l 20 -fm 1 -c 3 -e 15
+
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   11305.30 sec.
+    Max Memory :                                 1699 MB
+    Average Memory :                             1102.38 MB
+    Total Requested Memory :                     32000.00 MB
+    Delta Memory :                               30301.00 MB
+    Max Swap :                                   -
+    Max Processes :                              13
+    Max Threads :                                16
+    Run time :                                   11102 sec.
+    Turnaround time :                            15267 sec.
+
+The output (if any) follows:
+
++(0):ERROR:0: Unable to locate a modulefile for 'gcc/4.8'
+open ./tmp_chr1_myers_l20_c3_e15.LOWMEM.tpx
+Starting on duplex file mm9.chr1.fa
+### Forward search
+
+### Reverse search
+
+rename temorary file ./tmp_chr1_myers_l20_c3_e15.LOWMEM.tpx to ./chr1_myers_l20_c3_e15.LOWMEM.tpx

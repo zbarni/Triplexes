@@ -1,0 +1,65 @@
+Sender: LSF System <lsfadmin@linuxbcsc66>
+Subject: Job 28496545: <mm9_brute> in cluster <rcc> Exited
+
+Job <mm9_brute> was submitted from host <cluster> by user <bz107942> in cluster <rcc>.
+Job was executed on host(s) <linuxbcsc66>, in queue <normal>, as user <bz107942> in cluster <rcc>.
+</home/bz107942> was used as the home directory.
+</home/bz107942/triplexator/output/cluster/brute> was used as the working directory.
+Started at Fri May 27 16:46:28 2016
+Results reported on Sun May 29 16:46:31 2016
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/usr/bin/env zsh
+### Job name
+#BSUB -J mm9_brute
+
+##BSUB -P lect0008
+ 
+### File / path where STDOUT & STDERR will be written
+### %J is the job ID, %I is the array ID
+#BSUB -o mm9_chr1_l20_c2_e15.log.%J.%I
+ 
+### Request the time you need for execution in minutes
+### The format for the parameter is: [hour:]minute,
+### that means for 80 minutes you could also use this: 1:20
+#BSUB -W 48:00
+ 
+### Request memory you need for your job in TOTAL in MB
+#BSUB -M 16000
+ 
+### Change to the work directory
+C=$LSB_JOBINDEX
+cd /home/bz107942/triplexator/output/cluster/brute
+
+source /home/bz107942/.zshrc
+
+### Execute your application
+/rwthfs/rz/cluster/home/bz107942/triplexator/triplexator/bin/triplexator -ss /home/bz107942/triplexator/output/cluster/../../data/rna/CDP_merged.fa -ds /home/bz107942/triplexator/output/cluster/../../data/dna/mm9/mm9.chr1.fa -o chr1_brute_l20_c2_e15.tpx -v -l 20 -c 2 -e 15
+
+------------------------------------------------------------
+
+TERM_RUNLIMIT: job killed after reaching LSF run time limit.
+Exited with exit code 140.
+
+Resource usage summary:
+
+    CPU time :                                   176061.16 sec.
+    Max Memory :                                 1387 MB
+    Average Memory :                             389.93 MB
+    Total Requested Memory :                     16000.00 MB
+    Delta Memory :                               14613.00 MB
+    Max Swap :                                   -
+    Max Processes :                              5
+    Max Threads :                                6
+    Run time :                                   172802 sec.
+    Turnaround time :                            174613 sec.
+
+The output (if any) follows:
+
++(0):ERROR:0: Unable to locate a modulefile for 'gcc/4.8'
+open ./tmp_chr1_brute_l20_c2_e15.tpx
+Starting on duplex file mm9.chr1.fa
+User defined signal 2
