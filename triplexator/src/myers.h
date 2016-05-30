@@ -527,7 +527,6 @@ namespace SEQAN_NAMESPACE_MAIN
 						cout << "Discarding extended seed due to low guanine rate, adjustment failed." << endl << std::flush;
 					}
 #endif
-//					cout << "fuck i'm out" << endl << std::flush;
 					// shift seed to the right
 					shiftSeedToRight(extSeedDim);
 					// update temp guanine numbers within current / updated seed
@@ -782,25 +781,11 @@ namespace SEQAN_NAMESPACE_MAIN
 				int qGramSeedEnd 	= maxSeedQGramEnd + qGramOffset;
 
 				THitListKey seqNoKey(haystackFiberSeqNo, ndlSeqNo);
-				// check if seqNoKey key exists
-//				if (!initMaxSeedHashMap.count(seqNoKey)) {
-//					initMaxSeedHashMap[seqNoKey] = std::set<unsigned long long>();
-//				}
 
 //				TODO @barni fix this
 				if (!addedSeedHashMap.count(seqNoKey)) {
 					addedSeedHashMap[seqNoKey] = std::set<unsigned long long>();
 				}
-
-				// calculate hash for maxSeed
-//				unsigned long long maxSeedHash = maxSeedFiberEnd - maxSeedLength + 1;
-//				maxSeedHash = (((((maxSeedHash << 16) + maxSeedFiberEnd) << 16) + qGramSeedBegin) << 16) + qGramSeedEnd;
-//
-//				if (initMaxSeedHashMap[seqNoKey].count(maxSeedHash)) {
-//					continue;
-//				}
-//
-//				initMaxSeedHashMap[seqNoKey].insert(maxSeedHash);
 
 				TSeed seed(maxSeedFiberEnd - maxSeedLength + 1, qGramSeedBegin, maxSeedFiberEnd, qGramSeedEnd);
 	#ifdef DEBUG
@@ -808,11 +793,6 @@ namespace SEQAN_NAMESPACE_MAIN
 						<< "Actual right ends (including this pos.): " << getEndDim0(seed) << ", " << getEndDim1(seed) << endl
 						<< "seedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(seed), getEndDim0(seed) + 1) << "\n"
 						<< "seedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(seed), getEndDim1(seed) + 1) << "\n" << std::flush ;
-//				if (ndlSeqNo == 42 && haystackFiberSeqNo == 0) {
-//					cout << "@@@ --- it's getting hot in here --- @@@" << endl;
-//					cout 	<< "fiber: " << haystack[haystackFiberSeqNo] << endl
-//							<< "needle: " << needleSet[ndlSeqNo] << endl << std::flush;
-//				}
 	#endif
 
 				t = sysTime();

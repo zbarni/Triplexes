@@ -18,7 +18,6 @@ static const int WORD_SIZE = sizeof(Word) * 8; // Size of Word in bits
 static const Word WORD_1 = (Word)1;
 static const Word HIGH_BIT_MASK = WORD_1 << (WORD_SIZE - 1);  // 100..00
 int blockNr = 0;
-int tLength = 0;
 int matchingScores = 0;
 
 // Data needed to find alignment.
@@ -82,8 +81,6 @@ int edlibCalcEditDistance(
         int* bestScore, int** endLocations, int** startLocations, int* numLocations,
         unsigned char** alignment, int* alignmentLength) {
 
-    //TODO @barni remove
-    tLength = targetLength;
     *alignment = NULL;
     /*--------------------- INITIALIZATION ------------------*/
     int maxNumBlocks = ceilDiv(queryLength, WORD_SIZE); // bmax in Myers
@@ -122,8 +119,6 @@ int edlibCalcEditDistance(
 
     } while(dynamicK && *bestScore == -1);
     
-//    printf("Matching scores: %d\n", matchingScores);
-
 //    if (*bestScore >= 0) {  // If there is solution.
 //
 //        // Find starting locations.
