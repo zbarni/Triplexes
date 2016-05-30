@@ -1,26 +1,29 @@
 #!/bin/bash
 # IMPORTANT: must be run from output/mm9 or similar
 
-l=15
+l=20
 chr=1
 DATA_DIR="${PWD}/../../data"
-ROOT_DIR=$PWD/..
+ROOT_DIR=$PWD
 EXEC_CMD="${PWD}/../../triplexator/bin/triplexator"
 MYERS=false
 BRUTE=false
+QGRAM=false
 TRUNCATED=0
 eLow=5
-eHigh=5
-cLow=2
-cHigh=2
+eHigh=20
+cLow=1
+cHigh=3
 
-while getopts ":mbl:c:t:" opt; do
+while getopts ":mbql:c:t:" opt; do
     case ${opt} in
         t ) TRUNCATED=$OPTARG
         ;;
         b ) BRUTE=true
         ;;
         m ) MYERS=true
+        ;;
+        q ) QGRAM=true
         ;;
         l ) l=$OPTARG
         ;;
@@ -60,7 +63,7 @@ for ((e=$eLow;e<=$eHigh;e+=5)); do
             fi
 
             echo "Running l: ${l}, c: ${c}, e: ${e}"
-#    echo "$EXEC_CMD -ss $RNA -ds $DNA -o ${OUTPUT}.tpx -i -v -l $l -c $c -e $e &> ${OUTPUT}.dbg"
+            ulimit -Sv 14000000 
             $EXEC_CMD -ss $RNA -ds $DNA -o ${OUTPUT}.tpx -i -fm 1 -v -l $l -c $c -e $e &> ${OUTPUT}.dbg
 
             sort ${OUTPUT}.tpx > ${MYERS_TMP} 
@@ -68,7 +71,7 @@ for ((e=$eLow;e<=$eHigh;e+=5)); do
         fi
 
         if [ "$BRUTE" = true ]; then
-            cd "${ROOT_DIR}/mm9/original/"
+            cd ${ROOT_DIR}/brute
             if [[ "$TRUNCATED" = 0 ]]; then
                 DNA=$DNA_FILE
                 RNA=$RNA_FILE
@@ -88,15 +91,27 @@ for ((e=$eLow;e<=$eHigh;e+=5)); do
             $EXEC_CMD -ss $RNA -ds $DNA -o ${OUTPUT}.tpx -v -l $l -c $c -e $e &> ${OUTPUT}.dbg
             sort ${OUTPUT}.tpx > ${BRUTE_TMP}
         fi
+
+        if [ "$QGRAM" = true ]; then
+            cd ${ROOT_DIR}/qgram
+            if [[ "$TRUNCATED" = 0 ]]; then
+                DNA=$DNA_FILE
+                RNA=$RNA_FILE
+                OUTPUT="chr${chr}_qgram_l${l}_c${c}_e${e}_q2"
+            fi
+
+            echo "Running l: ${l}, c: ${c}, e: ${e} q?"
+            /home/zbarni/code/triplexator-project/triplexator_original/bin/triplexator -ss $RNA -ds $DNA -o ${OUTPUT}.tpx -v -t 1 -fm 1 -l $l -c $c -e $e &> ${OUTPUT}.dbg
+        fi
     done
 done
 
-if [ ! -f ${MYERS_TMP} ]; then
-    echo "Myers sorted output not found. Can't compare."
-elif [ ! -f ${BRUTE_TMP} ]; then
-    echo "Brute sorted output not found. Can't compare."
-else
-    echo "Comparing myers and brute-force... wait for failed?"
-    cmp --silent ${MYERS_TMP} ${BRUTE_TMP} || echo "Test #${TEST} failed."
-fi
+#if [ ! -f ${MYERS_TMP} ]; then
+#    echo "Myers sorted output not found. Can't compare."
+#elif [ ! -f ${BRUTE_TMP} ]; then
+#    echo "Brute sorted output not found. Can't compare."
+#else
+#    echo "Comparing myers and brute-force... wait for failed?"
+#    cmp --silent ${MYERS_TMP} ${BRUTE_TMP} || echo "Test #${TEST} failed."
+#fi
 #rm -f ${MYERS_TMP} ${BRUTE_TMP}
