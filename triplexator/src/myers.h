@@ -647,9 +647,6 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int match = 0; match < numLocations; match++) {
-	#ifdef DEBUG
-	//	    	cout << endl << "Iteration #" << match << " =====================================" << endl;
-	#endif
 			ePos = endLocations[match]; 	// end of current putative match in duplex (mergedHaystack)
 			bPos = ePos - options.minLength + 1; 	// beginning of --||--
 			if (bPos < 0) {
@@ -671,7 +668,6 @@ namespace SEQAN_NAMESPACE_MAIN
 
 			// make sure the found match doesn't span 2 different fibers in the original haystack
 			if ((bPos - segmentMap[haystackFiberSeqNo]) + options.minLength > length(haystack[haystackFiberSeqNo])) {
-	//	        if (haystackFiberSeqNo != posToFiberSeqNo[bPos + minLength] || bPos + minLength >= posToFiberSeqNo.size()) {
 	#ifdef DEBUG
 				cout << "Discarding Myers match because it spans over different fibers in original haystack." << std::flush << endl;
 	#endif

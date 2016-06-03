@@ -2047,7 +2047,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		if (options.maximalError >= 0){
 			eR = min(options.errorRate, max(double(options.maximalError)/options.minLength, 0.0));
 		}
-		plantMyers(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER() );
+		// TODO @barni make new function for palindromic
+		//plantMyers(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER() );
+		plantPalindrom(times, gardener, haystack, index, tfoSet, eR, options, unsigned(), SINGLE_WORKER() );
 	}
 	
 	
