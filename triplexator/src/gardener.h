@@ -1441,7 +1441,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TTimes,
 	typename THaystack,		 // haystack spec - double stranded sequences (tts)
 	typename TQGramIndex,	 // q-gram index - (tfo)
-	typename TNeedleSet,		 // query set (needle) - single stranded sequences (tfo)
+	typename TNeedleSet,	 // query set (needle) - single stranded sequences (tfo)
 	typename TError,		 // error rate
 	typename TOptions,
 	typename TPos,
@@ -1513,12 +1513,12 @@ namespace SEQAN_NAMESPACE_MAIN
 		cout << "needles l: " << length(needles) << endl;
 		for (int i = 0; i < length(haystack); ++i) {
 			THaystackValue fiber = haystack[i];
-			cout << beginPosition(fiber) << " - " << endPosition(fiber) << " >>> " << fiber << endl;
+			cout << beginPosition(fiber) << " - " << endPosition(fiber) << " >>> " << fiber << " === " << haystack[i] << endl;
 		}
 		cout << "\n\t=========\n";
 		for (int i = 0; i < length(needles); ++i) {
 			TNeedle needle = needles[i];
-			cout << beginPosition(needle) << " - " << endPosition(needle) << " >>> " << needle << endl;
+			cout << beginPosition(needle) << " - " << endPosition(needle) << " >>> " << needle /*<< " === " << ttsString(needle)*/ << endl;
 		}
 #endif
 
@@ -1533,6 +1533,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 
 		for (THaystackIterator fiberIt = begin(haystack); fiberIt != end(haystack); ++fiberIt) {
+			cout << "Doing fiber #" << std::distance(begin(haystack), fiberIt) << ": " << *fiberIt << endl;
+//			cout << "\t" << haystack[std::distance(begin(haystack), fiberIt)] << endl;
 			TNeedlePositionMapIterator needlePosIt = needlePosMap.lower_bound(beginPosition(*fiberIt));
 
 			// if positions don't overlap at all or overlap length is smaller than minLength
@@ -1549,9 +1551,9 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 			unsigned char * const bitFiberBase = bitFiber;
 
-			// iterate over each overlapping pair
+			// iterate over each overlapping needle - fiber pair / do it for several needles
 			while (needlePosIt != needlePosMap.end()
-					&& endPosition(*fiberIt)>= options.minLength + needlePosIt->first)
+					&& endPosition(*fiberIt) >= options.minLength + needlePosIt->first)
 			{
 				cout << endl;
 				// reset bitFiber to initial encoding (without shifts)
@@ -1561,7 +1563,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				TPos posOffset = needlePosIt->first - beginPosition(*fiberIt);
 				// align fiber to needle
 				bitFiber += posOffset;
-				cout << "Inherent posOffset: " << posOffset << endl;
+				cout << endl << "Inherent posOffset: " << posOffset << endl;
 
 				// get needle segment
 				const TNeedle* needle = &needles[needlePosIt->second.second];
@@ -1572,6 +1574,8 @@ namespace SEQAN_NAMESPACE_MAIN
 				cout << "Overlap found: ";
 				cout << beginPosition(*fiberIt) << " - " << endPosition(*fiberIt) << " vs ";
 				cout << ndlBPos << " - " << ndlEPos << endl;
+				cout << "fiber: " << *fiberIt << endl;
+				cout << "nedle: " << *needle << endl;
 
 				TPos minEndPos = std::min(ndlEPos, endPosition(*fiberIt)) - ndlBPos;
 				cout << "minEndPos: " << minEndPos << endl;
@@ -1579,36 +1583,41 @@ namespace SEQAN_NAMESPACE_MAIN
 				// init window which then slides to the right
 				TSeed seedWindow(posOffset, 0, posOffset + options.minLength - 1, options.minLength - 1);
 
+				unsigned shiftCnt = 0;
 				while (getEndDim0(seedWindow) < minEndPos && getEndDim1(seedWindow) < minEndPos) {
-					cout << "seedWindow: " << seedWindow << endl;
-					cout << "new offset: " << endl;
+					cout << "seedWindow (shifted again?): " << seedWindow << endl;
+					cout << "fiber window (search space): " << infix(*fiberIt, getBeginDim0(seedWindow), getEndDim0(seedWindow) + 1) << endl;
+					cout << "nedle window (search space): " << infix(*needle, getBeginDim1(seedWindow), getEndDim1(seedWindow) + 1) << endl;
 
 					// transform query into index for Myers
 					for (int i = 0; i < options.minLength; ++i) {
 						bitNdlSegment[i] = charToBit((*needle)[i + getBeginDim1(seedWindow)]);
 					}
 
-
-
-					cout <<  "bitNedle: ";
-					for (int i = 0; i < options.minLength; ++i) {
-						cout << (unsigned int)bitNdlSegment[i] << " ";
-					}
+//					cout <<  "bitNedle: ";
+//					for (int i = 0; i < options.minLength; ++i) {
+//						cout << (unsigned int)bitNdlSegment[i] << " ";
+//					}
 
 					unsigned char tmpBitFiber[options.minLength];
-					cout << endl << "bitFiber: ";
+//					cout << endl << "bitFiber: ";
 					for (int i = 0; i < options.minLength; ++i) {
 						tmpBitFiber[i] = bitFiber[i + getBeginDim0(seedWindow)];
-						cout << (unsigned int)tmpBitFiber[i] << " ";
+//						cout << (unsigned int)tmpBitFiber[i] << " ";
 					}
-					cout << endl;
+//					cout << endl;
 
 					//calculate Myers distance - this yields putative matches in endLocations
 					edlibCalcEditDistance(bitNdlSegment, options.minLength, tmpBitFiber, options.minLength,
 							alphabetSize, k + 1, EDLIB_MODE_HW, true, true, &score,
 							&endLocations, &startLocations, &numLocations,
 							&alignment, &alignmentLength);
-					cout << "Myers gave #numLocations: " << numLocations << "(k: " << k << ")" << endl;
+					cout << "Myers gave #numLocations: " << numLocations << "(k + 1: " << k + 1 << ")" << endl;
+					cout << "alignment length: " << alignmentLength << endl;
+					for (int i = 0; i < numLocations; ++i) {
+						cout << "endloc #" << i << ": " << *endLocations << endl;
+						++endLocations;
+					}
 					//				verifyMatches(times, seedHashMap, initMaxSeedHashMap, hitList, haystack, mergedHaystack,
 					//						fiberStartPos, posToFiberSeqNo, needles,
 					//						suffixQGram, itBucketItem, itEndBucket, errorRate, numLocations,
@@ -1618,6 +1627,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					setBeginDim1(seedWindow, getBeginDim1(seedWindow) + 1);
 					setEndDim0(seedWindow, getEndDim0(seedWindow) + 1);
 					setEndDim1(seedWindow, getEndDim1(seedWindow) + 1);
+					++shiftCnt;
 				}
 
 				++needlePosIt;
