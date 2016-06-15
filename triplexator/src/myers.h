@@ -607,7 +607,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	void verifyMatches(
 			TTimes					&times,
 			TSeedMap	   			&addedSeedHashMap,
-			TSeedMap	   			&initMaxSeedHashMap,
 			THitList				&hitList,
 			THaystack 		const 	&haystack,
 			TMergedHaystack const 	&mergedHaystack,
@@ -679,26 +678,25 @@ namespace SEQAN_NAMESPACE_MAIN
 			itEB = itEndBucket;
 
 			/////////////////////////////
-			// validate TODO check for # of consecutive mismatches
 			t = sysTime();
-			int consecutiveMismatches = 0;
-			bool consecutiveSatisfied = true;
+			int consMismatches = 0;
+			bool consSatisfied = true;
 			for (int pos = ePos; pos > bPos && misM <= k + 1; --pos) {
 				if (mergedHaystack[pos] != suffixQGram[qPos--]) {
 					++misM;
-					++consecutiveMismatches;
-					if (consecutiveMismatches > options.maxInterruptions) {
-						consecutiveSatisfied = false;
+					++consMismatches;
+					if (consMismatches > options.maxInterruptions) {
+						consSatisfied = false;
 						break;
 					}
 				}
 				else {
-					consecutiveMismatches = 0;
+					consMismatches = 0;
 				}
 			}
 			times["consmm"] += sysTime() - t;
 
-			if (!consecutiveSatisfied) {
+			if (!consSatisfied) {
 #ifdef DEBUG
 				cout << "Discarding Myers match because there are more consecutive mismatches than allowed."  << std::flush << endl;
 	#endif
@@ -1113,6 +1111,219 @@ namespace SEQAN_NAMESPACE_MAIN
 		} // end tts-tfo match for loop
 	}
 
+
+
+	/***************************************************************************************************
+	 *					PALINDROMIC STUFF
+	 ***************************************************************************************************
+	 */
+
+	template<typename TSeed>
+	inline bool shiftWindowRight(int &windowShifts, int &needleWindowShifts, TSeed &seedWindow) {
+		if (!windowShifts) {
+			// check if shifting only needle is still possible
+			if (!needleWindowShifts) {
+				return false;
+			}
+			// still shift beginning of fiber window (makes it smaller by 1)
+			setBeginDim0(seedWindow, getBeginDim0(seedWindow) + 1);
+			setBeginDim1(seedWindow, getBeginDim1(seedWindow) + 1);
+			setEndDim1(seedWindow, getEndDim1(seedWindow) + 1);
+			--needleWindowShifts;
+			return true;
+		}
+
+		setBeginDim0(seedWindow, getBeginDim0(seedWindow) + 1);
+		setBeginDim1(seedWindow, getBeginDim1(seedWindow) + 1);
+		setEndDim0(seedWindow, getEndDim0(seedWindow) + 1);
+		setEndDim1(seedWindow, getEndDim1(seedWindow) + 1);
+		--windowShifts;
+		--needleWindowShifts;
+		return true;
+	}
+
+	/**
+	 * TODO @barni @next implement this function
+	 */
+	template<
+//	typename TTimes,
+//	typename TSeedMap,
+	typename THitList,
+	typename TFiber,
+	typename TNeedle,
+	typename TPos,
+	typename TOptions
+	>
+	void verifyLocalTriplexes(
+//			TTimes					&times,
+//			TSeedMap	   			&addedSeedHashMap,
+			THitList				&hitList,
+			TFiber			const	&fiber,
+			TNeedle			const	&needle,
+			TPos 			const 	&fiberPosOffset,	// fiber offset relative to needle
+			int 		   	const	&numLocations,
+			int 			const	endLocations[],
+			TOptions		const	&options)
+	{
+		typedef int								TScore;
+		typedef Seed<Simple, DefaultSeedConfig>	TSeed;
+		typedef std::vector< Seed<Simple, DefaultSeedConfig> > 			 TSeedList;
+		typedef std::vector< Seed<Simple, DefaultSeedConfig> >::iterator TSeedListIterator;
+
+		TSeedList extendedSeeds;
+
+		int k = floor(options.errorRate * options.minLength); // #mismatches allowed
+
+		cout << "Myers gave #numLocations: " << numLocations << "(k + 1: " << k + 1 << ")" << endl;
+
+		// iterate over all putative matches (end locations), find max seed and then extend
+		for (int match = 0; match < numLocations; match++) {
+			cout << "endloc #" << match << ": " << endLocations[match] << endl;
+			int ePos = endLocations[match]; 			// end of current putative match in fiber
+			int bPos = ePos - options.minLength + 1; 	// beginning of --||--
+
+			// starting position of match is invalid
+			if (bPos < 0) {
+				continue;
+			}
+
+			// reset variables
+			unsigned int guanine= 0;
+			int misM 			= 0;	// counter for number of mismatches
+			int maxSeedLength	= 0;	// length of maximum seed
+			int maxSeedMergedEnd= 0;	// global position in merged haystack
+			int maxSeedQGramEnd = 0;	// local position in
+			int maxSeedFiberEnd = -1; 	// local begin position in fiber (elem in haystack)
+
+			// check for allowed consecutive mismatches
+			int consMismatches 	= 0;
+			bool consSatisfied 	= true;
+			int fibCurPos 		= 0; 	// current position in fiber (for comparison)
+			int ndlCurPos 		= 0; 	// current position in needle (for comparison)
+
+			for (fibCurPos = ePos, ndlCurPos = ePos - fiberPosOffset; fibCurPos > bPos && misM <= k + 1; --fibCurPos, --ndlCurPos) {
+				if (fiber[fibCurPos] != needle[ndlCurPos]) {
+					++misM;
+					++consMismatches;
+
+					if (consMismatches > options.maxInterruptions) {
+						consSatisfied = false;
+						break;
+					}
+				}
+				else {
+					consMismatches = 0;
+				}
+			}
+
+			if (!consSatisfied) {
+#ifdef DEBUG
+				cout << "Discarding Myers match because there are more consecutive mismatches than allowed."  << std::flush << endl;
+#endif
+				continue;
+			}
+
+			// invalid alignment. Note the k + 1, we want to be forgiving here because an extension might still
+			// lower the error rate as wanted, so don't discard here just yet (will later, if it's not good).
+			if (misM > k + 1) {
+#ifdef DEBUG
+				cout << "Discarding Myers match because there are more than allowed mismatches."  << std::flush << endl;
+#endif
+				continue;
+			}
+		}
+	}
+
+
+	/**
+	 * This function receives a fiber and a needle as input parameters, and computes all the matches
+	 * between the two satisfying some maximum shift constraint.
+	 */
+	template<
+	typename THitList,
+	typename TFiber,
+	typename TBitArray,
+	typename TNeedle,
+	typename TSeqNo,
+	typename TPos,
+	typename TOptions,
+	typename TSeed
+	>
+	void computeLocalTriplexes(
+			THitList			&hitList,
+			TFiber 		const 	&fiber,
+			TBitArray 			&bitFiber,			// bit representation of fiber, will be shifted
+			TNeedle 	const 	&needle,
+			TSeqNo		const	&fiberSeqNo,
+			TSeqNo		const	&needleSeqNo,
+			TPos 		const 	&posOffset,
+			unsigned 			k,
+			unsigned 			alphabetSize,
+			bool		const 	&plusStrand,
+			TOptions 	const 	&options,
+			TSeed)
+	{
+		typedef std::pair<TPos, TPos> TWindow;
+
+		int score;
+		int numLocations;
+		int *endLocations;
+		int *startLocations;
+		int alignmentLength;
+		unsigned char *alignment;
+		unsigned char *bitNeedle;
+
+		cout << "Overlap found: " << beginPosition(fiber) << " - " << endPosition(fiber) << " vs ..."
+//				<< needleAbsBegPos << " - " << needleAbsEndPos << endl
+				<< endl << "fiber (" << (plusStrand ? "+" : "-") << "): " << fiber << endl
+				<< "nedle (" << isParallel(needle) << "): " << needle << endl;
+
+		// init (fiber) window which then slides to the right
+		int windowSize = std::min((int)(options.minLength * 2), int(endPosition(fiber) - beginPosition(fiber) - posOffset)); //needleAbsEndPos - needleAbsBegPos + 1));
+
+		// start with minLength for fiber and twice previously calculated needle window size
+		TSeed seedWindow(posOffset, 0, windowSize - 1, options.minLength - 1);
+
+		int fiberLength   = length(fiber);
+		int needleLength  = length(needle);
+		bitNeedle 		  = new unsigned char [needleLength];
+		unsigned char * const bitNeedleBase = bitNeedle; // store original address for deletion later
+
+		int doubleWindowShifts  = std::min(fiberLength - windowSize, needleLength - (int)options.minLength);
+		int needleWindowShifts  = needleLength - (int)options.minLength;
+
+		cout << "(fiber) window size: " << windowSize << endl;
+		cout << "needle length: " << needleLength << endl;
+		cout << "fiber length: " << fiberLength << endl;
+		cout << "starting seedWindow: " << seedWindow << endl;
+		cout << "#window shifts: " << doubleWindowShifts << endl;
+
+		// transform query into index for Myers
+		for (int i = 0; i < needleLength; ++i) {
+			bitNeedle[i] = charToBit((needle)[i]);
+		}
+
+		do {
+			cout << endl << "seedWindow (shifted again?): " << seedWindow << endl;
+			cout << "fiber window (search space): " << infix(fiber, getBeginDim0(seedWindow), getEndDim0(seedWindow) + 1) << endl;
+			cout << "nedle window (search space): " << infix(needle, getBeginDim1(seedWindow), getEndDim1(seedWindow) + 1) << endl;
+
+
+			//calculate Myers distance - this yields putative matches in endLocations
+			numLocations = 0;
+			edlibCalcEditDistance(bitNeedle, options.minLength, bitFiber, windowSize,
+					alphabetSize, k + 1, EDLIB_MODE_HW, false, false, &score,
+					&endLocations, &startLocations, &numLocations,
+					&alignment, &alignmentLength);
+
+			verifyLocalTriplexes(hitList, fiber, needle, posOffset, numLocations, endLocations, options);
+			free(endLocations);
+
+			++bitNeedle; // shift needle window to the right by 1
+		} while (shiftWindowRight(doubleWindowShifts, needleWindowShifts, seedWindow));
+
+		delete [] bitNeedleBase;
+	}
 
 } //namespace SEQAN_NAMESPACE_MAIN
 

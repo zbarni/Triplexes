@@ -2036,10 +2036,11 @@ namespace SEQAN_NAMESPACE_MAIN
 	>
 	inline void _filterTriplexMyers(TTimes	&times,
 			Gardener< TId, TGardenerSpec>	&gardener,
-			THaystack const					&haystack, // ttsSet
+			THaystack 	const				&haystack,
 			TQGramIndex const				&index,
 			TQuery							&tfoSet,
-			Options const					&options
+			bool		const				&plusStrand,
+			Options 	const				&options
 	){
 
 		// adjust errorRate if maximalError is set and caps the errorRate setting wrt the minimum length constraint
@@ -2049,7 +2050,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 		// TODO @barni make new function for palindromic
 		//plantMyers(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER() );
-		plantPalindrom(times, gardener, haystack, index, tfoSet, eR, options, unsigned(), SINGLE_WORKER() );
+		plantPalindrom(times, gardener, haystack, index, tfoSet, eR, plusStrand, options, unsigned(), SINGLE_WORKER() );
 	}
 	
 	
@@ -4125,7 +4126,7 @@ namespace SEQAN_NAMESPACE_MAIN
     			processDuplex(ttsSetForward, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
     	        if (length(ttsSetForward)>0) {
     	        	SEQAN_PROTIMESTART(time_search);
-    	        	_filterTriplexMyers(times, gardenerForward, ttsSetForward, index, tfoMotifSet, options);
+    	        	_filterTriplexMyers(times, gardenerForward, ttsSetForward, index, tfoMotifSet, true, options);
     	        	options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
     	        	_verifyAndStoreMyers(triplexHashes, matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, duplexSeqNoWithinFile, true, options);
     	        }
@@ -4136,7 +4137,7 @@ namespace SEQAN_NAMESPACE_MAIN
     			processDuplex(ttsSetReverse, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
     			if (length(ttsSetReverse)>0) {
     				SEQAN_PROTIMESTART(time_search);
-    				_filterTriplexMyers(times, gardenerReverse, ttsSetReverse, index, tfoMotifSet, options);
+    				_filterTriplexMyers(times, gardenerReverse, ttsSetReverse, index, tfoMotifSet, false, options);
     				options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
     				triplexHashes.clear();
     				_verifyAndStoreMyers(triplexHashes, matches, potentials, gardenerReverse, tfoMotifSet, ttsSetReverse, duplexSeqNoWithinFile, false, options);

@@ -1343,7 +1343,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		THitList		hitList;		// for each tts-tfo pair: keeps a
 										//
 		TSeedHashesMap 	seedHashMap;
-		TSeedHashesMap 	initMaxSeedHashMap;
 	    TSADirIter  	itBucketDir;
 	    TSADirIter  	itBucketDirEnd;
 	    TSAIter     	saBegin;
@@ -1409,7 +1408,7 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 
 	    		t = sysTime();
-	    		verifyMatches(times, seedHashMap, initMaxSeedHashMap, hitList, haystack, mergedHaystack,
+	    		verifyMatches(times, seedHashMap, hitList, haystack, mergedHaystack,
 	    				fiberStartPos, posToFiberSeqNo, needles,
 	    				suffixQGram, itBucketItem, itEndBucket, errorRate, numLocations,
 						endLocations, options, THit(), THitListKey());
@@ -1456,6 +1455,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TQGramIndex		const	&index,				// q-gram index of tfoSet (for suffixes)
 			TNeedleSet		const	&needles,			// TFO set
 			TError 			const	&errorRate,
+			bool			const 	&plusStrand,
 			TOptions		const	&options,
 			TPos,
 			TWorker)
@@ -1477,36 +1477,28 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef  		 String<char> 									TMergedHaystack;
 		typedef 		 std::map<int, THitSetPointer> 					THitSetPointerMap;
 		typedef			 std::pair<int, int> 							TPair;
-		typedef 		 std::map<TPair, std::set<unsigned long long> > TSeedHashesMap;
+		typedef 		 std::map<TPair, std::set<unsigned long long> > 				TSeedHashesMap;
+		typedef			 std::map<TPair, std::map<TPair, std::vector<THit*> > >			THitList;
 		typedef typename Infix<typename GetSequenceByNo<TNeedleSet const>::Type >::Type	TInfix;
-		typedef			 std::map<TPair, std::map<TPair, std::vector<THit*> > >	THitList;
 
 		typedef 		 std::multimap<TPos, std::pair<TPos, TId> >	TNeedlePositionMap;
 		typedef typename TNeedlePositionMap::const_iterator 		TNeedlePositionMapIterator;
 
-		int score;
-		int numLocations;
-		int *endLocations;
-		int *startLocations;
-		int alignmentLength;
-		unsigned char *alignment;
 		unsigned char *bitFiber;
-		unsigned char *bitNdlSegment = new unsigned char[options.minLength];
-
-		int k = ceil(errorRate * options.minLength);
+		int 	 k 				= ceil(errorRate * options.minLength);
 		unsigned targetLength 	= 0;
 		unsigned alphabetSize	= 6;	// 4 + Y and N
 
 		THitList		hitList;		// for each tts-tfo pair: keeps a
 		TSeedHashesMap 	seedHashMap;
-		TSeedHashesMap 	initMaxSeedHashMap;
 		// may have several entries
 		TMergedHaystack mergedHaystack;		// current item in haystack (tts)
 		TVector			fiberStartPos; 		// for duplex each segment, the map stores its starting
 		TVector			posToFiberSeqNo;	// position in the merged haystack; sorted
 		THitSetPointerMap hitSetPointerMap; // for each query in queries (tfoSet), stores a
 											// hitSetPointer containing all corresponding hits
-		TNeedlePositionMap needlePosMap;
+		TNeedlePositionMap needlePosMap;	// key: absolute begin position of needle in sequence
+											// val: pair(absolute end pos, index in needles)
 
 #ifndef DEBUG
 		cout << "haystack l: " << length(haystack) << endl;
@@ -1522,6 +1514,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 #endif
 
+		// populate needle position map with beg / end positions
 		for (int i = 0; i < length(needles); ++i) {
 			needlePosMap.insert( std::pair<TPos, std::pair<TPos, TId> >(
 					beginPosition(needles[i]), std::pair<TPos, TId>(endPosition(needles[i]), i)));
@@ -1532,15 +1525,13 @@ namespace SEQAN_NAMESPACE_MAIN
 			hitSetPointerMap[i] = new THitSet;
 		}
 
+		// iterate over each fiber in haystack
 		for (THaystackIterator fiberIt = begin(haystack); fiberIt != end(haystack); ++fiberIt) {
-			cout << "Doing fiber #" << std::distance(begin(haystack), fiberIt) << ": " << *fiberIt << endl;
-//			cout << "\t" << haystack[std::distance(begin(haystack), fiberIt)] << endl;
+			cout << endl << "Doing fiber #" << std::distance(begin(haystack), fiberIt) << ": " << *fiberIt << endl;
 			TNeedlePositionMapIterator needlePosIt = needlePosMap.lower_bound(beginPosition(*fiberIt));
 
 			// if positions don't overlap at all or overlap length is smaller than minLength
-			if (needlePosIt == needlePosMap.end()
-					|| endPosition(*fiberIt) - needlePosIt->first < options.minLength)
-			{
+			if (needlePosIt == needlePosMap.end() || endPosition(*fiberIt) - needlePosIt->first < options.minLength) {
 				continue;
 			}
 
@@ -1551,11 +1542,10 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 			unsigned char * const bitFiberBase = bitFiber;
 
-			// iterate over each overlapping needle - fiber pair / do it for several needles
+			// for the current fiber, iterate over each overlapping needle - fiber pair / do it for several needles
 			while (needlePosIt != needlePosMap.end()
 					&& endPosition(*fiberIt) >= options.minLength + needlePosIt->first)
 			{
-				cout << endl;
 				// reset bitFiber to initial encoding (without shifts)
 				bitFiber = bitFiberBase;
 
@@ -1566,75 +1556,22 @@ namespace SEQAN_NAMESPACE_MAIN
 				cout << endl << "Inherent posOffset: " << posOffset << endl;
 
 				// get needle segment
-				const TNeedle* needle = &needles[needlePosIt->second.second];
-
-				TPos ndlBPos = needlePosIt->first;
-				TPos ndlEPos = needlePosIt->second.first;
-
-				cout << "Overlap found: ";
-				cout << beginPosition(*fiberIt) << " - " << endPosition(*fiberIt) << " vs ";
-				cout << ndlBPos << " - " << ndlEPos << endl;
-				cout << "fiber: " << *fiberIt << endl;
-				cout << "nedle: " << *needle << endl;
-
-				TPos minEndPos = std::min(ndlEPos, endPosition(*fiberIt)) - ndlBPos;
-				cout << "minEndPos: " << minEndPos << endl;
-
-				// init window which then slides to the right
-				TSeed seedWindow(posOffset, 0, posOffset + options.minLength - 1, options.minLength - 1);
-
-				unsigned shiftCnt = 0;
-				while (getEndDim0(seedWindow) < minEndPos && getEndDim1(seedWindow) < minEndPos) {
-					cout << "seedWindow (shifted again?): " << seedWindow << endl;
-					cout << "fiber window (search space): " << infix(*fiberIt, getBeginDim0(seedWindow), getEndDim0(seedWindow) + 1) << endl;
-					cout << "nedle window (search space): " << infix(*needle, getBeginDim1(seedWindow), getEndDim1(seedWindow) + 1) << endl;
-
-					// transform query into index for Myers
-					for (int i = 0; i < options.minLength; ++i) {
-						bitNdlSegment[i] = charToBit((*needle)[i + getBeginDim1(seedWindow)]);
-					}
-
-//					cout <<  "bitNedle: ";
-//					for (int i = 0; i < options.minLength; ++i) {
-//						cout << (unsigned int)bitNdlSegment[i] << " ";
-//					}
-
-					unsigned char tmpBitFiber[options.minLength];
-//					cout << endl << "bitFiber: ";
-					for (int i = 0; i < options.minLength; ++i) {
-						tmpBitFiber[i] = bitFiber[i + getBeginDim0(seedWindow)];
-//						cout << (unsigned int)tmpBitFiber[i] << " ";
-					}
-//					cout << endl;
-
-					//calculate Myers distance - this yields putative matches in endLocations
-					edlibCalcEditDistance(bitNdlSegment, options.minLength, tmpBitFiber, options.minLength,
-							alphabetSize, k + 1, EDLIB_MODE_HW, true, true, &score,
-							&endLocations, &startLocations, &numLocations,
-							&alignment, &alignmentLength);
-					cout << "Myers gave #numLocations: " << numLocations << "(k + 1: " << k + 1 << ")" << endl;
-					cout << "alignment length: " << alignmentLength << endl;
-					for (int i = 0; i < numLocations; ++i) {
-						cout << "endloc #" << i << ": " << *endLocations << endl;
-						++endLocations;
-					}
-					//				verifyMatches(times, seedHashMap, initMaxSeedHashMap, hitList, haystack, mergedHaystack,
-					//						fiberStartPos, posToFiberSeqNo, needles,
-					//						suffixQGram, itBucketItem, itEndBucket, errorRate, numLocations,
-					//						endLocations, options, THit(), THitListKey());
-					//				free(endLocations);
-					setBeginDim0(seedWindow, getBeginDim0(seedWindow) + 1);
-					setBeginDim1(seedWindow, getBeginDim1(seedWindow) + 1);
-					setEndDim0(seedWindow, getEndDim0(seedWindow) + 1);
-					setEndDim1(seedWindow, getEndDim1(seedWindow) + 1);
-					++shiftCnt;
-				}
-
+				computeLocalTriplexes(hitList, *fiberIt, bitFiber, needles[needlePosIt->second.second],
+						std::distance(begin(haystack), fiberIt), // fiberSeqNo
+						needlePosIt->second.second,	// needleSeqNo
+						posOffset, /*needlePosIt->first, needlePosIt->second.first,*/
+						k, alphabetSize, plusStrand, options, TSeed());
 				++needlePosIt;
 			}
 			delete [] bitFiberBase;
 		}
-		delete [] bitNdlSegment;
+
+		// TODO maybe we nee to merge here?
+
+		// add hits to gardener
+		for (int i = 0; i < length(haystack); ++i) {
+			insert(gardener.hits, i, hitSetPointerMap[i]);
+		}
 	}
 
 	/** 

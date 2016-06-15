@@ -119,8 +119,8 @@ int edlibCalcEditDistance(
 
     } while(dynamicK && *bestScore == -1);
     
-//    if (*bestScore >= 0) {  // If there is solution.
-//
+    if (*bestScore >= 0) {  // If there is solution.
+
 //        // Find starting locations.
 //        if (findStartLocations || findAlignment) {
 //            *startLocations = (int*) malloc((*numLocations) * sizeof(int));
@@ -140,6 +140,7 @@ int edlibCalcEditDistance(
 //                    // Taking last location as start ensures that alignment will not start with insertions
 //                    // if it can start with mismatches instead.
 //                    (*startLocations)[i] = endLocation - positionsSHW[numPositionsSHW - 1];
+//                    cout << "startloc: " << (*startLocations)[i] << endl;
 //                    delete[] positionsSHW;
 //                }
 //                delete[] rTarget;
@@ -151,7 +152,7 @@ int edlibCalcEditDistance(
 //                }
 //            }
 //        }
-//
+
 //        // Find alignment -> all comes down to finding alignment for NW.
 //        // Currently we return alignment only for first pair of locations.
 //        if (findAlignment) {
@@ -171,7 +172,7 @@ int edlibCalcEditDistance(
 //                            *bestScore, alnEndLocation - alnStartLocation,
 //                            alignData, alignment, alignmentLength);
 //        }
-//    }
+    }
     /*-------------------------------------------------------*/
 
     //--- Free memory ---//
@@ -256,7 +257,7 @@ static inline int calculateBlock(Word Pv, Word Mv, Word Eq, const int hin,
     Eq |= hinIsNeg;
     Word Xh = (((Eq & Pv) + Pv) ^ Pv) | Eq;
 
-    Word Ph = Mv | ~(Xh | Pv);//~Eq;//~(Xh | Pv);
+    Word Ph = Mv | ~(Xh | Pv);
     Word Mh = Pv & Xh;
 
     int hout = 0;
@@ -273,7 +274,7 @@ static inline int calculateBlock(Word Pv, Word Mv, Word Eq, const int hin,
     // This is instruction below written using 'if': if (hin > 0) Ph |= (Word)1;
     Ph |= (Word)((hin + 1) >> 1);
 
-    PvOut = Mh | ~(Xv | Ph); // == Mh | (~Eq & ~Mv & ~Ph)
+    PvOut = Mh | ~(Xv | Ph);
     MvOut = Ph & Xv;
     //TODO remove @barni 
 #ifdef BITSET
@@ -357,15 +358,15 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
     *positions_ = NULL;
     *numPositions_ = 0;
 
-//	cout << endl << "myers bitNedle: ";
-//	for (int i = 0; i < queryLength; ++i) {
-//		cout << (unsigned int)query[i] << " ";
-//	}
-//	cout << endl << "myers bitFiber: ";
-//	for (int i = 0; i < targetLength; ++i) {
-//		cout << (unsigned int)target[i] << " ";
-//	}
-//	cout << endl;
+	cout << endl << "myers bitNedle: ";
+	for (int i = 0; i < queryLength; ++i) {
+		cout << (unsigned int)query[i] << " ";
+	}
+	cout << endl << "myers bitFiber: ";
+	for (int i = 0; i < targetLength; ++i) {
+		cout << (unsigned int)target[i] << " ";
+	}
+	cout << endl;
     
     // firstBlock is 0-based index of first block in Ukkonen band.
     // lastBlock is 0-based index of last block in Ukkonen band.
@@ -479,7 +480,6 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
 //                    positions.push_back(c - W);
                 }
                 // @barni moved push back here to keep all results
-//                printf("yeyy@\n\n\n");
                 positions.push_back(c - W);
             }
         }
