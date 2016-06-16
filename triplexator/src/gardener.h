@@ -1527,7 +1527,8 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// iterate over each fiber in haystack
 		for (THaystackIterator fiberIt = begin(haystack); fiberIt != end(haystack); ++fiberIt) {
-			cout << endl << "Doing fiber #" << std::distance(begin(haystack), fiberIt) << ": " << *fiberIt << endl;
+			cout << endl << "###########################################" << endl
+					<< "Doing fiber #" << std::distance(begin(haystack), fiberIt) << ": " << *fiberIt << endl;
 			TNeedlePositionMapIterator needlePosIt = needlePosMap.lower_bound(beginPosition(*fiberIt));
 
 			// if positions don't overlap at all or overlap length is smaller than minLength
@@ -1561,12 +1562,13 @@ namespace SEQAN_NAMESPACE_MAIN
 						needlePosIt->second.second,	// needleSeqNo
 						posOffset, /*needlePosIt->first, needlePosIt->second.first,*/
 						k, alphabetSize, plusStrand, options, TSeed());
+
 				++needlePosIt;
 			}
 			delete [] bitFiberBase;
 		}
 
-		// TODO maybe we nee to merge here?
+		// TODO maybe we need to merge here?
 
 		// add hits to gardener
 		for (int i = 0; i < length(haystack); ++i) {
