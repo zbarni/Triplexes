@@ -87,7 +87,8 @@ namespace SEQAN_NAMESPACE_MAIN
         addOption(parser, addArgumentText(CommandLineOption("ss",  "single-strand-file",    "File in FASTA format that is searched for TFOs (e.g. RNA or DNA)", OptionType::String), "<FILE>"));
         addOption(parser, addArgumentText(CommandLineOption("ds", "duplex-file",            "File in FASTA format that is searched for TTSs (e.g. DNA)", OptionType::String), "<FILE>"));
         addSection(parser, "Main Options:");
-        addOption(parser, CommandLineOption("bp",  "bit-parallel",                 			"use bit-parallel computation when searching for triplex pairs", OptionType::Boolean));
+        addOption(parser, CommandLineOption("bp", "bit-parallel",                 			"use bit-parallel computation when searching for triplex pairs", OptionType::Boolean));
+        addOption(parser, CommandLineOption("bpl","bit-parallel-local",                 	"use bit-parallel computation when searching for triplex pairs, and restrict search to local match (semi-palindrom)", OptionType::Boolean));
         addOption(parser, CommandLineOption("l",  "lower-length-bound",                     "minimum triplex feature length required", OptionType::Int| OptionType::Label, options.minLength));
         addOption(parser, CommandLineOption("L",  "upper-length-bound",                     "maximum triplex feature length permitted, -1 = unrestricted ", OptionType::Int | OptionType::Label, options.maxLength ));
         addOption(parser, CommandLineOption("e",  "error-rate",                             "set the maximal error-rate in % tolerated", OptionType::Double | OptionType::Label, (100.0 * options.errorRate)));
@@ -181,7 +182,8 @@ namespace SEQAN_NAMESPACE_MAIN
         
         //////////////////////////////////////////////////////////////////////////////
         // Extract options
-        options.bitParallel = isSetLong(parser, "bit-parallel");
+        options.bitParallel 	 = isSetLong(parser, "bit-parallel");
+        options.bitParallelLocal = isSetLong(parser, "bit-parallel-local");
 
         getOptionValueLong(parser, "error-rate", options.errorRate);
         getOptionValueLong(parser, "maximal-error", options.maximalError);
@@ -376,8 +378,8 @@ namespace SEQAN_NAMESPACE_MAIN
             options.showHelp = true;
             return 0;
         }
-        if ((options.runmode != TRIPLEX_TRIPLEX_SEARCH && options.bitParallel) && (stop = true))
-            ::std::cerr << "Bit parallel mode enabled but running mode is not triplex search." << ::std::endl;
+        if ((options.runmode != TRIPLEX_TRIPLEX_SEARCH && (options.bitParallel || options.bitParallelLocal)) && (stop = true))
+            ::std::cerr << "Bit parallel (local) mode enabled but running mode is not triplex search." << ::std::endl;
         if ((options.errorRate > 20 || options.errorRate < 0) && (stop = true))
             ::std::cerr << "Error-rate must be a value between 0 and 20" << ::std::endl;
         if ((options.minGuanineRate < 0 || options.minGuanineRate > 100) && (stop = true))
@@ -434,7 +436,7 @@ namespace SEQAN_NAMESPACE_MAIN
         
         //  optimizing shape/q-gram for threshold >= 2 
         if (options.filterMode == FILTERING_GRAMS && options.runmode==TRIPLEX_TRIPLEX_SEARCH){
-        	if (!options.bitParallel) {
+        	if (!options.bitParallel && !options.bitParallelLocal) {
         		int qgram = _calculateShape(options);
         		if (qgram <= 4 && (stop = true)){
         			::std::cerr << "Error-rate, minimum length and qgram-threshold settings do not allow for efficient filtering with q-grams of weight >= 5 (currently " << qgram << ")." << ::std::endl;
@@ -1634,7 +1636,7 @@ namespace SEQAN_NAMESPACE_MAIN
         } else if (options.runmode == TRIPLEX_TFO_SEARCH){ // investigate TFO only
             result = investigateTFO<TTriplexSet, TMotifSet>(options);
         } else if (options.runmode == TRIPLEX_TRIPLEX_SEARCH){ // map TFO and TTSs
-            result = options.bitParallel ? mapTriplexesMyers<TTriplexSet, TMotifSet>(options) : mapTriplexes<TTriplexSet, TMotifSet>(options);
+            result = (options.bitParallel || options.bitParallelLocal) ? mapTriplexesMyers<TTriplexSet, TMotifSet>(options) : mapTriplexes<TTriplexSet, TMotifSet>(options);
         } else {
             cerr << "Exiting ... invalid runmode" << endl;
             options.logFileHandle << "ERROR: Exit due to invalid options " << ::std::endl;  

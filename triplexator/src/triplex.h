@@ -475,7 +475,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		// 1..TRIPLEX_TTS_SEARCH
 		// 2..TRIPLEX_TFO_SEARCH
 		// 3..TRIPLEX_TRIPLEX_SEARCH
-        bool        bitParallel;         // inverted preprocessing: double strand is indexed and used as pattern
+        bool        bitParallel;        // use Myers' bit-parallel algorithm
+        bool        bitParallelLocal;   // use Myers' bit-parallel algorithm and restrict search to local area (semi-palindrom)
 		bool		ttsFileSupplied;  	// indicates that at least one file as triplex target has been specified
 		bool		tfoFileSupplied;  	// indicates that one file as triplex source has been specified
 		bool		forward;			// compute forward oriented read matches
@@ -2040,17 +2041,21 @@ namespace SEQAN_NAMESPACE_MAIN
 			TQGramIndex const				&index,
 			TQuery							&tfoSet,
 			bool		const				&plusStrand,
-			Options 	const				&options
-	){
+			Options 	const				&options)
+	{
 
 		// adjust errorRate if maximalError is set and caps the errorRate setting wrt the minimum length constraint
 		double eR = options.errorRate;
 		if (options.maximalError >= 0){
 			eR = min(options.errorRate, max(double(options.maximalError)/options.minLength, 0.0));
 		}
-		// TODO @barni make new function for palindromic
-		//plantMyers(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER() );
-		plantPalindrom(times, gardener, haystack, index, tfoSet, eR, plusStrand, options, unsigned(), SINGLE_WORKER() );
+
+		if (options.bitParallel) {
+			plantMyers(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER() );
+		}
+		else {
+			plantPalindrom(times, gardener, haystack, index, tfoSet, eR, plusStrand, options, unsigned(), SINGLE_WORKER() );
+		}
 	}
 	
 	
