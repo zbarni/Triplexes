@@ -949,9 +949,9 @@ namespace SEQAN_NAMESPACE_MAIN
 			TOptions			const	&options,
 			THit)
 	{
-		typedef std::pair<int,int>										THitListKey;
-		typedef typename 	THitList::iterator 							THitListIterator;
-		typedef typename 	std::vector<THit*>::iterator 				THitIterator;
+		typedef 			std::pair<int,int>				THitListKey;
+		typedef typename 	THitList::iterator 				THitListIterator;
+		typedef typename 	std::vector<THit*>::iterator 	THitIterator;
 		typedef typename 	std::map<THitListKey, std::vector<THit*> >::iterator TDim0Iterator;
 
 		int haystackFiberSeqNo;
@@ -1010,7 +1010,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 								int mergeEndPos = nextHit->hstkPos + nextHit->hitLength;
 								int overlappedLength = mergeEndPos - currHit->hstkPos;
-								if (overlappedLength > options.maxLength) {
+								if (overlappedLength > options.maxLength && options.maxLength != -1) {
 #ifdef DEBUG
 									cout << "overlapped length longer than maxLength, ignoring possible merge" << endl;
 #endif
