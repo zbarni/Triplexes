@@ -900,6 +900,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 	}
 
+	/**
+	 *
+	 */
 	template<
 	typename TFiber,
 	typename TNeedle,
@@ -925,6 +928,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		return guanines;
 	}
 
+	/**
+	 *
+	 */
 	template<
 		typename THitSetPointerMap,
 		typename THitList,
@@ -953,15 +959,12 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		TDim0Iterator dim0It;
 		TDim0Iterator nextDim0It;
-#ifdef DEBUG
-		cout << endl << endl << "Merging overlaps" << endl;
-#endif
 
 		for (THitListIterator it = hitList.begin(); it != hitList.end(); ++it) {
 			haystackFiberSeqNo 	= (it->first).first;
 			ndlSeqNo			= (it->first).second;
 #ifdef DEBUG
-			cout << "Starting new tts-tfo pair" << endl;
+			cout << "Starting merge of new tts-tfo pair" << endl;
 #endif
 
 			for (dim0It = (it->second).begin(); dim0It != (it->second).end(); ++dim0It) {
@@ -1114,10 +1117,16 @@ namespace SEQAN_NAMESPACE_MAIN
 
 
 	/***************************************************************************************************
-	 *					PALINDROMIC STUFF
+	 ***************************************************************************************************
+	 *										PALINDROMIC STUFF
+	 ***************************************************************************************************
 	 ***************************************************************************************************
 	 */
 
+
+	/**
+	 *
+	 */
 	template<
 	typename TPos,
 	typename TLength,
@@ -1143,6 +1152,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		return seed;
 	}
 
+	/**
+	 * Check if matching positions on fiber and needle are not? too far apart - we want locality!
+	 */
 	template<typename TSeed, typename TSize>
 	bool checkLocalOverlapConstraints(
 			bool  const	plusStrand,
@@ -1169,14 +1181,14 @@ namespace SEQAN_NAMESPACE_MAIN
 				offset = fiberLength - getBeginDim0(seed) - (needleLength - getBeginDim1(seed));
 			}
 		}
-		cout << "Offset is (overlap constraint): " << offset << endl;
 		// TODO change max offset here
 		return offset <= (getEndDim0(seed) - getBeginDim0(seed));
 	}
 
 	/**
-	 * Theoretically we shouldn't need to verify if a shift is invalid, i.e., a bound is violated,
-	 * since windowShifts and needleWindowShifts are properly calculated.
+	 * Resizes seedWindow for fiber according to its orientation (plusStrand?): this can be
+	 * a (partial) shift in any direction. The needle window is never resized but only shifted
+	 * to left or right.
 	 * Returns true if there is a valid shift and false otherwise, i.e., false if window size
 	 * gets smaller than minLength, or one of the limits is reached.
 	 */
@@ -1184,6 +1196,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	inline bool shiftWindow(bool plusStrand, bool isNeedleParallel,
 			int fiberLength, int needleLength, int minLength, TSeed &seedWindow)
 	{
+		// shift needle window to right / left
 		int needleWindowShift = isNeedleParallel ? 1 : -1;
 
 		// check for left limits if we have to shift to the left
@@ -1209,9 +1222,16 @@ namespace SEQAN_NAMESPACE_MAIN
 		setBeginDim1(seedWindow, getBeginDim1(seedWindow) + needleWindowShift);
 		setEndDim1(seedWindow, getEndDim1(seedWindow) + needleWindowShift);
 
-		return !(getBeginDim1(seedWindow) < 0 || getEndDim1(seedWindow) >= needleLength);
+		return (getBeginDim1(seedWindow) >= 0 && getEndDim1(seedWindow) < needleLength &&
+				getEndDim0(seedWindow) - getBeginDim0(seedWindow) >= minLength - 1 &&
+				getEndDim1(seedWindow) - getBeginDim1(seedWindow) >= minLength - 1);
 	}
 
+	/**
+	 * Receives a list of putative matches (endLocations) on fiber and finds all maximal
+	 * triplexes starting from these matches. Finds and extends seeds according to constraints, and
+	 * all hits are appended to hitList.
+	 */
 	template<
 //	typename TTimes,
 	typename TSeedMap,
@@ -1253,8 +1273,8 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int match = 0; match < numLocations; match++) {
-			cout << "endloc (relative)#" << match << ": " << endLocations[match] << endl;
-			cout << "endloc (absolute)#" << match << ": " << endLocations[match] + getBeginDim0(seedWindow) << endl;
+//			cout << "endloc (relative)#" << match << ": " << endLocations[match] << endl;
+//			cout << "endloc (absolute)#" << match << ": " << endLocations[match] + getBeginDim0(seedWindow) << endl;
 			int ePos = endLocations[match] + getBeginDim0(seedWindow); 	// end of current putative match in fiber
 			int bPos = ePos - options.minLength + 1; 					// beginning of --||--
 
@@ -1274,9 +1294,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			int fibCurPos 		= 0; 	// current position in fiber (for comparison)
 			int ndlCurPos 		= 0; 	// current position in needle (for comparison)
 
-			cout << "Compare:" << endl << "\t" << infix(fiber, bPos, ePos + 1) << endl << "\t" <<
-					infix(needle,getBeginDim1(seedWindow), getEndDim1(seedWindow) + 1) << endl;
-
 			for (fibCurPos = ePos, ndlCurPos = getEndDim1(seedWindow); fibCurPos > bPos && misM <= k + 1; --fibCurPos, --ndlCurPos) {
 				if (fiber[fibCurPos] != needle[ndlCurPos]) {
 					++misM;
@@ -1292,18 +1309,12 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 			}
 
-			if (!consSatisfied) {
-#ifdef DEBUG
-				cout << "Discarding Myers match because there are more consecutive mismatches than allowed."  << std::flush << endl;
-#endif
-				continue;
-			}
-
 			// invalid alignment. Note the k + 1, we want to be forgiving here because an extension might still
 			// lower the error rate as wanted, so don't discard here just yet (will later, if it's not good).
-			if (misM > k + 1) {
+			if (!consSatisfied || misM > k + 1) {
 #ifdef DEBUG
-				cout << "Discarding Myers match because there are more than allowed mismatches."  << std::flush << endl;
+				cout << "Discarding Myers match because there are more consecutive mismatches than allowed. // "
+						<< "Discarding Myers match because there are more than allowed mismatches."  << std::flush << endl;
 #endif
 				continue;
 			}
@@ -1315,8 +1326,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			int tempGuanine = 0;
 			for (fibCurPos = ePos, ndlCurPos = getEndDim1(seedWindow); fibCurPos > bPos; --fibCurPos, --ndlCurPos)
 			{
-//				cout << "@Comp: " << fiber[fibCurPos] << ":" << needle[ndlCurPos]
-//						<< " ; " << fibCurPos << ":" << ndlCurPos << endl;
 				int matchLength = 0;
 
 				if (fiber[fibCurPos] != needle[ndlCurPos]) {
@@ -1327,8 +1336,6 @@ namespace SEQAN_NAMESPACE_MAIN
 					if (isGuanine(fiber[fibCurPos])) {
 						++tempGuanine;
 					}
-//					cout << "@Comp ?double: " << fiber[fibCurPos] << ":" << needle[ndlCurPos]
-//							<< " ; " << fibCurPos << ":" << ndlCurPos << endl;
 					matchLength++;
 					--fibCurPos;
 					--ndlCurPos;
@@ -1360,7 +1367,6 @@ namespace SEQAN_NAMESPACE_MAIN
 
 			for (TSeedListIterator seed = extendedSeeds.begin(); seed != extendedSeeds.end(); ++seed) {
 #ifdef DEBUG
-				cout << "++++++++++++++++++++++++++++++++++++++++++++++++" << endl << std::flush;
 				cout << "one seed after extension: " << *seed << endl;
 				cout << "Match: " << endl << std::flush;
 				cout << "\tseedFiber: " << infix(fiber, getBeginDim0(*seed), getEndDim0(*seed)) << endl << std::flush ;
@@ -1375,14 +1381,15 @@ namespace SEQAN_NAMESPACE_MAIN
 					cout << "Overlap / offset constraint violated, discarding extended seed." << endl;
 					continue;
 				}
+
 				// if new seed, add to seedMap and to hitSet
 				if (addIfNewSeed(seqNoKey.first, seqNoKey.second, *seed, addedSeedHashMap[seqNoKey])) {
 					THit *hit = new THit(
 							seqNoKey.first,			// fiber seq no
 							seqNoKey.second,		// needle seq no
-							getBeginDim0(*seed),
-							getBeginDim1(*seed),
-							-1, 					// the diagonal,
+							getBeginDim0(*seed),	// fiber beginning
+							getBeginDim1(*seed),	// needle beginning
+							-1, 					// the diagonal - NOT IMPORTANT
 							0,
 							getEndDim0(*seed)-getBeginDim0(*seed));
 
@@ -1459,7 +1466,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		unsigned char * const bitNeedleBase = bitNeedle; // store original address for deletion later
 
 		// init seed window and number of shifts
-		TSeed seedWindow 		= initSeedWindow(plusStrand, isParallel(needle), posOffset, windowSize, fiberLength, needleLength, options, TSeed());//(posOffset, 0, windowSize - 1, options.minLength - 1);
+		TSeed seedWindow = initSeedWindow(plusStrand, isParallel(needle), posOffset, windowSize, fiberLength, needleLength, options, TSeed());//(posOffset, 0, windowSize - 1, options.minLength - 1);
 
 #ifdef DEBUG
 		cout << "(fiber) window size: " << windowSize << endl;

@@ -4049,7 +4049,8 @@ namespace SEQAN_NAMESPACE_MAIN
                                         TShape const                &shape,
 										Options						&options,
 										Gardener<TId, TGardenerSpec>
-										) {
+										)
+	{
 		typedef TriplexString										TDuplex;
 		typedef StringSet<ModStringTriplex<TDuplex, TDuplex> >		TDuplexModSet;
 		typedef typename Iterator<TDuplexModSet>::Type  			TIterMotifSet;
