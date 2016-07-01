@@ -757,7 +757,7 @@ namespace SEQAN_NAMESPACE_MAIN
             resize(indexShape(index_qgram), weight(shape));
             indexRequire(index_qgram, QGramCounts());
             indexRequire(index_qgram, QGramSADir());
-            errorCode = startTriplexSearchSerialMyers(tfoMotifSet, tfoNames, index_qgram, outputfile, shape, options, TGardener());
+            errorCode = startTriplexSearchSerialBitParallelGlobal(tfoMotifSet, tfoNames, index_qgram, outputfile, shape, options, TGardener());
         }
         else {
             assert(false && "Should handle brute force inverted here. TODO");
@@ -1660,29 +1660,29 @@ namespace SEQAN_NAMESPACE_MAIN
     }
 } // namespace SEQAN_NAMESPACE_MAIN 
 
-//////////////////////////////////////////////////////////////////////////////
-// Command line parsing and parameter choosing
-// Program entry point
-int main(int argc, char const ** argv)
-{
-    // Setup command line parser.
-    CommandLineParser parser;
-    Options options;
-    _setupCommandLineParser(parser, options);
-    
-    // Then, parser the command line and handle the cases where help display
-    // is requested or errornoeous parameters were given.
-    int ret = _parseCommandLineAndCheck(options, parser, argc, argv);
-    if (ret != 0)
-        return ret;
-        
-    if (options.showHelp || options.showVersion)
-        return 0;
-    
-    // Finally, launch the program.
-    ret = _mainWithOptions(argc, argv, options);
-    return ret;
-}
+////////////////////////////////////////////////////////////////////////////////
+//// Command line parsing and parameter choosing
+//// Program entry point
+//int main(int argc, char const ** argv)
+//{
+//    // Setup command line parser.
+//    CommandLineParser parser;
+//    Options options;
+//    _setupCommandLineParser(parser, options);
+//
+//    // Then, parser the command line and handle the cases where help display
+//    // is requested or errornoeous parameters were given.
+//    int ret = _parseCommandLineAndCheck(options, parser, argc, argv);
+//    if (ret != 0)
+//        return ret;
+//
+//    if (options.showHelp || options.showVersion)
+//        return 0;
+//
+//    // Finally, launch the program.
+//    ret = _mainWithOptions(argc, argv, options);
+//    return ret;
+//}
 
 
 
