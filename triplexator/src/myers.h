@@ -11,7 +11,7 @@
 #include <seqan/misc/priority_type_heap.h>
 #include <seqan/misc/misc_dequeue.h>
 
-#define DEBUG
+//#define DEBUG
 #define TOLERATED_ERROR 2
 using namespace seqan;
 
@@ -38,6 +38,27 @@ namespace SEQAN_NAMESPACE_MAIN
 	ostream& operator << (ostream& os, const SeedDimStruct& s) {
 		return os << "\tbDim0, eDim0: " << s.bDim0 << ", " << s.eDim0 << endl
 					<< "\tbDim1, eDim1: " << s.bDim1 << ", " << s.eDim1;
+	}
+
+	/**
+	 * Returns true if parameter char is guanine, false otherwise.
+	 */
+	template<typename TChar>
+	bool isGuanine(TChar const &c) {
+		return c == 'G';
+	}
+
+	template<typename TChar>
+	unsigned int charToBit(TChar const &c) {
+		switch(char(c)) {
+		case 'A': return 0;
+		case 'C': return 1;
+		case 'G': return 2;
+		case 'T': return 3;
+		case 'Y': return 4;
+		case 'N': return 5;
+		default: assert(false && "Invalid character.");
+		}
 	}
 
 	/**
@@ -104,7 +125,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			--posQuery;
 		}
 
-//		unsigned int lastGuanine = (lGuanines.size()) ? guanine : 0;
 		// add corresponding end points if required
 		if ((posFiber == -1 || posQuery == -1) && !isLeftZeroIncluded) {
 			lGuanines.push_back(guanine);
@@ -148,8 +168,6 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// add corresponding end points if required
 		if ((posFiber == endFiber || posQuery == endNeedle) && !isRightEndIncluded) {
-//			int rightmostGuanine = (isGuanine(fiber[posFiber - 1])) ? 1 : 0;
-//			rGuanines.push_back((rGuanines.size()) ? guanine : rightmostGuanine);
 			rGuanines.push_back(guanine);
 			rMmOffsets.push_back(std::min((int)(endNeedle - getEndDim1(seed) - 1), (int)(endFiber - getEndDim0(seed) - 1)));
 		}
@@ -294,7 +312,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	/**
 	 * Tries to minimize the window size so that maxLength is satisfied. Returns true is this is
-	 * possible, and false otherwise. Also, the leftmost such window is returned extSeedDim.
+	 * possible, and false otherwise. Also, the leftmost such window is returned in extSeedDim.
 	 */
 	template<
 	typename THaystackFiber,
@@ -458,6 +476,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 
 				guanineRate = lGuanines[l] + rGuanines[r] + seedGuanine;
+				// resize window if too big
 				if (!resizeWindowToMaxLength(extSeedDim, fiber, needle, diag, guanineRate, options)) {
 					continue;
 				}
@@ -560,13 +579,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		hash = (((((hash << 16) + getEndDim0(seed)) << 16) + getBeginDim1(seed)) << 16) + getEndDim1(seed);
 
 		if (addedSeedHashes.count(hash)) {
-	#ifdef DEBUG
-			std::cout
-					<< "== XXX >> Seed is already in map: " << seed << std::endl << std::flush
-					<< "\thash: " << hash << std::endl
-					<< "\ttfoSeqNo: " << tfoSeqNo << std::endl
-					<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo  << std::flush << std::endl << std::flush;
-	#endif
 			return false;
 		}
 		addedSeedHashes.insert(hash);
@@ -577,12 +589,6 @@ namespace SEQAN_NAMESPACE_MAIN
 				<< "\thaystackFiberSeqNo: " << haystackFiberSeqNo  << std::flush << std::endl << std::flush;
 	#endif
 		return true;
-	}
-
-
-	template<typename TChar>
-	bool isGuanine(TChar const &c) {
-		return c == 'G';
 	}
 
 	/**
@@ -645,8 +651,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		TSeedList extendedSeeds;
 
 		// iterate over all putative matches (end locations), find max seed and then extend
-		for (int match = 0; match < numLocations; match++) {
-			ePos = endLocations[match]; 	// end of current putative match in duplex (mergedHaystack)
+		for (int matchId = 0; matchId < numLocations; matchId++) {
+			ePos = endLocations[matchId]; 	// end of current putative match in duplex (mergedHaystack)
 			bPos = ePos - options.minLength + 1; 	// beginning of --||--
 			if (bPos < 0) {
 				continue;
@@ -677,7 +683,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			itSB = itStartBucket;
 			itEB = itEndBucket;
 
-			/////////////////////////////
+			// check for consecutive mismatch constraint
 			t = sysTime();
 			int consMismatches = 0;
 			bool consSatisfied = true;
@@ -696,23 +702,16 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 			times["consmm"] += sysTime() - t;
 
-			if (!consSatisfied) {
-#ifdef DEBUG
-				cout << "Discarding Myers match because there are more consecutive mismatches than allowed."  << std::flush << endl;
-	#endif
-				continue;
-			}
-
 			// invalid alignment. Note the k + 1, we want to be forgiving here because an extension might still
 			// lower the error rate as wanted, so don't discard here just yet (will later, if it's not good).
-			if (misM > k + 1) {
-	#ifdef DEBUG
-				cout << "Discarding Myers match because there are more than allowed mismatches."  << std::flush << endl;
-	#endif
+			if (!consSatisfied || misM > k + 1) {
+#ifdef DEBUG
+				cout << "Discarding Myers match because there are more consecutive mismatches than allowed / there are more than allowed mismatches"  << std::flush << endl;
+#endif
 				continue;
 			}
 
-	#ifdef DEBUG
+#ifdef DEBUG
 			cout << endl << "=====>>>>> Found valid match @ " << endl;
 			cout << "Seed match is (Myers):" << endl << std::flush  << "\t";
 			for (int pos = bPos; pos <= ePos; ++pos) {
@@ -723,8 +722,8 @@ namespace SEQAN_NAMESPACE_MAIN
 				std::cout << suffixQGram[pos];
 			}
 			std::cout << "\ttfo"  << std::flush << endl;
+#endif
 
-	#endif
 			// find the largest seed within the q-gram
 			t 	 = sysTime();
 			qPos = options.minLength - 1;
@@ -884,19 +883,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	#ifdef DEBUG
 			std::cout 	<< haystack[i] << std::endl << std::flush ;
 	#endif
-		}
-	}
-
-	template<typename TChar>
-	unsigned int charToBit(TChar const &c) {
-		switch(char(c)) {
-		case 'A': return 0;
-		case 'C': return 1;
-		case 'G': return 2;
-		case 'T': return 3;
-		case 'Y': return 4;
-		case 'N': return 5;
-		default: assert(false && "Invalid character.");
 		}
 	}
 
@@ -1269,7 +1255,9 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		int k = floor(options.errorRate * options.minLength); // #mismatches allowed
 
+#ifdef DEBUG
 		cout << "Myers gave #numLocations: " << numLocations << "(k + 1: " << k + 1 << ")" << endl;
+#endif
 
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int match = 0; match < numLocations; match++) {
@@ -1378,7 +1366,9 @@ namespace SEQAN_NAMESPACE_MAIN
 				if (!checkLocalOverlapConstraints(plusStrand, isParallel(needle), length(fiber),
 						length(needle), *seed))
 				{
+#ifdef DEBUG
 					cout << "Overlap / offset constraint violated, discarding extended seed." << endl;
+#endif
 					continue;
 				}
 

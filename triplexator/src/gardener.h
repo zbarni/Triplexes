@@ -1280,7 +1280,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	 * stranded sequence in the haystack, and for each of these sequences iterates over each substring
 	 * s of length minLength (== len(q-gram)). For each s we do Myers' approximate matching with maximal
 	 * k (# allowed errors), and then verify / extend these matches (seeds).
-	 * TODO assume we have only one duplex sequence
 	 */
 	template<
 	typename TTimes,
@@ -1293,7 +1292,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TId,			 // sequence id
 	typename TWorker
 	>
-	void plantMyers(
+	void plantBitParallelGlobal(
 			TTimes 					&times,
 			Gardener<TId, TSpec>	&gardener,
 			THaystack 		const	&haystack, 			// TTS set
@@ -1301,8 +1300,8 @@ namespace SEQAN_NAMESPACE_MAIN
 			TQuerySet		const	&needles,			// TFO set
 			TError 			const	&errorRate,
 			TOptions		const	&options,
-			TWorker
-	){
+			TWorker)
+	{
 	    double t;
 		typedef typename Value<Gardener<TId, TSpec> >::Type		THitMap;
 		typedef typename Value<THitMap>::Type					THitMapEntry;
@@ -1387,25 +1386,13 @@ namespace SEQAN_NAMESPACE_MAIN
 					bitQGram[i] = charToBit(suffixQGram[i]);//static_cast<unsigned int>(suffixQGram[i]);
 				}
 
-	    		//calculate Myers distance - this yields putative matches in endLocations
 				t = sysTime();
+	    		//calculate Myers distance - this yields putative matches in endLocations
 	    		edlibCalcEditDistance(bitQGram, options.minLength, bitTarget, targetLength, alphabetSize,
 	    				k + 1, EDLIB_MODE_HW, true, true, &score,
 						&endLocations, &startLocations, &numLocations,
 						&alignment, &alignmentLength);
 	    		times["myers"] += sysTime() - t;
-#ifdef DEBUG
-//	    		std::cout << "current suffix (length == " << minLength << "): ";
-//	    		for (int i = 0; i < minLength; ++i) {
-//	    			printf("%c",(char)suffixQGram[i]);//(unsigned int)(char)(suf[i]));
-//	    		}
-//	    		cout << endl << "current target (length == " << targetLength << "):";
-//	    		for (int i = 0; i < targetLength; ++i) {
-//	    			cout << (int)((char)bitTarget[i]);
-//	    			assert((int)((char)bitTarget[i]) <=5 && (int)((char)bitTarget[i]) >= 0);
-//	    		}
-	    		cout << endl << "Number of hits (numLocations): " << numLocations << endl;
-#endif
 
 	    		t = sysTime();
 	    		verifyMatches(times, seedHashMap, hitList, haystack, mergedHaystack,
@@ -1447,7 +1434,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TId,			 // sequence id
 	typename TWorker
 	>
-	void plantPalindrom(
+	void plantBitParallelLocal(
 			TTimes 					&times,
 			Gardener<TId, TSpec>	&gardener,
 			THaystack 		const	&haystack, 			// TTS set
@@ -1481,7 +1468,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef 		 std::multimap<TPos, std::pair<TPos, TId> >	TNeedlePositionMap;
 		typedef typename TNeedlePositionMap::const_iterator 		TNeedlePositionMapIterator;
 
-		int 	 k 				= ceil(errorRate * options.minLength);
+		int 	 k 				= ceil(errorRate * options.minLength); // #overall mismatches allowed
 		unsigned targetLength 	= 0;
 		unsigned alphabetSize	= 6;	// 4 + Y and N
 		unsigned char *bitFiber;
@@ -1492,20 +1479,6 @@ namespace SEQAN_NAMESPACE_MAIN
 											// hitSetPointer containing all corresponding hits
 		TNeedlePositionMap needlePosMap;	// key: absolute begin position of needle in sequence
 											// val: pair(absolute end pos, index in needles)
-
-#ifdef DEBUG
-		cout << "haystack l: " << length(haystack) << endl;
-		cout << "needles l: " << length(needles) << endl;
-		for (int i = 0; i < length(haystack); ++i) {
-			THaystackValue fiber = haystack[i];
-			cout << beginPosition(fiber) << " - " << endPosition(fiber) << " >>> " << fiber << " === " << haystack[i] << endl;
-		}
-		cout << "\n\t=========\n";
-		for (int i = 0; i < length(needles); ++i) {
-			TNeedle needle = needles[i];
-			cout << beginPosition(needle) << " - " << endPosition(needle) << " >>> " << needle /*<< " === " << ttsString(needle)*/ << endl;
-		}
-#endif
 
 		// populate needle position map with beg / end positions
 		for (int i = 0; i < length(needles); ++i) {
@@ -1544,11 +1517,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				// inherent offset between fiber and needle, must be taken into account
 				TPos fiberPosOffset = needlePosIt->first - beginPosition(*fiberIt);
 
-				// align fiber to needle
-//				TODO REMOVE? not needed / test
-//				bitFiber += fiberPosOffset;
-
-				// get needle segment
+				// compute all triplex hits between needle and fiber
 				computeLocalTriplexes(seedHashMap, hitList, *fiberIt, bitFiber, needles[needlePosIt->second.second],
 						std::distance(begin(haystack), fiberIt), // fiberSeqNo
 						needlePosIt->second.second,	// needleSeqNo

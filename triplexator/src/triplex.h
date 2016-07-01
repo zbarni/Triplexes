@@ -2051,10 +2051,10 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 
 		if (options.bitParallel) {
-			plantMyers(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER() );
+			plantBitParallelGlobal(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER() );
 		}
 		else {
-			plantPalindrom(times, gardener, haystack, index, tfoSet, eR, plusStrand, options, unsigned(), SINGLE_WORKER() );
+			plantBitParallelLocal(times, gardener, haystack, index, tfoSet, eR, plusStrand, options, unsigned(), SINGLE_WORKER() );
 		}
 	}
 	
@@ -4041,7 +4041,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TId,
 	typename TGardenerSpec
 	>
-	int inline startTriplexSearchSerialMyers(
+	int inline startTriplexSearchSerialBitParallelGlobal(
                                         TMotifSet					&tfoMotifSet,
 										StringSet<CharString> const	&tfoNames,
 							            TQGramIndex const			&index,
@@ -4164,14 +4164,14 @@ namespace SEQAN_NAMESPACE_MAIN
         options.timeCollectSeedsLoop+= timeCollectSeedsLoop;
         options.timeCSFreeSpace		+= timeCSFreeSpace;
         options.cntCSFind			+= cntCSFind;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time myers " << ::std::setprecision(3) << times["myers"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time verify " << ::std::setprecision(3) << times["verify"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time merge  " << ::std::setprecision(3) << times["merge"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time seedExtend " << ::std::setprecision(3) << times["seedextend"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time maxSeedFind " << ::std::setprecision(3) << times["maxseedfind"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time addIfNewSeed " << ::std::setprecision(3) << times["addifnewseed"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time consecutive & mismatches " << ::std::setprecision(3) << times["consmm"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @earlybird time getHaystackFiberNo " << ::std::setprecision(3) << times["gethaystackfiberno"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time myers " << ::std::setprecision(3) << times["myers"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time verify " << ::std::setprecision(3) << times["verify"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time merge  " << ::std::setprecision(3) << times["merge"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time seedExtend " << ::std::setprecision(3) << times["seedextend"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time maxSeedFind " << ::std::setprecision(3) << times["maxseedfind"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time addIfNewSeed " << ::std::setprecision(3) << times["addifnewseed"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time consecutive & mismatches " << ::std::setprecision(3) << times["consmm"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time getHaystackFiberNo " << ::std::setprecision(3) << times["gethaystackfiberno"] << " sec" << ::std::endl;
 
         return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}

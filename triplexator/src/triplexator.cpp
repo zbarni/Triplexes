@@ -32,7 +32,7 @@
 // Author: Fabian Buske <fbuske@uq.edu.au>
 // ==========================================================================
 
-#define SEQAN_PROFILE                   // enable time measuring
+//#define SEQAN_PROFILE                   // enable time measuring
 //#define TRIPLEX_DEBUG                   // print verification regions
 
 //#ifndef SEQAN_ENABLE_PARALLELISM
@@ -56,6 +56,7 @@
 #include <seqan/file.h>
 #include "triplexator.h"
 #include "triplex.h"
+#include "config.h"
 
 #include <iostream>
 #include <sstream>
@@ -1663,26 +1664,54 @@ namespace SEQAN_NAMESPACE_MAIN
 ////////////////////////////////////////////////////////////////////////////////
 //// Command line parsing and parameter choosing
 //// Program entry point
-//int main(int argc, char const ** argv)
-//{
-//    // Setup command line parser.
-//    CommandLineParser parser;
-//    Options options;
-//    _setupCommandLineParser(parser, options);
-//
-//    // Then, parser the command line and handle the cases where help display
-//    // is requested or errornoeous parameters were given.
-//    int ret = _parseCommandLineAndCheck(options, parser, argc, argv);
-//    if (ret != 0)
-//        return ret;
-//
-//    if (options.showHelp || options.showVersion)
-//        return 0;
-//
-//    // Finally, launch the program.
-//    ret = _mainWithOptions(argc, argv, options);
-//    return ret;
-//}
+
+#if SHAREDLIBRARY
+extern "C" {
+	void pyTriplexator(int argc, const char **py_argv) {
+		std::cout << "Hello from pyTriplexator, will now continue..." << std::endl;
+
+		// Setup command line parser.
+		CommandLineParser parser;
+		Options options;
+		_setupCommandLineParser(parser, options);
+
+		// Then, parser the command line and handle the cases where help display
+		// is requested or errornoeous parameters were given.
+		int ret = _parseCommandLineAndCheck(options, parser, argc, py_argv);
+		if (ret != 0)
+			return;
+
+		if (options.showHelp || options.showVersion)
+			return;
+
+		// Finally, launch the program.
+		ret = _mainWithOptions(argc, py_argv, options);
+//		return ret;
+	}
+}
+#else
+int main(int argc, char const ** argv)
+{
+    // Setup command line parser.
+    CommandLineParser parser;
+    Options options;
+    _setupCommandLineParser(parser, options);
+
+    // Then, parser the command line and handle the cases where help display
+    // is requested or errornoeous parameters were given.
+    int ret = _parseCommandLineAndCheck(options, parser, argc, argv);
+    if (ret != 0)
+        return ret;
+
+    if (options.showHelp || options.showVersion)
+        return 0;
+
+    // Finally, launch the program.
+    ret = _mainWithOptions(argc, argv, options);
+    return ret;
+}
+
+#endif
 
 
 
