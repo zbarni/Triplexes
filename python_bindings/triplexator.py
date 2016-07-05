@@ -1,4 +1,7 @@
-""" Binding for calling Triplexator as Python function.  Author: Barna Zajzon
+""" 
+Binding for calling Triplexator as Python function.  
+
+Author: Barna Zajzon
 Revisions: 0.1 01.07.2016
 """
 
