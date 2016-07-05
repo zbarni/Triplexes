@@ -1665,7 +1665,7 @@ namespace SEQAN_NAMESPACE_MAIN
 //// Command line parsing and parameter choosing
 //// Program entry point
 
-#if SHAREDLIBRARY
+#if SHARED_LIBRARY
 extern "C" {
 	void pyTriplexator(int argc, const char **py_argv) {
 		std::cout << "Hello from pyTriplexator, will now continue..." << std::endl;

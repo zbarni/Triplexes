@@ -15,12 +15,15 @@ elseif (OPENMP_FOUND)
     message(STATUS "Building triplexator without OpenMP support.")
 endif (OPENMP_FOUND)
 
+# Configure SHARED_LIBRARY define
 if (SHAREDLIBRARY)
-    configure_file (${triplexator_SOURCE_DIR}/config.h.in
-            ${triplexator_BINARY_DIR}/config.h)
-    configure_file (${triplexator_SOURCE_DIR}/config.h.in
-            ${triplexator_SOURCE_DIR}/config.h)
+    set(SHARED_LIBRARY "1")
+else ()
+    set(SHARED_LIBRARY "0")
 endif()
+
+configure_file (${triplexator_SOURCE_DIR}/config.h.in
+    ${triplexator_SOURCE_DIR}/config.h)
 
 include_directories(${triplexator_BINARY_DIR})
 include_directories(${triplexator_SOURCE_DIR})

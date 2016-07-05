@@ -11,7 +11,7 @@
 #include <seqan/misc/priority_type_heap.h>
 #include <seqan/misc/misc_dequeue.h>
 
-//#define DEBUG
+#define DEBUG
 #define TOLERATED_ERROR 2
 using namespace seqan;
 
@@ -1186,8 +1186,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		int needleWindowShift = isNeedleParallel ? 1 : -1;
 
 		// check for left limits if we have to shift to the left
-		if ((getBeginDim1(seedWindow) == 0 && needleWindowShift == -1) ||
-				(!plusStrand && getBeginDim0(seedWindow) == 0))
+		if ((getBeginDim1(seedWindow) == 0 && needleWindowShift == -1) /*||
+				(!plusStrand && getBeginDim0(seedWindow) == 0)*/)
 		{
 			return false;
 		}
@@ -1208,6 +1208,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		setBeginDim1(seedWindow, getBeginDim1(seedWindow) + needleWindowShift);
 		setEndDim1(seedWindow, getEndDim1(seedWindow) + needleWindowShift);
 
+		cout << "shiftWindow new temp seed is: " << seedWindow << endl;
 		return (getBeginDim1(seedWindow) >= 0 && getEndDim1(seedWindow) < needleLength &&
 				getEndDim0(seedWindow) - getBeginDim0(seedWindow) >= minLength - 1 &&
 				getEndDim1(seedWindow) - getBeginDim1(seedWindow) >= minLength - 1);
@@ -1463,6 +1464,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		cout << "needle length: " << needleLength << endl;
 		cout << "fiber length: " << fiberLength << endl;
 		cout << "starting seedWindow: " << seedWindow << endl;
+		cout << "plusStrand?: " << plusStrand << endl;
+		cout << "needleParallel?: " << isParallel(needle) << endl;
 #endif
 
 		// transform query into index for Myers
