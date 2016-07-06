@@ -1149,7 +1149,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TSize const needleLength,
 			TSeed const &seed)
 	{
-		TSize offset;
+		int offset; // can be negative as well
 
 		if (plusStrand) {
 			if (isNeedleParallel) {
@@ -1167,8 +1167,19 @@ namespace SEQAN_NAMESPACE_MAIN
 				offset = fiberLength - getBeginDim0(seed) - (needleLength - getBeginDim1(seed));
 			}
 		}
+#ifdef DEBUG
+		cout << "overlap offset: " << offset << ", returning: " << (offset <= (int)(getEndDim0(seed) - getBeginDim0(seed))) << endl;
+#endif
 		// TODO change max offset here
-		return offset <= (getEndDim0(seed) - getBeginDim0(seed));
+		return offset <= (int)(getEndDim0(seed) - getBeginDim0(seed));
+	}
+
+	/**
+	 * Maximum fiber window size is 3 * minLength TODO change here if required
+	 */
+	template<typename TSize>
+	TSize maxFiberWindowSize(TSize const minLength) {
+		return minLength * 3;
 	}
 
 	/**
@@ -1186,20 +1197,28 @@ namespace SEQAN_NAMESPACE_MAIN
 		int needleWindowShift = isNeedleParallel ? 1 : -1;
 
 		// check for left limits if we have to shift to the left
-		if ((getBeginDim1(seedWindow) == 0 && needleWindowShift == -1) /*||
-				(!plusStrand && getBeginDim0(seedWindow) == 0)*/)
+		if ((getBeginDim1(seedWindow) == 0 && needleWindowShift == -1))
 		{
 			return false;
 		}
 
+		unsigned long fiberWindowSize = getEndDim0(seedWindow) - getBeginDim0(seedWindow) + 1;
+#ifdef DEBUG
+		cout << "shiftWindow --> fiberWindowSize: " << fiberWindowSize << endl;
+#endif
 		if (plusStrand) {
-			setBeginDim0(seedWindow, getBeginDim0(seedWindow) + 1);
+			if (fiberWindowSize >= maxFiberWindowSize(minLength)) {
+				setBeginDim0(seedWindow, getBeginDim0(seedWindow) + 1);
+			}
 			if (getEndDim0(seedWindow) < fiberLength - 1) {
 				setEndDim0(seedWindow, getEndDim0(seedWindow) + 1);
 			}
 		}
 		else {
-			setEndDim0(seedWindow, getEndDim0(seedWindow) - 1);
+			// only decrease fiber window size if it's sufficiently large
+			if (fiberWindowSize >= maxFiberWindowSize(minLength)) {
+				setEndDim0(seedWindow, getEndDim0(seedWindow) - 1);
+			}
 			if (getBeginDim0(seedWindow) > 0) {
 				setBeginDim0(seedWindow, getBeginDim0(seedWindow) - 1);
 			}
@@ -1262,8 +1281,8 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int match = 0; match < numLocations; match++) {
-//			cout << "endloc (relative)#" << match << ": " << endLocations[match] << endl;
-//			cout << "endloc (absolute)#" << match << ": " << endLocations[match] + getBeginDim0(seedWindow) << endl;
+			cout << "endloc (relative)#" << match << ": " << endLocations[match] << endl;
+			cout << "endloc (absolute)#" << match << ": " << endLocations[match] + getBeginDim0(seedWindow) << endl;
 			int ePos = endLocations[match] + getBeginDim0(seedWindow); 	// end of current putative match in fiber
 			int bPos = ePos - options.minLength + 1; 					// beginning of --||--
 
@@ -1445,7 +1464,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		cout << "Overlap found: " << beginPosition(fiber) << " - " << endPosition(fiber) << " vs "
 				<< beginPosition(needle) << " - " << endPosition(needle) << endl
 				<< endl << "fiber (" << (plusStrand ? "+" : "-") << "): " << fiber << endl
-				<< "nedle (" << isParallel(needle) << "): " << needle << endl;
+				<< "nedle (" << isParallel(needle) << " = " << getMotif(needle) << "): " << needle << endl;
 #endif
 
 		// init (fiber) window which then slides to the right or left
@@ -1485,7 +1504,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			edlibCalcEditDistance(bitNeedle + getBeginDim1(seedWindow),
 					options.minLength,
 					bitFiber + getBeginDim0(seedWindow), //
-					getEndDim0(seedWindow) - getBeginDim0(seedWindow), // size of current fiber window
+					getEndDim0(seedWindow) - getBeginDim0(seedWindow) + 1, // size of current fiber window
 					alphabetSize, k + 1, EDLIB_MODE_HW, false, false, &score,
 					&endLocations, &startLocations, &numLocations,
 					&alignment, &alignmentLength);

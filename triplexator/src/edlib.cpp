@@ -358,15 +358,15 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
     *positions_ = NULL;
     *numPositions_ = 0;
 
-//	cout << endl << "myers bitNedle: ";
-//	for (int i = 0; i < queryLength; ++i) {
-//		cout << (unsigned int)query[i] << " ";
-//	}
-//	cout << endl << "myers bitFiber: ";
-//	for (int i = 0; i < targetLength; ++i) {
-//		cout << (unsigned int)target[i] << " ";
-//	}
-//	cout << endl;
+	cout << endl << "myers bitNedle: ";
+	for (int i = 0; i < queryLength; ++i) {
+		cout << (unsigned int)query[i] << " ";
+	}
+	cout << endl << "myers bitFiber: ";
+	for (int i = 0; i < targetLength; ++i) {
+		cout << (unsigned int)target[i] << " ";
+	}
+	cout << endl;
     
     // firstBlock is 0-based index of first block in Ukkonen band.
     // lastBlock is 0-based index of last block in Ukkonen band.

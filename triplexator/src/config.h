@@ -1,2 +1,2 @@
 /* #undef HAVE_OPENMP */
-/* #undef SHARED_LIBRARY */
+#define SHARED_LIBRARY 1
