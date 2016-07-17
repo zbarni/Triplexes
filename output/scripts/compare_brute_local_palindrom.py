@@ -35,15 +35,11 @@ def matching_palindrom(idx, content, reference_line):
     print "----"
     return reference_line == content[idx]
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print "This script requires 2 txp files as parameters, local_myers and brute_force outputs."
-        exit(-1)
-
-    with open(sys.argv[1]) as f:
+def compare(pal_filename, bru_filename):
+    with open(pal_filename) as f:
         pal_content = f.readlines()
 
-    with open(sys.argv[2]) as f:
+    with open(bru_filename) as f:
         bru_content = f.readlines()
 
     # init indices and skip first line (not needed)
@@ -62,4 +58,12 @@ if __name__ == "__main__":
         bru_idx += 1
         pal_idx += 1
 
-    print "Success."
+    print ">>> SUCCESS."
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print "This script requires 2 txp files as parameters, local_myers and brute_force outputs."
+        exit(-1)
+
+    compare(sys.argv[1], sys.argv[2])

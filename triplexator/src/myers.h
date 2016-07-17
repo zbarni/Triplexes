@@ -11,7 +11,7 @@
 #include <seqan/misc/priority_type_heap.h>
 #include <seqan/misc/misc_dequeue.h>
 
-#define DEBUG
+//#define DEBUG
 #define TOLERATED_ERROR 2
 using namespace seqan;
 
@@ -1227,7 +1227,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		setBeginDim1(seedWindow, getBeginDim1(seedWindow) + needleWindowShift);
 		setEndDim1(seedWindow, getEndDim1(seedWindow) + needleWindowShift);
 
-		cout << "shiftWindow new temp seed is: " << seedWindow << endl;
+//		cout << "shiftWindow new temp seed is: " << seedWindow << endl;
 		return (getBeginDim1(seedWindow) >= 0 && getEndDim1(seedWindow) < needleLength &&
 				getEndDim0(seedWindow) - getBeginDim0(seedWindow) >= minLength - 1 &&
 				getEndDim1(seedWindow) - getBeginDim1(seedWindow) >= minLength - 1);
@@ -1281,8 +1281,10 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int match = 0; match < numLocations; match++) {
+#ifdef DEBUG
 			cout << "endloc (relative)#" << match << ": " << endLocations[match] << endl;
 			cout << "endloc (absolute)#" << match << ": " << endLocations[match] + getBeginDim0(seedWindow) << endl;
+#endif
 			int ePos = endLocations[match] + getBeginDim0(seedWindow); 	// end of current putative match in fiber
 			int bPos = ePos - options.minLength + 1; 					// beginning of --||--
 
