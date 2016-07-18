@@ -2,26 +2,29 @@
 # IMPORTANT: must be run from output/mm9 or similar
 
 l=20
-chr=1
+chr="_full"
 DATA_DIR="${PWD}/../../data"
 ROOT_DIR=$PWD
 EXEC_CMD="${PWD}/../../triplexator/bin/triplexator"
+PALINDROM=false
 MYERS=false
 BRUTE=false
 QGRAM=false
 TRUNCATED=0
-eLow=5
+eLow=20
 eHigh=20
 cLow=1
-cHigh=3
+cHigh=1
 
-while getopts ":mbql:c:t:" opt; do
+while getopts ":mbqpl:c:t:" opt; do
     case ${opt} in
         t ) TRUNCATED=$OPTARG
         ;;
         b ) BRUTE=true
         ;;
         m ) MYERS=true
+        ;;
+        p ) PALINDROM=true
         ;;
         q ) QGRAM=true
         ;;
@@ -34,6 +37,7 @@ while getopts ":mbql:c:t:" opt; do
     esac
 done
 
+DNA_FILE_FULL="${DATA_DIR}/dna/mm9/mm9.fa"
 DNA_FILE="${DATA_DIR}/dna/mm9/mm9.chr${chr}.fa"
 DNA_TRUNCATED_FILE="${DATA_DIR}/dna/mm9/mm9.chr${chr}.oneline.truncated.fa"
 RNA_FILE="${DATA_DIR}/rna/CDP_merged.fa"
@@ -46,6 +50,18 @@ for ((e=$eLow;e<=$eHigh;e+=5)); do
     for ((c=$cLow;c<=$cHigh;c+=1)); do
 
 # switch directory according to options
+        if [ "$PALINDROM" = true ]; then
+            cd ${ROOT_DIR}/palindrom
+
+            DNA=$DNA_FILE_FULL
+            #RNA=$RNA_FILE
+            MAXLENGTH="-nolimit"
+            OUTPUT="chr${chr}_palindrom_l${l}_c${c}_e${e}_ml${MAXLENGTH}"
+
+            echo "Running PALINDROM l: ${l}, c: ${c}, e: ${e}, max-length: ${MAXLENGTH}"
+            $EXEC_CMD -ss $DNA -ds $DNA -o ${OUTPUT}.tpx -v -fm 1 -fr off -l $l -c $c -e $e --bit-parallel-local &> ${OUTPUT}.dbg
+        fi
+
         if [ "$MYERS" = true ]; then
             cd ${ROOT_DIR}/myers
             if [[ "$TRUNCATED" = 0 ]]; then
@@ -64,14 +80,15 @@ for ((e=$eLow;e<=$eHigh;e+=5)); do
 
             echo "Running l: ${l}, c: ${c}, e: ${e}"
             ulimit -Sv 14000000 
-            $EXEC_CMD -ss $RNA -ds $DNA -o ${OUTPUT}.tpx -i -fm 1 -v -l $l -c $c -e $e &> ${OUTPUT}.dbg
+            $EXEC_CMD -ss $RNA -ds $DNA -o ${OUTPUT}.tpx --bit-parallel -fm 1 -v -l $l -c $c -e $e &> ${OUTPUT}.dbg
 
             sort ${OUTPUT}.tpx > ${MYERS_TMP} 
             #rm ${OUTPUT}.debug
         fi
 
         if [ "$BRUTE" = true ]; then
-            cd ${ROOT_DIR}/brute
+#TODO revert to normal / not palindrom
+            cd ${ROOT_DIR}/palindrom
             if [[ "$TRUNCATED" = 0 ]]; then
                 DNA=$DNA_FILE
                 RNA=$RNA_FILE
@@ -86,9 +103,9 @@ for ((e=$eLow;e<=$eHigh;e+=5)); do
                 OUTPUT="chr${chr}_brute_l${l}_c${c}_e${e}_truncated"
             fi
 
-            echo "Running l: ${l}, c: ${c}, e: ${e}"
+            echo "Running BRUTE l: ${l}, c: ${c}, e: ${e}"
 #    echo "$EXEC_CMD -ss $RNA -ds $DNA -o ${OUTPUT}.tpx -v -l $l -c $c -e $e &> ${OUTPUT}.dbg"
-            $EXEC_CMD -ss $RNA -ds $DNA -o ${OUTPUT}.tpx -v -l $l -c $c -e $e &> ${OUTPUT}.dbg
+            $EXEC_CMD -ss $DNA -ds $DNA -o ${OUTPUT}.tpx -v -l $l -c $c -e $e &> ${OUTPUT}.dbg
             sort ${OUTPUT}.tpx > ${BRUTE_TMP}
         fi
 
