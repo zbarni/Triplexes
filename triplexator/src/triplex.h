@@ -4099,6 +4099,7 @@ namespace SEQAN_NAMESPACE_MAIN
         //////////////////////////////////////////////////////////////////////////////
         SEQAN_PROTIMESTART(time_tts_io);
 		for(; !_streamEOF(file); ++duplexSeqNoWithinFile) {
+//			::std::cerr << "Processing:\t" << duplexName << "\t(seq " << duplexSeqNoWithinFile << ")\r" << ::std::flush;
 			TDuplex	duplexSeq;
 			CharString duplexName;
 			readShortID(file, duplexName, Fasta());	// read Fasta id up to first whitespace

@@ -1417,6 +1417,95 @@ namespace SEQAN_NAMESPACE_MAIN
 	}
 
 	/**
+	 * Returns true if a fiber and a needle overlap for at least minLength base pairs.
+	 */
+	template<
+		typename TFiberIt,
+		typename TNeedleIt,
+		typename TLength
+	>
+	bool overlap (TFiberIt const &fiberIt, TNeedleIt const &needleIt, TLength minLength) {
+		// fiber segment has an offset to the right compared to needle
+		if (needleIt->second.first <= endPosition(*fiberIt) &&
+				needleIt->second.first >= minLength + beginPosition(*fiberIt)) {
+			return true;
+		}
+
+		// fiber segment has an offset to the left compared to needle
+		if (needleIt->second.first >= endPosition(*fiberIt) &&
+				endPosition(*fiberIt) >= minLength + needleIt->first) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 *
+	 */
+	template<
+	typename TNeedlePositionMap,
+	typename TFiberIt,
+	typename TLength,
+	typename TNeedlePositionMapIterator
+	>
+	TNeedlePositionMapIterator getLowestOverlappingNeedle(TNeedlePositionMap const &needlePosMap,
+			TFiberIt fiberIt,
+			TLength minLength,
+			TNeedlePositionMapIterator)
+	{
+		TNeedlePositionMapIterator needlePosIt = needlePosMap.lower_bound(beginPosition(*fiberIt));
+
+		if (needlePosIt == needlePosMap.end()) {
+			return needlePosIt;
+		}
+
+		// find lowest which still overlaps, with an overlapping length of min. minLength
+		while (needlePosIt != needlePosMap.end() && overlap(fiberIt, needlePosIt, minLength)) {
+			if (needlePosIt == needlePosMap.begin()) {
+				break;
+			}
+			needlePosIt--;
+		}
+
+		// check if we went backwards one too many
+		if (!overlap(fiberIt, needlePosIt, minLength)) {
+			++needlePosIt;
+		}
+
+		return needlePosIt;
+	}
+
+	/**
+	 *
+	 */
+	template<
+	typename TFiber,
+	typename TNeedle,
+	typename TPos
+	>
+	void alignFiberAndNeedle(
+			TFiber 	*alignedFiber,
+			TFiber 	 const &fiber,
+			TNeedle *alignedNeedle,
+			TNeedle  const &needle,
+			TPos 	 fiberPosOffset)
+	{
+		if (fiberPosOffset > 0) {
+			TPos newFiberSize = std::min(length(fiber) - fiberPosOffset, length(needle));
+//			alignedFiber = new TFiber();
+//			alignedFiber->
+		}
+		else if (fiberPosOffset < 0) {
+
+		}
+
+//		cout << "aligned? fiber " << beginPosition(alignedFiber) << " <-> " << endPosition(alignedFiber) << endl;
+//		cout << "aligned? needle " << beginPosition(alignedNeedle) << " <-> " << endPosition(alignedNeedle) << endl;
+//		cout << alignedFiber << endl;
+	}
+
+	/**
 	 * One parameter is the q-gram index of the TFO set. This function iterates over each double
 	 * stranded sequence in the haystack, and for each of these sequences iterates over each substring
 	 * s of length minLength (== len(q-gram)). For each s we do Myers' approximate matching with maximal
@@ -1453,7 +1542,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename Value<THitSetPointer>::Type			THitSet;
 		typedef typename Value<THitSet>::Type					THit;
 
-		typedef typename Value<THaystack>::Type               	THaystackValue;
+		typedef typename Value<THaystack>::Type               	TFiber;
 	    typedef typename Iterator<THaystack const>::Type        THaystackIterator;
 	    typedef typename Iterator<TNeedleSet const>::Type       TNeedleIterator;
 		typedef typename Value<TNeedleSet>::Type               	TNeedle;
@@ -1484,6 +1573,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		for (int i = 0; i < length(needles); ++i) {
 			needlePosMap.insert( std::pair<TPos, std::pair<TPos, TId> >(
 					beginPosition(needles[i]), std::pair<TPos, TId>(endPosition(needles[i]), i)));
+#ifdef DEBUG
+			cout << "needle #" << i << " : " << beginPosition(needles[i]) << " <-> " << endPosition(needles[i]) << endl;
+#endif
 		}
 
 		// add a new hitset object for each fiber in haystack
@@ -1491,41 +1583,72 @@ namespace SEQAN_NAMESPACE_MAIN
 			hitSetPointerMap[i] = new THitSet;
 		}
 
+		TFiber 	*alignedFiber = 0;
+		TNeedle *alignedNeedle = 0;
 		// iterate over each fiber in haystack
 		for (THaystackIterator fiberIt = begin(haystack); fiberIt != end(haystack); ++fiberIt) {
-			TNeedlePositionMapIterator needlePosIt = needlePosMap.lower_bound(beginPosition(*fiberIt));
+#ifdef DEBUG
+			cout << "!fiber #?" << " : " << beginPosition(*fiberIt) << " <-> " << endPosition(*fiberIt) << endl;
+#endif
+			// find the one which overlaps and is equal or lowest, if such exists
+			TNeedlePositionMapIterator needlePosIt = getLowestOverlappingNeedle(needlePosMap, fiberIt, options.minLength, TNeedlePositionMapIterator());
 
-			// if positions don't overlap at all or overlap length is smaller than minLength
-			if (needlePosIt == needlePosMap.end() || endPosition(*fiberIt) - needlePosIt->first < options.minLength) {
-				continue;
+			// iterate over all needles that overlap somehow with this fiber
+			for (; needlePosIt != needlePosMap.end() && overlap(fiberIt, needlePosIt, options.minLength); ++needlePosIt) {
+				bitFiber = new unsigned char[length(*fiberIt)];
+				// transform fiber to bit encoding for Myers
+				for (int i = 0; i < length(*fiberIt); ++i) {
+					bitFiber[i] = charToBit((*fiberIt)[i]);
+				}
+				unsigned char * const bitFiberBase = bitFiber;
+				// for the current fiber, iterate over each overlapping needle - fiber pair / do it for several needles
+				while (needlePosIt != needlePosMap.end() &&
+						endPosition(*fiberIt) >= options.minLength + needlePosIt->first)
+				{
+					TNeedle needle = needles[needlePosIt->second.second];
+					// reset bitFiber to initial encoding (without shifts)
+					bitFiber = bitFiberBase;
+
+					// inherent offset between fiber and needle, must be taken into account
+					// + positive value means the needle has a higher abs. starting pos. on genome
+					// - negative value means the needle has a lower abs. starting pos. on genome
+					TPos fiberPosOffset = needlePosIt->first - beginPosition(*fiberIt);
+//					alignFiberAndNeedle(alignedFiber, *fiberIt, alignedNeedle, needle, fiberPosOffset);
+					TFiber tmpfiber(*fiberIt);
+//					goFurther(begin(tmpfiber), fiberPosOffset);
+					setBeginPosition(tmpfiber, beginPosition(tmpfiber) + fiberPosOffset);
+					setBegin(tmpfiber, begin(tmpfiber) + fiberPosOffset);
+					cout << "aligned? fiber " << beginPosition(tmpfiber) << " <-> " << endPosition(tmpfiber) << endl;
+					cout << length(tmpfiber) << endl;
+					cout << tmpfiber << endl;
+					cout << tmpfiber[0] << endl;
+					cout << tmpfiber[1] << endl;
+					cout << tmpfiber[2] << endl;
+					cout << tmpfiber[3] << endl;
+					cout << tmpfiber[4] << endl;
+					cout << "shit \n";
+					cout << *(begin(tmpfiber) + 0) << endl;
+					cout << *(begin(tmpfiber) + 1) << endl;
+					cout << *(begin(tmpfiber) + 2) << endl;
+					cout << *(begin(tmpfiber) + 3) << endl;
+					cout << *(begin(tmpfiber) + 4) << endl;
+
+					// compute all triplex hits between needle and fiber
+//					computeLocalTriplexes(seedHashMap, hitList, alignedFiber, bitFiber, needle,
+//							std::distance(begin(haystack), fiberIt), // fiberSeqNo
+//							needlePosIt->second.second,	// needleSeqNo
+//							/*fiberPosOffset,*/ k, alphabetSize, plusStrand, options, TSeed(), THit());
+//					delete alignedFiber;
+//					delete alignedNeedle;
+					++needlePosIt;
+				}
+
+				delete [] bitFiberBase;
+				// if reached the end, break here, otherwise for loop will go amok
+				if (needlePosIt == needlePosMap.end()) {
+					break;
+				}
 			}
-
-			bitFiber = new unsigned char[length(*fiberIt)];
-			// transform fiber to bit encoding for Myers
-			for (int i = 0; i < length(*fiberIt); ++i) {
-				bitFiber[i] = charToBit((*fiberIt)[i]);
-			}
-			unsigned char * const bitFiberBase = bitFiber;
-
-			// for the current fiber, iterate over each overlapping needle - fiber pair / do it for several needles
-			while (needlePosIt != needlePosMap.end() &&
-					endPosition(*fiberIt) >= options.minLength + needlePosIt->first)
-			{
-				// reset bitFiber to initial encoding (without shifts)
-				bitFiber = bitFiberBase;
-
-				// inherent offset between fiber and needle, must be taken into account
-				TPos fiberPosOffset = needlePosIt->first - beginPosition(*fiberIt);
-
-				// compute all triplex hits between needle and fiber
-				computeLocalTriplexes(seedHashMap, hitList, *fiberIt, bitFiber, needles[needlePosIt->second.second],
-						std::distance(begin(haystack), fiberIt), // fiberSeqNo
-						needlePosIt->second.second,	// needleSeqNo
-						fiberPosOffset, k, alphabetSize, plusStrand, options, TSeed(), THit());
-
-				++needlePosIt;
-			}
-			delete [] bitFiberBase;
 		}
 
 		// merge hits

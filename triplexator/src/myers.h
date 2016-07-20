@@ -11,7 +11,7 @@
 #include <seqan/misc/priority_type_heap.h>
 #include <seqan/misc/misc_dequeue.h>
 
-//#define DEBUG
+#define DEBUG
 #define TOLERATED_ERROR 2
 using namespace seqan;
 
@@ -1108,20 +1108,18 @@ namespace SEQAN_NAMESPACE_MAIN
 	 ***************************************************************************************************
 	 ***************************************************************************************************
 	 */
-
+//	TODO @next: check negative fiber offset
 
 	/**
 	 *
 	 */
 	template<
-	typename TPos,
 	typename TLength,
 	typename TOptions,
 	typename TSeed>
 	TSeed initSeedWindow(
 			bool 		  	  plusStrand,
 			bool		  	  needleParallel,
-			TPos 		const &posOffset,
 			TLength 	const &windowSize,
 			TLength 	const &fiberLength,
 			TLength 	const &needleLength,
@@ -1130,8 +1128,8 @@ namespace SEQAN_NAMESPACE_MAIN
 	{
 		TSeed seed;
 
-		setBeginDim0(seed, plusStrand ? posOffset : fiberLength - posOffset - windowSize);
-		setEndDim0(seed, plusStrand ?  posOffset + windowSize - 1 : fiberLength - posOffset - 1);
+		setBeginDim0(seed, plusStrand ? 0 : fiberLength - windowSize);
+		setEndDim0(seed, plusStrand ?  windowSize - 1 : fiberLength - 1);
 		setBeginDim1(seed, needleParallel ? 0 : needleLength - options.minLength);
 		setEndDim1(seed, needleParallel ? options.minLength - 1 : needleLength - 1);
 
@@ -1168,10 +1166,11 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 		}
 #ifdef DEBUG
-		cout << "overlap offset: " << offset << ", returning: " << (offset <= (int)(getEndDim0(seed) - getBeginDim0(seed))) << endl;
+		cout << "\nseed: " << seed << endl;
+		cout << "overlap offset: " << offset << ", returning: " << (abs(offset) <= (int)(getEndDim0(seed) - getBeginDim0(seed))) << endl;
 #endif
 		// TODO change max offset here
-		return offset <= (int)(getEndDim0(seed) - getBeginDim0(seed));
+		return abs(offset) <= (int)(getEndDim0(seed) - getBeginDim0(seed));
 	}
 
 	/**
@@ -1204,7 +1203,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		unsigned long fiberWindowSize = getEndDim0(seedWindow) - getBeginDim0(seedWindow) + 1;
 #ifdef DEBUG
-		cout << "shiftWindow --> fiberWindowSize: " << fiberWindowSize << endl;
+		cout << "shiftWindow --> fiberWindowSize: " << fiberWindowSize << endl << std::flush;
 #endif
 		if (plusStrand) {
 			if (fiberWindowSize >= maxFiberWindowSize(minLength)) {
@@ -1227,7 +1226,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		setBeginDim1(seedWindow, getBeginDim1(seedWindow) + needleWindowShift);
 		setEndDim1(seedWindow, getEndDim1(seedWindow) + needleWindowShift);
 
-//		cout << "shiftWindow new temp seed is: " << seedWindow << endl;
+#ifdef DEBUG
+		cout << "shiftWindow new temp seed is: " << seedWindow << endl << std::flush;
+#endif
 		return (getBeginDim1(seedWindow) >= 0 && getEndDim1(seedWindow) < needleLength &&
 				getEndDim0(seedWindow) - getBeginDim0(seedWindow) >= minLength - 1 &&
 				getEndDim1(seedWindow) - getBeginDim1(seedWindow) >= minLength - 1);
@@ -1246,7 +1247,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TFiber,
 	typename TNeedle,
 	typename TSeed,
-	typename TPos,
+//	typename TPos,
 	typename TError,
 	typename TOptions,
 	typename THit
@@ -1260,7 +1261,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TFiber			const	&fiber,
 			TNeedle			const	&needle,
 			TSeed			const 	&seedWindow,
-			TPos 			const 	&fiberPosOffset,	// fiber offset relative to needle
+//			TPos 			const 	&fiberPosOffset,	// fiber offset relative to needle
 			int 		   	const	&numLocations,
 			int 			const	endLocations[],
 			TError			const	&errorRate,
@@ -1423,7 +1424,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TBitArray,
 	typename TNeedle,
 	typename TSeqNo,
-	typename TPos,
+//	typename TPos,
 	typename TOptions,
 	typename TSeed,
 	typename THit
@@ -1436,7 +1437,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TNeedle 	const 	&needle,
 			TSeqNo		const	&fiberSeqNo,
 			TSeqNo		const	&needleSeqNo,
-			TPos 		const 	&posOffset,
+//			TPos 		const 	&posOffset,
 			unsigned 			k,
 			unsigned 			alphabetSize,
 			bool		const 	&plusStrand,
@@ -1470,7 +1471,7 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 
 		// init (fiber) window which then slides to the right or left
-		int windowSize = std::min((int)(options.minLength * 2), int(endPosition(fiber) - beginPosition(fiber) - posOffset)); //needleAbsEndPos - needleAbsBegPos + 1));
+		int windowSize = std::min((int)(options.minLength * 2), int(endPosition(fiber) - beginPosition(fiber))); //needleAbsEndPos - needleAbsBegPos + 1));
 
 		int fiberLength   = length(fiber);
 		int needleLength  = length(needle);
@@ -1478,12 +1479,13 @@ namespace SEQAN_NAMESPACE_MAIN
 		unsigned char * const bitNeedleBase = bitNeedle; // store original address for deletion later
 
 		// init seed window and number of shifts
-		TSeed seedWindow = initSeedWindow(plusStrand, isParallel(needle), posOffset, windowSize, fiberLength, needleLength, options, TSeed());//(posOffset, 0, windowSize - 1, options.minLength - 1);
+		TSeed seedWindow = initSeedWindow(plusStrand, isParallel(needle), /*posOffset,*/ windowSize, fiberLength, needleLength, options, TSeed());//(posOffset, 0, windowSize - 1, options.minLength - 1);
 
 #ifdef DEBUG
 		cout << "(fiber) window size: " << windowSize << endl;
 		cout << "needle length: " << needleLength << endl;
 		cout << "fiber length: " << fiberLength << endl;
+//		cout << "posOffset: " << posOffset << endl;
 		cout << "starting seedWindow: " << seedWindow << endl;
 		cout << "plusStrand?: " << plusStrand << endl;
 		cout << "needleParallel?: " << isParallel(needle) << endl;
@@ -1512,11 +1514,12 @@ namespace SEQAN_NAMESPACE_MAIN
 					&alignment, &alignmentLength);
 
 			verifyLocalTriplexes(plusStrand, addedSeedHashMap, hitList, seqNoKey, fiber, needle,
-					seedWindow,	posOffset, numLocations, endLocations, eR, options, THit());
+					seedWindow,	/*posOffset,*/ numLocations, endLocations, eR, options, THit());
 			free(endLocations);
 		} while (shiftWindow(plusStrand, isParallel(needle), fiberLength, needleLength, options.minLength, seedWindow));
-
+//		cout << "foo" << endl << std::flush;
 		delete [] bitNeedleBase;
+//		cout << "bar" << endl << std::flush;
 	}
 
 } //namespace SEQAN_NAMESPACE_MAIN
