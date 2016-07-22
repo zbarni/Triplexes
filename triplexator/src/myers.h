@@ -10,6 +10,7 @@
 #include <seqan/misc/priority_type_base.h>
 #include <seqan/misc/priority_type_heap.h>
 #include <seqan/misc/misc_dequeue.h>
+#include "local_container.h"
 
 #define DEBUG
 #define TOLERATED_ERROR 2
@@ -39,6 +40,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		return os << "\tbDim0, eDim0: " << s.bDim0 << ", " << s.eDim0 << endl
 					<< "\tbDim1, eDim1: " << s.bDim1 << ", " << s.eDim1;
 	}
+
 
 	/**
 	 * Returns true if parameter char is guanine, false otherwise.
@@ -856,7 +858,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	#ifdef DEBUG
 		assert(totalHaystackLength == length(mergedHaystack));
 		std::cout 	<< "Merged haystack has length: " << totalHaystackLength << std::endl << std::flush ;
-		std::cout 	<< "Fibers in merged haystack: " << std::endl << std::flush ;
+		std::cout 	<< "Fibers in merged haystack: " << length(haystack) << std::endl << std::flush ;
 	#endif
 
 		// resize merged haystack to totalLength
@@ -1247,25 +1249,27 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TFiber,
 	typename TNeedle,
 	typename TSeed,
-//	typename TPos,
+	typename TOffset,
 	typename TError,
 	typename TOptions,
 	typename THit
 	>
 	void verifyLocalTriplexes(
 //			TTimes					&times,
-			bool 			const	plusStrand,
-			TSeedMap	   			&addedSeedHashMap,
-			THitList				&hitList,
-			TPair			const 	&seqNoKey,
-			TFiber			const	&fiber,
-			TNeedle			const	&needle,
-			TSeed			const 	&seedWindow,
-//			TPos 			const 	&fiberPosOffset,	// fiber offset relative to needle
-			int 		   	const	&numLocations,
-			int 			const	endLocations[],
-			TError			const	&errorRate,
-			TOptions		const	&options,
+			bool 		const	plusStrand,
+			TSeedMap			&addedSeedHashMap,
+			THitList			&hitList,
+			TPair		const 	&seqNoKey,
+			TFiber		const	&fiber,
+			TFiber 		const 	&parentFiber,
+			TNeedle 	const 	&needle,
+			TNeedle 	const 	&parentNeedle,
+			TSeed		const 	&seedWindow,
+			TOffset		const 	&fiberPosOffset,	// fiber offset relative to needle
+			int 		const	&numLocations,
+			int 		const	endLocations[],
+			TError		const	&errorRate,
+			TOptions	const	&options,
 			THit)
 	{
 		typedef int								TScore;
@@ -1276,16 +1280,8 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		int k = floor(options.errorRate * options.minLength); // #mismatches allowed
 
-#ifdef DEBUG
-		cout << "Myers gave #numLocations: " << numLocations << "(k + 1: " << k + 1 << ")" << endl;
-#endif
-
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int match = 0; match < numLocations; match++) {
-#ifdef DEBUG
-			cout << "endloc (relative)#" << match << ": " << endLocations[match] << endl;
-			cout << "endloc (absolute)#" << match << ": " << endLocations[match] + getBeginDim0(seedWindow) << endl;
-#endif
 			int ePos = endLocations[match] + getBeginDim0(seedWindow); 	// end of current putative match in fiber
 			int bPos = ePos - options.minLength + 1; 					// beginning of --||--
 
@@ -1395,6 +1391,32 @@ namespace SEQAN_NAMESPACE_MAIN
 					continue;
 				}
 
+				// readjust fiber position to absolute value
+				if (fiberPosOffset > 0 && plusStrand) {
+					setBeginDim0(*seed, getBeginDim0(*seed) + fiberPosOffset);
+					setEndDim0(*seed, getEndDim0(*seed) + fiberPosOffset);
+					cout << "@@@ -> +- fiber fiberoffset " << endl;
+				}
+				// readjust needle position to absolute value
+				else if (isParallel(needle)) {
+					setBeginDim1(*seed, getBeginDim1(*seed) - fiberPosOffset);
+					setEndDim1(*seed, getEndDim1(*seed) - fiberPosOffset);
+					cout << "@@@ -> +- needle fiberoffset " << endl;
+				}
+
+				if (!plusStrand) {
+					TOffset fiberAbsRevOffset = endPosition(parentFiber) - endPosition(fiber);
+					setBeginDim0(*seed, fiberAbsRevOffset + getBeginDim0(*seed));
+					setEndDim0(*seed, fiberAbsRevOffset + getEndDim0(*seed));
+				}
+
+				if (!isParallel(needle)) {
+					TOffset ndlAbsRevOffset = endPosition(parentNeedle) - endPosition(needle);
+					cout << "@@@ -> antiparallel: ndlAbsRevOffset: " << ndlAbsRevOffset << endl;
+					setBeginDim1(*seed, ndlAbsRevOffset + getBeginDim1(*seed));
+					setEndDim1(*seed, ndlAbsRevOffset + getEndDim1(*seed));
+				}
+
 				// if new seed, add to seedMap and to hitSet
 				if (addIfNewSeed(seqNoKey.first, seqNoKey.second, *seed, addedSeedHashMap[seqNoKey])) {
 					THit *hit = new THit(
@@ -1421,10 +1443,10 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TSeedHashMap,
 	typename THitList,
 	typename TFiber,
-	typename TBitArray,
 	typename TNeedle,
+	typename TBitArray,
 	typename TSeqNo,
-//	typename TPos,
+	typename TOffset,
 	typename TOptions,
 	typename TSeed,
 	typename THit
@@ -1433,11 +1455,13 @@ namespace SEQAN_NAMESPACE_MAIN
 			TSeedHashMap 		&addedSeedHashMap,
 			THitList			&hitList,
 			TFiber 		const 	&fiber,
-			TBitArray 			&bitFiber,			// bit representation of fiber, will be shifted
+			TFiber 		const 	&parentFiber,
 			TNeedle 	const 	&needle,
+			TNeedle 	const 	&parentNeedle,
+			TBitArray 			&bitFiber,			// bit representation of fiber, will be shifted
 			TSeqNo		const	&fiberSeqNo,
 			TSeqNo		const	&needleSeqNo,
-//			TPos 		const 	&posOffset,
+			TOffset		const 	&fiberPosOffset,
 			unsigned 			k,
 			unsigned 			alphabetSize,
 			bool		const 	&plusStrand,
@@ -1445,6 +1469,11 @@ namespace SEQAN_NAMESPACE_MAIN
 			TSeed,
 			THit)
 	{
+		// TODO remove
+//		if (!isParallel(needle)) {
+//			cout << "fuck parallel" << endl;
+//			return;
+//		}
 		typedef std::pair<TSeqNo, TSeqNo> TPair;
 		TPair seqNoKey(fiberSeqNo, needleSeqNo);
 
@@ -1483,9 +1512,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 #ifdef DEBUG
 		cout << "(fiber) window size: " << windowSize << endl;
-		cout << "needle length: " << needleLength << endl;
-		cout << "fiber length: " << fiberLength << endl;
-//		cout << "posOffset: " << posOffset << endl;
+		cout << "fiberPosOffset: " << fiberPosOffset << endl;
 		cout << "starting seedWindow: " << seedWindow << endl;
 		cout << "plusStrand?: " << plusStrand << endl;
 		cout << "needleParallel?: " << isParallel(needle) << endl;
@@ -1513,13 +1540,13 @@ namespace SEQAN_NAMESPACE_MAIN
 					&endLocations, &startLocations, &numLocations,
 					&alignment, &alignmentLength);
 
-			verifyLocalTriplexes(plusStrand, addedSeedHashMap, hitList, seqNoKey, fiber, needle,
-					seedWindow,	/*posOffset,*/ numLocations, endLocations, eR, options, THit());
+			verifyLocalTriplexes(plusStrand, addedSeedHashMap, hitList, seqNoKey, fiber,
+					parentFiber, needle, parentNeedle,
+					seedWindow,	fiberPosOffset, numLocations, endLocations, eR, options, THit());
 			free(endLocations);
 		} while (shiftWindow(plusStrand, isParallel(needle), fiberLength, needleLength, options.minLength, seedWindow));
-//		cout << "foo" << endl << std::flush;
+
 		delete [] bitNeedleBase;
-//		cout << "bar" << endl << std::flush;
 	}
 
 } //namespace SEQAN_NAMESPACE_MAIN

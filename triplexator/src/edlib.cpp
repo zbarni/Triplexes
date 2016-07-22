@@ -357,7 +357,7 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
                                            int** positions_, int* numPositions_) {
     *positions_ = NULL;
     *numPositions_ = 0;
-
+//
 //	cout << endl << "myers bitNedle: ";
 //	for (int i = 0; i < queryLength; ++i) {
 //		cout << (unsigned int)query[i] << " ";

@@ -2054,7 +2054,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			plantBitParallelGlobal(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER() );
 		}
 		else {
-			plantBitParallelLocal(times, gardener, haystack, index, tfoSet, eR, plusStrand, options, unsigned(), SINGLE_WORKER() );
+			plantBitParallelLocal(times, gardener, haystack, tfoSet, eR, plusStrand, options, unsigned(), SINGLE_WORKER() );
 		}
 	}
 	
@@ -3793,12 +3793,17 @@ namespace SEQAN_NAMESPACE_MAIN
 				THost tfo = infix(ttsString(tfoSet[hit.getNdlSeqNo()]), hit.getNdlPos(), hit.getNdlPos() + hit.getHitLength());
 				THost triplex(infix(ttsString(value(ttsSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
 
-#ifdef TRIPLEX_DEBUG
+#ifndef TRIPLEX_DEBUG
+//				// TODO remove
+//				if (!isParallel(tfoSet[hit.getNdlSeqNo()])) {
+//					continue;
+//				}
 				cout << "============ HIT ============ " << endl << std::flush;
 				cout << "Seed gardener: " << endl << '\t'
 						<< hit.getHstkPos() << ", " << hit.getHstkPos() + hit.getHitLength()
 						<< " - " <<  hit.getNdlPos() << ", " <<  hit.getNdlPos() + hit.getHitLength() << endl
 						<< "hit.getHitLength() " << hit.getHitLength() << endl << std::flush;
+				cout << "needle isParallel: " << isParallel(tfoSet[hit.getNdlSeqNo()]) << endl;
 				cout << "tfoSet[hit.getNdlSeqNo()]: " << tfoSet[hit.getNdlSeqNo()] << endl <<
 						"value(ttsSet,hit.getHstId()): " << value(ttsSet,hit.getHstId()) << endl << std::flush;
 				cout << "TFO: " << tfo << endl << "TTS: " << triplex << endl << endl;
@@ -3904,12 +3909,12 @@ namespace SEQAN_NAMESPACE_MAIN
 								 );
 					appendValue(matches, match);
 
-//					cout << "====+++===== MATCH?! ====+++===== " << endl << std::flush;
-//					cout << "Seed gardener: " << endl << '\t'
-//							<< ttsStart << ", " << ttsEnd
-//							<< " - " <<  tfoStart << ", " <<  tfoEnd << endl << std::flush;
-//					cout << "TFO: " << infix(ttsString(tfoSet[hit.getNdlSeqNo()]), tfoStart, tfoEnd) << endl
-//							<< "TTS: " << infix(ttsString(ttsSet[duplexId]), ttsStart, ttsEnd) << endl << endl;
+					cout << "====+++===== MATCH?! ====+++===== " << endl << std::flush;
+					cout << "Seed gardener: " << endl << '\t'
+							<< ttsStart << ", " << ttsEnd
+							<< " - " <<  tfoStart << ", " <<  tfoEnd << endl << std::flush;
+					cout << "TFO: " << infix(ttsString(tfoSet[hit.getNdlSeqNo()]), tfoStart, tfoEnd) << endl
+							<< "TTS: " << infix(ttsString(ttsSet[duplexId]), ttsStart, ttsEnd) << endl << endl;
 				}
 				// save potential
 				TPotKey pkey(getSequenceNo(value(tfoSet,hit.getNdlSeqNo())), getSequenceNo(value(ttsSet,hit.getHstId())));

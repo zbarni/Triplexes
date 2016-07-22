@@ -6,7 +6,7 @@ TEST=""
 OD_LOCAL=$PWD"/results/bit_parallel_local"
 OD_BIT=$PWD"/results/bit_parallel"
 OD_BRUTE=$PWD"/results/brute"
-OPTIONS=" -e 20 -c 2 -L -1 -l 15 -fr off "
+OPTIONS=" -e 20 -c 2 -L -1 -l 15 -fr off -m M "
 
 while getopts ":vx:t:" opt; do
     case ${opt} in

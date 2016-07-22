@@ -1359,7 +1359,16 @@ namespace SEQAN_NAMESPACE_MAIN
 		// add a new hitset object for each fiber in haystack
 		for (int i = 0; i < length(haystack); ++i) {
 			hitSetPointerMap[i] = new THitSet;
+#ifdef DEBUG
+			cout << "=> fiber #" << i << ": " << haystack[i] << endl;
+#endif
 		}
+#ifdef DEBUG
+		for (int i = 0; i < length(needles); ++i) {
+			cout << "=> needle ( )#" << i << ": " << needles[i] << endl;
+			cout << "=> needle (x)#" << i << ": " << tfoString(needles[i]) << endl;
+		}
+#endif
 
 	    // merge duplex segments
 	    mergeHaystack(haystack, mergedHaystack, fiberStartPos, posToFiberSeqNo, bitTarget, targetLength);
@@ -1455,24 +1464,29 @@ namespace SEQAN_NAMESPACE_MAIN
 			TNeedlePositionMapIterator)
 	{
 		TNeedlePositionMapIterator needlePosIt = needlePosMap.lower_bound(beginPosition(*fiberIt));
-
+//		cout << "foo 1" << endl;
 		if (needlePosIt == needlePosMap.end()) {
-			return needlePosIt;
+//			cout << "foo 2" << endl;
+			--needlePosIt; // try the previous one, maybe it's good
+//			return needlePosIt;
 		}
 
 		// find lowest which still overlaps, with an overlapping length of min. minLength
 		while (needlePosIt != needlePosMap.end() && overlap(fiberIt, needlePosIt, minLength)) {
+//			cout << "foo 3" << endl;
 			if (needlePosIt == needlePosMap.begin()) {
 				break;
 			}
+//			cout << "foo 3x" << endl;
 			needlePosIt--;
 		}
-
+//		cout << "foo 4" << endl;
 		// check if we went backwards one too many
-		if (!overlap(fiberIt, needlePosIt, minLength)) {
+		while (needlePosIt != needlePosMap.end() && !overlap(fiberIt, needlePosIt, minLength)) {
+//			cout << "foo 5" << endl;
 			++needlePosIt;
 		}
-
+//		cout << "foo 6" << endl;
 		return needlePosIt;
 	}
 
@@ -1482,27 +1496,89 @@ namespace SEQAN_NAMESPACE_MAIN
 	template<
 	typename TFiber,
 	typename TNeedle,
-	typename TPos
+	typename TOffset
 	>
 	void alignFiberAndNeedle(
-			TFiber 	*alignedFiber,
+			TFiber 	*&alignedFiber,
 			TFiber 	 const &fiber,
-			TNeedle *alignedNeedle,
+			TNeedle *&alignedNeedle,
 			TNeedle  const &needle,
-			TPos 	 fiberPosOffset)
+			TOffset  fiberPosOffset)
 	{
+#ifdef DEBUG
+		cout << "aligning fiber and needle: "
+				<< beginPosition(fiber) << " - " << endPosition(fiber)
+				<< " vs " << beginPosition(needle) << " - " << endPosition(needle) << endl << std::flush;
+#endif
+		// needle has a higher starting position, move start position of fiber to the right
 		if (fiberPosOffset > 0) {
-			TPos newFiberSize = std::min(length(fiber) - fiberPosOffset, length(needle));
-//			alignedFiber = new TFiber();
-//			alignedFiber->
+			TOffset newFiberSize = std::min(length(fiber) - fiberPosOffset, length(needle));
+			alignedFiber = new TFiber(
+					host(fiber),
+					beginPosition(fiber) + fiberPosOffset,
+					beginPosition(fiber) + fiberPosOffset + newFiberSize,
+					fiber.parallel,
+					fiber.seqNo,
+					fiber.isTFO,
+					fiber.motif,
+					fiber.copies);
+
+			// new fiber is shorter than needle, adjust (shorten) end of needle
+			if (newFiberSize < length(needle)) {
+				alignedNeedle = new TNeedle(
+						host(needle),
+						beginPosition(needle), beginPosition(needle) + newFiberSize,
+						needle.parallel,
+						needle.seqNo,
+						needle.isTFO,
+						needle.motif,
+						needle.copies);
+			}
+			else {
+				alignedNeedle = new TNeedle(needle);
+			}
 		}
+		// needle has lower starting position, move start position of needle to the right
 		else if (fiberPosOffset < 0) {
-
+			fiberPosOffset = -fiberPosOffset; // make it positive
+			TOffset newNeedleSize = std::min(length(needle) - fiberPosOffset, length(fiber));
+			alignedNeedle = new TNeedle(
+					host(needle),
+					beginPosition(needle) + fiberPosOffset,
+					beginPosition(needle) + fiberPosOffset + newNeedleSize,
+					needle.parallel,
+					needle.seqNo,
+					needle.isTFO,
+					needle.motif,
+					needle.copies);
+			// new needle is shorter than fiber, adjust (shorten) end of fiber
+			if (newNeedleSize < length(fiber)) {
+				alignedFiber = new TFiber(
+						host(fiber),
+						beginPosition(fiber), beginPosition(fiber) + newNeedleSize,
+						fiber.parallel,
+						fiber.seqNo,
+						fiber.isTFO,
+						fiber.motif,
+						fiber.copies);
+			}
+			else {
+				alignedFiber = new TFiber(fiber);
+			}
+		}
+		else {
+			alignedFiber  = new TFiber(fiber);
+			alignedNeedle = new TNeedle(needle);
 		}
 
-//		cout << "aligned? fiber " << beginPosition(alignedFiber) << " <-> " << endPosition(alignedFiber) << endl;
-//		cout << "aligned? needle " << beginPosition(alignedNeedle) << " <-> " << endPosition(alignedNeedle) << endl;
-//		cout << alignedFiber << endl;
+#ifdef DEBUG
+		cout << "aligned? : " << ((beginPosition(*alignedFiber) == beginPosition(*alignedNeedle)
+				&& endPosition(*alignedFiber) == endPosition(*alignedNeedle)) ? "yes" : "no") << endl;
+		cout << "after alignment: " << beginPosition(*alignedFiber) << " - " << endPosition(*alignedFiber)
+				<< " vs " << beginPosition(*alignedNeedle) << " - " << endPosition(*alignedNeedle) << endl << std::flush;
+		cout << "aligned fiber:  " << *alignedFiber << endl;
+		cout << "aligned needle: " << *alignedNeedle << endl;
+#endif
 	}
 
 	/**
@@ -1514,7 +1590,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	template<
 	typename TTimes,
 	typename THaystack,		 // haystack spec - double stranded sequences (tts)
-	typename TQGramIndex,	 // q-gram index - (tfo)
 	typename TNeedleSet,	 // query set (needle) - single stranded sequences (tfo)
 	typename TError,		 // error rate
 	typename TOptions,
@@ -1527,7 +1602,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			TTimes 					&times,
 			Gardener<TId, TSpec>	&gardener,
 			THaystack 		const	&haystack, 			// TTS set
-			TQGramIndex		const	&index,				// q-gram index of tfoSet (for suffixes)
 			TNeedleSet		const	&needles,			// TFO set
 			TError 			const	&errorRate,
 			bool			const 	&plusStrand,
@@ -1581,7 +1655,16 @@ namespace SEQAN_NAMESPACE_MAIN
 		// add a new hitset object for each fiber in haystack
 		for (int i = 0; i < length(haystack); ++i) {
 			hitSetPointerMap[i] = new THitSet;
+#ifdef DEBUG
+			cout << "=> fiber #" << i << ": " << haystack[i] << endl;
+#endif
 		}
+#ifdef DEBUG
+		for (int i = 0; i < length(needles); ++i) {
+			cout << "=> needle ( )["<< isParallel(needles[i])<<"]#" << i << ": " << needles[i] << endl;
+//			cout << "=> needle (x)["<< isParallel(needles[i])<<"]#" << i << ": " << tfoString(needles[i]) << endl;
+		}
+#endif
 
 		TFiber 	*alignedFiber = 0;
 		TNeedle *alignedNeedle = 0;
@@ -1612,34 +1695,25 @@ namespace SEQAN_NAMESPACE_MAIN
 					// inherent offset between fiber and needle, must be taken into account
 					// + positive value means the needle has a higher abs. starting pos. on genome
 					// - negative value means the needle has a lower abs. starting pos. on genome
-					TPos fiberPosOffset = needlePosIt->first - beginPosition(*fiberIt);
-//					alignFiberAndNeedle(alignedFiber, *fiberIt, alignedNeedle, needle, fiberPosOffset);
-					TFiber tmpfiber(*fiberIt);
-//					goFurther(begin(tmpfiber), fiberPosOffset);
-					setBeginPosition(tmpfiber, beginPosition(tmpfiber) + fiberPosOffset);
-					setBegin(tmpfiber, begin(tmpfiber) + fiberPosOffset);
-					cout << "aligned? fiber " << beginPosition(tmpfiber) << " <-> " << endPosition(tmpfiber) << endl;
-					cout << length(tmpfiber) << endl;
-					cout << tmpfiber << endl;
-					cout << tmpfiber[0] << endl;
-					cout << tmpfiber[1] << endl;
-					cout << tmpfiber[2] << endl;
-					cout << tmpfiber[3] << endl;
-					cout << tmpfiber[4] << endl;
-					cout << "shit \n";
-					cout << *(begin(tmpfiber) + 0) << endl;
-					cout << *(begin(tmpfiber) + 1) << endl;
-					cout << *(begin(tmpfiber) + 2) << endl;
-					cout << *(begin(tmpfiber) + 3) << endl;
-					cout << *(begin(tmpfiber) + 4) << endl;
+					int fiberPosOffset = needlePosIt->first - beginPosition(*fiberIt);
+					alignFiberAndNeedle(alignedFiber, *fiberIt, alignedNeedle, needle, fiberPosOffset);
 
 					// compute all triplex hits between needle and fiber
-//					computeLocalTriplexes(seedHashMap, hitList, alignedFiber, bitFiber, needle,
-//							std::distance(begin(haystack), fiberIt), // fiberSeqNo
-//							needlePosIt->second.second,	// needleSeqNo
-//							/*fiberPosOffset,*/ k, alphabetSize, plusStrand, options, TSeed(), THit());
-//					delete alignedFiber;
-//					delete alignedNeedle;
+					bitFiber += fiberPosOffset;
+
+//					LocalContainer container(*alignedFiber, *alignedNeedle, *fiberIt, needle, bitFiber,
+//							std::distance(begin(haystack), fiberIt), needlePosIt->second.second,
+//							fiberPosOffset, k, alphabetSize, plusStrand, options);
+//					computeLocalTriplexes(seedHashMap, hitList, container, TSeed(), THit());
+
+					computeLocalTriplexes(seedHashMap, hitList, *alignedFiber, *fiberIt,
+							*alignedNeedle, needle, bitFiber,
+							std::distance(begin(haystack), fiberIt), // fiberSeqNo
+							needlePosIt->second.second,	// needleSeqNo
+							fiberPosOffset, k, alphabetSize, plusStrand, options, TSeed(), THit());
+
+					delete alignedFiber;
+					delete alignedNeedle;
 					++needlePosIt;
 				}
 

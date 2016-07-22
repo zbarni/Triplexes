@@ -6,7 +6,7 @@ TEST=""
 OD_LOCAL=$PWD"/results/bit_parallel_local"
 OD_BIT=$PWD"/results/bit_parallel"
 OD_BRUTE=$PWD"/results/brute"
-OPTIONS=" -e 20 -c 1 -L -1 -l 20 "
+OPTIONS=" -e 20 -c 2 -L -1 -l 15 -fr off -m M"
 
 while getopts ":vx:t:" opt; do
     case ${opt} in
@@ -31,8 +31,8 @@ if [[ $TEST != "" ]]; then
     echo "Running BRUTE FORCE #${LARGE}${TEST}"
     triplexator -ss "data/tts_${LARGE}${TEST}.data" -ds "data/tts_${LARGE}${TEST}.data" $OPTIONS -o "${LARGE}${TEST}.tpx" -od $OD_BRUTE $VERBOSE &> "${OD_BRUTE}/${LARGE}${TEST}.dbg"
 
-    #echo "Running MYERS #${LARGE}${TEST}"
-    #triplexator -ss "../data/tts_${LARGE}${TEST}.data" -ds "../data/tts_${LARGE}${TEST}.data" $OPTIONS -fm 1 --bit-parallel -o "${LARGE}${TEST}.tpx" $VERBOSE  &> "${LARGE}${TEST}.dbg"
+    echo "Running MYERS #${LARGE}${TEST}"
+    triplexator -ss "data/tts_${LARGE}${TEST}.data" -ds "data/tts_${LARGE}${TEST}.data" $OPTIONS -fm 1 --bit-parallel -od $OD_BIT -o "${LARGE}${TEST}.tpx" $VERBOSE  &> "$OD_BIT/${LARGE}${TEST}.dbg"
 
     #echo ""
     #sort "${LARGE}${TEST}.tpx" > "myers.tmp"
