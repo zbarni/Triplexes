@@ -1398,7 +1398,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				t = sysTime();
 	    		//calculate Myers distance - this yields putative matches in endLocations
 	    		edlibCalcEditDistance(bitQGram, options.minLength, bitTarget, targetLength, alphabetSize,
-	    				k + 1, EDLIB_MODE_HW, true, true, &score,
+	    				k + TOLERATED_SEED_ERROR, EDLIB_MODE_HW, true, true, &score,
 						&endLocations, &startLocations, &numLocations,
 						&alignment, &alignmentLength);
 	    		times["myers"] += sysTime() - t;
@@ -1434,19 +1434,26 @@ namespace SEQAN_NAMESPACE_MAIN
 		typename TLength
 	>
 	bool overlap (TFiberIt const &fiberIt, TNeedleIt const &needleIt, TLength minLength) {
+		bool ret = false;
 		// fiber segment has an offset to the right compared to needle
 		if (needleIt->second.first <= endPosition(*fiberIt) &&
 				needleIt->second.first >= minLength + beginPosition(*fiberIt)) {
-			return true;
+			ret = true;
 		}
 
 		// fiber segment has an offset to the left compared to needle
 		if (needleIt->second.first >= endPosition(*fiberIt) &&
 				endPosition(*fiberIt) >= minLength + needleIt->first) {
-			return true;
+			ret = true;
 		}
 
-		return false;
+#ifdef DEBUG
+		cout << "checking [gardener.h] overlap - fiber vs. needle:" << endl;
+		cout << beginPosition(*fiberIt) << " - " << endPosition(*fiberIt)
+				<< " vs. " << needleIt->first << " - " << needleIt->second.first << endl;
+		cout << "=== " << (ret ? "True" : "False") << " ===" << endl << std::flush;
+#endif
+		return ret;
 	}
 
 	/**
@@ -1464,20 +1471,21 @@ namespace SEQAN_NAMESPACE_MAIN
 			TNeedlePositionMapIterator)
 	{
 		TNeedlePositionMapIterator needlePosIt = needlePosMap.lower_bound(beginPosition(*fiberIt));
-//		cout << "foo 1" << endl;
-		if (needlePosIt == needlePosMap.end()) {
-//			cout << "foo 2" << endl;
-			--needlePosIt; // try the previous one, maybe it's good
-//			return needlePosIt;
-		}
+//		cout << "foo 1. cur needlePosIt: " << needlePosIt->first << " - " << needlePosIt->second.first << endl << std::flush;
 
+		if (needlePosIt == needlePosMap.end() || !overlap(fiberIt, needlePosIt, minLength)) {
+//			cout << "foo 2" << endl << std::flush;
+
+			--needlePosIt; // try the previous one, maybe it's good
+		}
+//		cout << "foo 2#: dist: " << std::distance(needlePosMap.begin(), needlePosIt) << endl << std::flush;
 		// find lowest which still overlaps, with an overlapping length of min. minLength
 		while (needlePosIt != needlePosMap.end() && overlap(fiberIt, needlePosIt, minLength)) {
-//			cout << "foo 3" << endl;
+//			cout << "foo 3" << endl << std::flush;
 			if (needlePosIt == needlePosMap.begin()) {
 				break;
 			}
-//			cout << "foo 3x" << endl;
+//			cout << "foo 3x" << endl << std::flush;
 			needlePosIt--;
 		}
 //		cout << "foo 4" << endl;
@@ -1628,8 +1636,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef			 std::map<TPair, std::map<TPair, std::vector<THit*> > >	THitList;
 		typedef typename Infix<typename GetSequenceByNo<TNeedleSet const>::Type >::Type	TInfix;
 
-		typedef 		 std::multimap<TPos, std::pair<TPos, TId> >	TNeedlePositionMap;
-		typedef typename TNeedlePositionMap::const_iterator 		TNeedlePositionMapIterator;
+		typedef			 Pair<const TNeedle*, unsigned long>		TIntervalCargo;
+		typedef			 IntervalAndCargo<TPos, TIntervalCargo >	TInterval;
 
 		int 	 k 				= ceil(errorRate * options.minLength); // #overall mismatches allowed
 		unsigned targetLength 	= 0;
@@ -1640,13 +1648,13 @@ namespace SEQAN_NAMESPACE_MAIN
 		TSeedHashesMap 	  seedHashMap;
 		THitSetPointerMap hitSetPointerMap; // for each needle in query set (needles/tfoSet), stores a
 											// hitSetPointer containing all corresponding hits
-		TNeedlePositionMap needlePosMap;	// key: absolute begin position of needle in sequence
-											// val: pair(absolute end pos, index in needles)
+
+		IntervalTree<TPos, TIntervalCargo> intervalTree;
 
 		// populate needle position map with beg / end positions
-		for (int i = 0; i < length(needles); ++i) {
-			needlePosMap.insert( std::pair<TPos, std::pair<TPos, TId> >(
-					beginPosition(needles[i]), std::pair<TPos, TId>(endPosition(needles[i]), i)));
+		for (unsigned i = 0; i < length(needles); ++i) {
+			TIntervalCargo cargo(&(needles[i]), i);
+			addInterval(intervalTree, beginPosition(needles[i]), endPosition(needles[i]), cargo);
 #ifdef DEBUG
 			cout << "needle #" << i << " : " << beginPosition(needles[i]) << " <-> " << endPosition(needles[i]) << endl;
 #endif
@@ -1665,58 +1673,34 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 #endif
 
-//		TFiber 	*alignedFiber = 0;
-//		TNeedle *alignedNeedle = 0;
 		// iterate over each fiber in haystack
 		for (THaystackIterator fiberIt = begin(haystack); fiberIt != end(haystack); ++fiberIt) {
 #ifdef DEBUG
 			cout << "!fiber #?" << " : " << beginPosition(*fiberIt) << " <-> " << endPosition(*fiberIt) << endl;
 #endif
-			// find the one which overlaps and is equal or lowest, if such exists
-			// currently minimal required overlap is 0 (at least adjacent)
-			TNeedlePositionMapIterator needlePosIt = getLowestOverlappingNeedle(needlePosMap, fiberIt, MIN_OVERLAP, TNeedlePositionMapIterator());
+			typedef typename Iterator< String<TIntervalCargo> >::Type TIntervalCargoIterator;
+			String<TIntervalCargo> results;
+			findIntervals(intervalTree, beginPosition(*fiberIt), endPosition(*fiberIt), results);
 
 			// iterate over all needles that overlap somehow with this fiber
-			for (; needlePosIt != needlePosMap.end() && overlap(fiberIt, needlePosIt, MIN_OVERLAP); ++needlePosIt) {
+			for (TIntervalCargoIterator cargoIt = begin(results); cargoIt != end(results); ++cargoIt) {
 				bitFiber = new unsigned char[length(*fiberIt)];
+
 				// transform fiber to bit encoding for Myers
 				for (int i = 0; i < length(*fiberIt); ++i) {
 					bitFiber[i] = charToBit((*fiberIt)[i]);
 				}
 				unsigned char * const bitFiberBase = bitFiber;
 
-				// for the current fiber, iterate over each overlapping needle - fiber pair / do it for several needles
-				while (needlePosIt != needlePosMap.end() &&
-						endPosition(*fiberIt) >= MIN_OVERLAP + needlePosIt->first)
-				{
-					TNeedle needle = needles[needlePosIt->second.second];
-					// reset bitFiber to initial encoding (without shifts)
-					bitFiber = bitFiberBase;
+				// reset bitFiber to initial encoding (without shifts)
+				bitFiber = bitFiberBase;
 
-//					// inherent offset between fiber and needle, must be taken into account
-//					// + positive value means the needle has a higher abs. starting pos. on genome
-//					// - negative value means the needle has a lower abs. starting pos. on genome
-//					int fiberPosOffset = needlePosIt->first - beginPosition(*fiberIt);
-//					alignFiberAndNeedle(alignedFiber, *fiberIt, alignedNeedle, needle, fiberPosOffset);
-
-					// compute all triplex hits between needle and fiber
-//					bitFiber += fiberPosOffset;
-
-					computeLocalTriplexes(seedHashMap, hitList, *fiberIt, needle, bitFiber,
-							std::distance(begin(haystack), fiberIt), // fiberSeqNo
-							needlePosIt->second.second,	// needleSeqNo
-							/*fiberPosOffset,*/ k, alphabetSize, plusStrand, options, TSeed(), THit());
-
-//					delete alignedFiber;
-//					delete alignedNeedle;
-					++needlePosIt;
-				}
+				computeLocalTriplexes(seedHashMap, hitList, *fiberIt, *(cargoIt->i1), bitFiber,
+						(unsigned long)std::distance(begin(haystack), fiberIt), // fiberSeqNo
+						cargoIt->i2,	// needleSeqNo
+						k, alphabetSize, plusStrand, options, TSeed(), THit());
 
 				delete [] bitFiberBase;
-				// if reached the end, break here, otherwise for loop will go amok
-				if (needlePosIt == needlePosMap.end()) {
-					break;
-				}
 			}
 		}
 

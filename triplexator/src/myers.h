@@ -12,8 +12,9 @@
 #include <seqan/misc/misc_dequeue.h>
 #include "local_container.h"
 
-#define DEBUG
+//#define DEBUG
 #define TOLERATED_ERROR 2
+#define TOLERATED_SEED_ERROR 2 // temporary error to allow for potentially long matches to be explored
 #define MIN_OVERLAP 0
 using namespace seqan;
 
@@ -655,8 +656,8 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int matchId = 0; matchId < numLocations; matchId++) {
-			ePos = endLocations[matchId]; 	// end of current putative match in duplex (mergedHaystack)
-			bPos = ePos - options.minLength + 1; 	// beginning of --||--
+			ePos = endLocations[matchId]; 		// end of current putative match in duplex (mergedHaystack)
+			bPos = ePos - options.minLength + 1;// beginning of --||--
 			if (bPos < 0) {
 				continue;
 			}
@@ -707,9 +708,10 @@ namespace SEQAN_NAMESPACE_MAIN
 
 			// invalid alignment. Note the k + 1, we want to be forgiving here because an extension might still
 			// lower the error rate as wanted, so don't discard here just yet (will later, if it's not good).
-			if (!consSatisfied || misM > k + 1) {
+			if (!consSatisfied || misM > k + TOLERATED_SEED_ERROR) {
 #ifdef DEBUG
 				cout << "Discarding Myers match because there are more consecutive mismatches than allowed / there are more than allowed mismatches"  << std::flush << endl;
+				cout << "k: " << k << "; misMatches: " << misM << "; consSatisfied?: " << consSatisfied << endl << std::flush;
 #endif
 				continue;
 			}
@@ -727,6 +729,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			std::cout << "\ttfo"  << std::flush << endl;
 #endif
 
+			/////////////////////////////////////////////////////////////////////////
 			// find the largest seed within the q-gram
 			t 	 = sysTime();
 			qPos = options.minLength - 1;
@@ -738,7 +741,6 @@ namespace SEQAN_NAMESPACE_MAIN
 					if (isGuanine(mergedHaystack[pos])) {
 						++tempGuanine;
 					}
-
 					matchLength++;
 					--pos;
 					--qPos;
@@ -746,6 +748,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 				if (matchLength > maxSeedLength) {
 					guanine				= tempGuanine;
+
 					maxSeedLength 		= matchLength;
 					maxSeedMergedEnd 	= pos  + matchLength;
 					maxSeedQGramEnd		= qPos + matchLength;
@@ -783,16 +786,17 @@ namespace SEQAN_NAMESPACE_MAIN
 					addedSeedHashMap[seqNoKey] = std::set<unsigned long long>();
 				}
 
-				TSeed seed(maxSeedFiberEnd - maxSeedLength + 1, qGramSeedBegin, maxSeedFiberEnd, qGramSeedEnd);
+				TSeed maxSeed(maxSeedFiberEnd - maxSeedLength + 1, qGramSeedBegin, maxSeedFiberEnd, qGramSeedEnd);
+
 	#ifdef DEBUG
-				std::cout << endl << "Original seed: " << seed << endl
-						<< "Actual right ends (including this pos.): " << getEndDim0(seed) << ", " << getEndDim1(seed) << endl
-						<< "seedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(seed), getEndDim0(seed) + 1) << "\n"
-						<< "seedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(seed), getEndDim1(seed) + 1) << "\n" << std::flush ;
+				std::cout << endl << "MAXSEED: " << maxSeed << endl
+						<< "Actual right ends (including this pos.): " << getEndDim0(maxSeed) << ", " << getEndDim1(maxSeed) << endl
+						<< "seedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(maxSeed), getEndDim0(maxSeed) + 1) << "\n"
+						<< "seedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(maxSeed), getEndDim1(maxSeed) + 1) << "\n" << std::flush ;
 	#endif
 
 				t = sysTime();
-				extendSimpleSeed(addedSeedHashMap[seqNoKey], seed, extendedSeeds, haystack[haystackFiberSeqNo],
+				extendSimpleSeed(addedSeedHashMap[seqNoKey], maxSeed, extendedSeeds, haystack[haystackFiberSeqNo],
 						needleSet[ndlSeqNo], errorRate, k, guanine, options);
 				times["seedextend"] += sysTime() - t;
 
@@ -947,6 +951,22 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		TDim0Iterator dim0It;
 		TDim0Iterator nextDim0It;
+
+#ifdef DEBUG
+		// TODO @barni remove
+		cout << "Dumping (added) hitList [added and not yet merged seeds]:" << endl;
+		for (THitListIterator it = hitList.begin(); it != hitList.end(); ++it) {
+			for (dim0It = (it->second).begin(); dim0It != (it->second).end(); ++dim0It) {
+				int currBegDim0 = dim0It->first.first;
+				int currEndDim0 = dim0It->first.second;
+				for (THitIterator currHitIt = dim0It->second.begin(); currHitIt != dim0It->second.end(); ++currHitIt) {
+					THit *currHit = *currHitIt;
+					cout 	<< "hit (fib vs ndl): " << currBegDim0 << " - " << currBegDim0 + currHit->hitLength << " vs. " << currHit->ndlPos << " - " << currHit->ndlPos + currHit->hitLength << endl;
+				}
+			}
+		}
+		cout << "===" << endl << "Dumping ended." << endl;
+#endif
 
 		for (THitListIterator it = hitList.begin(); it != hitList.end(); ++it) {
 			haystackFiberSeqNo 	= (it->first).first;
@@ -1245,7 +1265,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TFiber,
 	typename TNeedle,
 	typename TSeed,
-//	typename TOffset,
 	typename TError,
 	typename TOptions,
 	typename THit
@@ -1257,11 +1276,8 @@ namespace SEQAN_NAMESPACE_MAIN
 			THitList			&hitList,
 			TPair		const 	&seqNoKey,
 			TFiber		const	&fiber,
-//			TFiber 		const 	&parentFiber,
 			TNeedle 	const 	&needle,
-//			TNeedle 	const 	&parentNeedle,
 			TSeed		const 	&needleSearchWindow,
-//			TOffset		const 	&fiberPosOffset,	// fiber offset relative to needle
 			int 		const	&numLocations,
 			int 		const	endLocations[],
 			TError		const	&errorRate,
@@ -1278,6 +1294,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int match = 0; match < numLocations; match++) {
+
 			int ePos = endLocations[match]; 			// end of current putative match in fiber
 			int bPos = ePos - options.minLength + 1; 	// beginning of --||--
 
@@ -1314,10 +1331,11 @@ namespace SEQAN_NAMESPACE_MAIN
 
 			// invalid alignment. Note the k + 1, we want to be forgiving here because an extension might still
 			// lower the error rate as wanted, so don't discard here just yet (will later, if it's not good).
-			if (!consSatisfied || misM > k + 1) {
+			if (!consSatisfied || misM > k + TOLERATED_SEED_ERROR) {
 #ifdef DEBUG
 				cout << "Discarding Myers match because there are more consecutive mismatches than allowed. // "
 						<< "Discarding Myers match because there are more than allowed mismatches."  << std::flush << endl;
+				cout << "k: " << k << "; misMatches: " << misM << "; consSatisfied?: " << consSatisfied << endl << std::flush;
 #endif
 				continue;
 			}
@@ -1325,17 +1343,13 @@ namespace SEQAN_NAMESPACE_MAIN
 			/////////////////////////////////////////////////////////////////////////
 			// find the largest seed within the q-gram
 			// current position in needle is end of seed window
-			TSeed maxSeed;
-			int tempGuanine = 0;
-			for (fibCurPos = ePos, ndlCurPos = getEndDim1(needleSearchWindow); fibCurPos > bPos; --fibCurPos, --ndlCurPos)
+			TSeed 	maxSeed;
+			int 	needleWindowBPos = getBeginDim1(needleSearchWindow);
+			for (fibCurPos = ePos, ndlCurPos = getEndDim1(needleSearchWindow); fibCurPos > bPos && ndlCurPos >= needleWindowBPos; --fibCurPos, --ndlCurPos)
 			{
+				int tempGuanine = 0;
 				int matchLength = 0;
-
-				if (fiber[fibCurPos] != needle[ndlCurPos]) {
-					tempGuanine = 0;
-				}
-
-				while (ndlCurPos >= 0 && fibCurPos >= 0 && fiber[fibCurPos] == needle[ndlCurPos]) {
+				while (ndlCurPos >= needleWindowBPos && fiber[fibCurPos] == needle[ndlCurPos]) {
 					if (isGuanine(fiber[fibCurPos])) {
 						++tempGuanine;
 					}
@@ -1355,13 +1369,19 @@ namespace SEQAN_NAMESPACE_MAIN
 					maxSeedLength = matchLength;
 				}
 			}
+
 			// make sure we have a valid maximum seed
 			if (!maxSeedLength) {
 				cout << "BIG PROBLEM HERE, CAPTAIN! We have a seed of length 0?!!" << std::flush << endl;
 			}
+
+			if (!addedSeedHashMap.count(seqNoKey)) {
+				addedSeedHashMap[seqNoKey] = std::set<unsigned long long>();
+			}
 #ifdef DEBUG
-			cout << "Compare MAXSEED:" << maxSeed << endl << "\t" << infix(fiber, getBeginDim0(maxSeed), getEndDim0(maxSeed) + 1) << endl << "\t" <<
-					infix(needle,getBeginDim1(maxSeed), getEndDim1(maxSeed) + 1) << endl;
+			cout << "MAXSEED:" << maxSeed << endl << "\t"
+					<< infix(fiber, getBeginDim0(maxSeed), getEndDim0(maxSeed) + 1) << endl << "\t"
+					<< infix(needle,getBeginDim1(maxSeed), getEndDim1(maxSeed) + 1) << endl;
 #endif
 
 			// extend valid maximum seed
@@ -1415,7 +1435,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TNeedle,
 	typename TBitArray,
 	typename TSeqNo,
-//	typename TOffset,
 	typename TOptions,
 	typename TSeed,
 	typename THit
@@ -1424,13 +1443,10 @@ namespace SEQAN_NAMESPACE_MAIN
 			TSeedHashMap 		&addedSeedHashMap,
 			THitList			&hitList,
 			TFiber 		const 	&fiber,
-//			TFiber 		const 	&parentFiber,
 			TNeedle 	const 	&needle,
-//			TNeedle 	const 	&parentNeedle,
 			TBitArray 			&bitFiber,			// bit representation of fiber, will be shifted
 			TSeqNo		const	&fiberSeqNo,
 			TSeqNo		const	&needleSeqNo,
-//			TOffset		const 	&fiberPosOffset,
 			unsigned 			k,
 			unsigned 			alphabetSize,
 			bool		const 	&plusStrand,
@@ -1462,23 +1478,15 @@ namespace SEQAN_NAMESPACE_MAIN
 				<< endl << "fiber (" << (plusStrand ? "+" : "-") << "): " << fiber << endl
 				<< "nedle (" << isParallel(needle) << " = " << getMotif(needle) << "): " << needle << endl;
 #endif
-
-		// init (fiber) window which then slides to the right or left
-//		int windowSize = std::min((int)(options.minLength * 2), int(endPosition(fiber) - beginPosition(fiber))); //needleAbsEndPos - needleAbsBegPos + 1));
-
 		int fiberLength   = length(fiber);
 		int needleLength  = length(needle);
 		bitNeedle 		  = new unsigned char [needleLength];
 		unsigned char * const bitNeedleBase = bitNeedle; // store original address for deletion later
 
 		// init seed window and number of shifts
-//		TSeed seedWindow = initSeedWindow(plusStrand, isParallel(needle), /*posOffset,*/ windowSize, fiberLength, needleLength, options, TSeed());//(posOffset, 0, windowSize - 1, options.minLength - 1);
 		TSeed needleSearchWindow(0, 0, 0, options.minLength - 1);
 
 #ifdef DEBUG
-//		cout << "(fiber) window size: " << windowSize << endl;
-//		cout << "fiberPosOffset: " << fiberPosOffset << endl;
-//		cout << "starting seedWindow: " << seedWindow << endl;
 		cout << "plusStrand?: " << plusStrand << endl;
 		cout << "needleParallel?: " << isParallel(needle) << endl;
 #endif
@@ -1488,8 +1496,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			bitNeedle[i] = charToBit((needle)[i]);
 		}
 
-//		do {
-		for (unsigned i = 0; i < needleLength - options.minLength; ++i) {
+		for (unsigned i = 0; i <= needleLength - options.minLength; ++i) {
 #ifdef DEBUG
 			cout << endl << "seedWindow (shifted again?): " << needleSearchWindow << endl;
 			cout << "nedle window (search space): " << infix(needle, getBeginDim1(needleSearchWindow), getEndDim1(needleSearchWindow) + 1) << endl;
@@ -1501,7 +1508,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					options.minLength,
 					bitFiber, //
 					fiberLength, // size of current fiber window
-					alphabetSize, k + 1, EDLIB_MODE_HW, false, false, &score,
+					alphabetSize, k + TOLERATED_SEED_ERROR, EDLIB_MODE_HW, false, false, &score,
 					&endLocations, &startLocations, &numLocations,
 					&alignment, &alignmentLength);
 

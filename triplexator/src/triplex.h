@@ -3793,7 +3793,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				THost tfo = infix(ttsString(tfoSet[hit.getNdlSeqNo()]), hit.getNdlPos(), hit.getNdlPos() + hit.getHitLength());
 				THost triplex(infix(ttsString(value(ttsSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
 
-#ifndef TRIPLEX_DEBUG
+#ifdef DEBUG
 				cout << "============ HIT ============ " << endl << std::flush;
 				cout << "Seed gardener: " << endl << '\t'
 						<< hit.getHstkPos() << ", " << hit.getHstkPos() + hit.getHitLength()
@@ -3905,12 +3905,14 @@ namespace SEQAN_NAMESPACE_MAIN
 								 );
 					appendValue(matches, match);
 
+#ifdef DEBUG
 					cout << "====+++===== MATCH?! ====+++===== " << endl << std::flush;
 					cout << "Seed gardener: " << endl << '\t'
 							<< ttsStart << ", " << ttsEnd
 							<< " - " <<  tfoStart << ", " <<  tfoEnd << endl << std::flush;
 					cout << "TFO: " << infix(ttsString(tfoSet[hit.getNdlSeqNo()]), tfoStart, tfoEnd) << endl
 							<< "TTS: " << infix(ttsString(ttsSet[duplexId]), ttsStart, ttsEnd) << endl << endl;
+#endif
 				}
 				// save potential
 				TPotKey pkey(getSequenceNo(value(tfoSet,hit.getNdlSeqNo())), getSequenceNo(value(ttsSet,hit.getHstId())));
