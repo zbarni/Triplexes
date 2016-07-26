@@ -1662,58 +1662,53 @@ namespace SEQAN_NAMESPACE_MAIN
 #ifdef DEBUG
 		for (int i = 0; i < length(needles); ++i) {
 			cout << "=> needle ( )["<< isParallel(needles[i])<<"]#" << i << ": " << needles[i] << endl;
-//			cout << "=> needle (x)["<< isParallel(needles[i])<<"]#" << i << ": " << tfoString(needles[i]) << endl;
 		}
 #endif
 
-		TFiber 	*alignedFiber = 0;
-		TNeedle *alignedNeedle = 0;
+//		TFiber 	*alignedFiber = 0;
+//		TNeedle *alignedNeedle = 0;
 		// iterate over each fiber in haystack
 		for (THaystackIterator fiberIt = begin(haystack); fiberIt != end(haystack); ++fiberIt) {
 #ifdef DEBUG
 			cout << "!fiber #?" << " : " << beginPosition(*fiberIt) << " <-> " << endPosition(*fiberIt) << endl;
 #endif
 			// find the one which overlaps and is equal or lowest, if such exists
-			TNeedlePositionMapIterator needlePosIt = getLowestOverlappingNeedle(needlePosMap, fiberIt, options.minLength, TNeedlePositionMapIterator());
+			// currently minimal required overlap is 0 (at least adjacent)
+			TNeedlePositionMapIterator needlePosIt = getLowestOverlappingNeedle(needlePosMap, fiberIt, MIN_OVERLAP, TNeedlePositionMapIterator());
 
 			// iterate over all needles that overlap somehow with this fiber
-			for (; needlePosIt != needlePosMap.end() && overlap(fiberIt, needlePosIt, options.minLength); ++needlePosIt) {
+			for (; needlePosIt != needlePosMap.end() && overlap(fiberIt, needlePosIt, MIN_OVERLAP); ++needlePosIt) {
 				bitFiber = new unsigned char[length(*fiberIt)];
 				// transform fiber to bit encoding for Myers
 				for (int i = 0; i < length(*fiberIt); ++i) {
 					bitFiber[i] = charToBit((*fiberIt)[i]);
 				}
 				unsigned char * const bitFiberBase = bitFiber;
+
 				// for the current fiber, iterate over each overlapping needle - fiber pair / do it for several needles
 				while (needlePosIt != needlePosMap.end() &&
-						endPosition(*fiberIt) >= options.minLength + needlePosIt->first)
+						endPosition(*fiberIt) >= MIN_OVERLAP + needlePosIt->first)
 				{
 					TNeedle needle = needles[needlePosIt->second.second];
 					// reset bitFiber to initial encoding (without shifts)
 					bitFiber = bitFiberBase;
 
-					// inherent offset between fiber and needle, must be taken into account
-					// + positive value means the needle has a higher abs. starting pos. on genome
-					// - negative value means the needle has a lower abs. starting pos. on genome
-					int fiberPosOffset = needlePosIt->first - beginPosition(*fiberIt);
-					alignFiberAndNeedle(alignedFiber, *fiberIt, alignedNeedle, needle, fiberPosOffset);
+//					// inherent offset between fiber and needle, must be taken into account
+//					// + positive value means the needle has a higher abs. starting pos. on genome
+//					// - negative value means the needle has a lower abs. starting pos. on genome
+//					int fiberPosOffset = needlePosIt->first - beginPosition(*fiberIt);
+//					alignFiberAndNeedle(alignedFiber, *fiberIt, alignedNeedle, needle, fiberPosOffset);
 
 					// compute all triplex hits between needle and fiber
-					bitFiber += fiberPosOffset;
+//					bitFiber += fiberPosOffset;
 
-//					LocalContainer container(*alignedFiber, *alignedNeedle, *fiberIt, needle, bitFiber,
-//							std::distance(begin(haystack), fiberIt), needlePosIt->second.second,
-//							fiberPosOffset, k, alphabetSize, plusStrand, options);
-//					computeLocalTriplexes(seedHashMap, hitList, container, TSeed(), THit());
-
-					computeLocalTriplexes(seedHashMap, hitList, *alignedFiber, *fiberIt,
-							*alignedNeedle, needle, bitFiber,
+					computeLocalTriplexes(seedHashMap, hitList, *fiberIt, needle, bitFiber,
 							std::distance(begin(haystack), fiberIt), // fiberSeqNo
 							needlePosIt->second.second,	// needleSeqNo
-							fiberPosOffset, k, alphabetSize, plusStrand, options, TSeed(), THit());
+							/*fiberPosOffset,*/ k, alphabetSize, plusStrand, options, TSeed(), THit());
 
-					delete alignedFiber;
-					delete alignedNeedle;
+//					delete alignedFiber;
+//					delete alignedNeedle;
 					++needlePosIt;
 				}
 

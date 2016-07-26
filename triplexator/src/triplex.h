@@ -3794,10 +3794,6 @@ namespace SEQAN_NAMESPACE_MAIN
 				THost triplex(infix(ttsString(value(ttsSet,hit.getHstId())), hit.getHstkPos(), hit.getHstkPos()+hit.getHitLength()));
 
 #ifndef TRIPLEX_DEBUG
-//				// TODO remove
-//				if (!isParallel(tfoSet[hit.getNdlSeqNo()])) {
-//					continue;
-//				}
 				cout << "============ HIT ============ " << endl << std::flush;
 				cout << "Seed gardener: " << endl << '\t'
 						<< hit.getHstkPos() << ", " << hit.getHstkPos() + hit.getHitLength()
