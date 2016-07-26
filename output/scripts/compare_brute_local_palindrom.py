@@ -82,7 +82,9 @@ def compare(pal_filename, bru_filename):
             print "ERROR - mismatching palindrom found for line below:"
             print "#" + str(bru_idx + 1) + "\tbrute line: ", bru_content[bru_idx]
             print "#" + str(pal_idx + 1) + "\tbit-parallel line: ", pal_content[pal_idx]
-            exit(-1)
+            print "!!! ERROR."
+            return
+            # exit(-1)
 
         bru_idx += 1
         pal_idx += 1

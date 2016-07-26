@@ -23,16 +23,17 @@ sys.path.append(os.environ.get("TRIPLEXATOR_HOME") + '/python_bindings/')
 
 import triplexator
 import compare_brute_local_palindrom as compare
+import time
 
 # test variables
-TESTS = 1
-TEST_SIZE = 10000
+TESTS = 500
+TEST_SIZE = 100000
 
 # options
 ERROR_RATE = " -e 20 "  # percentage
 CONS_ERROR = " -c 2 "
 MIN_LENGTH = " -l 15 "
-MAX_LENGTH = " -L -1 "
+MAX_LENGTH = " "
 
 if __name__ == "__main__":
     with open(FILE_DNA_DATA_CHR1) as f:
@@ -47,25 +48,31 @@ if __name__ == "__main__":
 
         # create new random data files
         data_file_name = PATH_TEST_DATA + 'ss_' + str(test_nr) + '.data'
-        # data_file = open(data_file_name, 'w')
-        # print('>chr_test', file=data_file)
-        # print(seq, file=data_file)
-        # data_file.close()
+        data_file = open(data_file_name, 'w')
+        print('>chr_test', file=data_file)
+        print(seq, file=data_file)
+        data_file.close()
 
         print("Running bit-parallel local #" + str(test_nr) + " ...")
         out_bit_file_name = "random_" + str(test_nr) + ".tpx"
         dbg_bit_file_name = "random_" + str(test_nr) + ".dbg"
+        start_time = time.time()
         triplexator.runTriplexator(
             '-ss ' + data_file_name + " -ds " + data_file_name + " -fr off -fm 1 --bit-parallel-local " +
             ERROR_RATE + CONS_ERROR + MIN_LENGTH + MAX_LENGTH +
             " -od " + PATH_TEST_BPL + " -o " + out_bit_file_name + " &> " + dbg_bit_file_name)
+        print("BPL time: " + str(time.time() - start_time))
 
         print("Running brute-force #" + str(test_nr) + " ...")
         out_brute_file_name = "random_" + str(test_nr) + ".tpx"
         dbg_brute_file_name = "random_" + str(test_nr) + ".dbg"
+        start_time = time.time()
         triplexator.runTriplexator(
             '-ss ' + data_file_name + " -ds " + data_file_name + " -fr off " +
             ERROR_RATE + CONS_ERROR + MIN_LENGTH + MAX_LENGTH +
             " -od " + PATH_TEST_BRUTE + " -o " + out_brute_file_name + " &> " + dbg_brute_file_name)
+        print("Brute time: " + str(time.time() - start_time))
+
         compare.compare(PATH_TEST_BPL + out_bit_file_name, PATH_TEST_BRUTE + out_brute_file_name)
+
         print("-----\n")
