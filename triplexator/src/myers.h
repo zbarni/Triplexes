@@ -501,9 +501,10 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 #endif
 				// valid diag window, now shift this window to the left and check for valid seeds at each window position
-				// diag, mismatches don't change in this loop!
+				// error rate must be checked again since diag size could have become smaller
 				while (extSeedDim.eDim0 < fiberSize && extSeedDim.eDim1 < needleSize
-						&& fiber[extSeedDim.bDim0] == needle[extSeedDim.bDim1] && fiber[extSeedDim.eDim0] == needle[extSeedDim.eDim1]) {
+						&& fiber[extSeedDim.bDim0] == needle[extSeedDim.bDim1] && fiber[extSeedDim.eDim0] == needle[extSeedDim.eDim1])
+				{
 #ifdef DEBUG
 					cout << "shifting diag window over valid positions: " << diag << endl << std::flush;
 #endif
@@ -521,6 +522,14 @@ namespace SEQAN_NAMESPACE_MAIN
 							cout << "\tnew? tfo : " << infix(needle, seedDim->bDim1, seedDim->eDim1 + 1) << endl << std::flush;
 							cout << "\tAfter guanine rate: " << guanineRate << " vs " << ceil((seedDim->eDim0 - seedDim->bDim0) * options.minGuanineRate) << endl << std::flush;
 #endif
+							// new diag after guanine adjustment
+							unsigned tmp_diag = seedDim->eDim0 + 1 - seedDim->bDim0;
+							// check again if error rate is still satisfied
+							localK = std::max((int)floor(tmp_diag * errorRate), k);
+							if (localK < mismatches) {
+//								cout << "However, error rate is now not satisfied any more!" << endl;
+								continue;
+							}
 
 							// seedDim->eDim* still include the last match, to report we add +1
 							if (seedDim->eDim0 + 1 - seedDim->bDim0 >= options.minLength) {
@@ -716,19 +725,6 @@ namespace SEQAN_NAMESPACE_MAIN
 				continue;
 			}
 
-#ifdef DEBUG
-			cout << endl << "=====>>>>> Found valid match @ " << endl;
-			cout << "Seed match is (Myers):" << endl << std::flush  << "\t";
-			for (int pos = bPos; pos <= ePos; ++pos) {
-				std::cout << mergedHaystack[pos];
-			}
-			std::cout << "\ttts" << endl << "\t";
-			for (int pos = 0; pos < options.minLength; ++pos) {
-				std::cout << suffixQGram[pos];
-			}
-			std::cout << "\ttfo"  << std::flush << endl;
-#endif
-
 			/////////////////////////////////////////////////////////////////////////
 			// find the largest seed within the q-gram
 			t 	 = sysTime();
@@ -800,16 +796,17 @@ namespace SEQAN_NAMESPACE_MAIN
 						needleSet[ndlSeqNo], errorRate, k, guanine, options);
 				times["seedextend"] += sysTime() - t;
 
+				// WARNING! from now on, the (extended) seeds have a +1 at their end dimensions as
+				// they should for reporting results. E.g., an 10 - 21 extended seed has an actual
+				// triplex length of 20 and lies between 10 - 20.
 				for (TSeedListIterator seed = extendedSeeds.begin(); seed != extendedSeeds.end(); ++seed) {
 	#ifdef DEBUG
 					cout << "++++++++++++++++++++++++++++++++++++++++++++++++" << endl << std::flush;
 					cout << "one seed after extension: " << *seed << endl;
 					cout << "Match: " << endl << std::flush;
-					cout << "\tseedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(*seed), getEndDim0(*seed)) << endl << std::flush ;
+					cout << "\tseedFiber: " << infix(haystack[haystackFiberSeqNo], getBeginDim0(*seed), getEndDim0(*seed)) << endl << std::flush;
 					cout << "\tseedQuery: " << infix(needleSet[ndlSeqNo], getBeginDim1(*seed), getEndDim1(*seed)) << endl << std::flush;
-					cout << "needle (tfo - isparallel): " << isParallel(needleSet[ndlSeqNo]) << "\t\t\t" << needleSet[ndlSeqNo] << endl << std::flush;
 					cout << "match length: " << getEndDim0(*seed) - getBeginDim0(*seed) << endl << std::flush;
-					cout << "tfo sequence id (index): \t\t" << ndlSeqNo << endl << std::flush;
 					cout << "+++++ ------- +++++++ ------ ++++++ will try to add new? seed" << endl << std::flush ;
 	#endif
 					// if new seed, add to seedMap and to hitSet

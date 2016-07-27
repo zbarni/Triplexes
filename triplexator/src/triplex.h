@@ -3214,7 +3214,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	
 		// reduce motif set for triplex search
 		if (reduceSet){
-#ifdef TRIPLEX_DEBUG	
+#ifdef TRIPLEX_DEBUG
 			::std::cerr << "# Elements before merging:" << length(tmp_pattern_set) << ::std::endl;
 #endif			
 			_reduceMotifSet(patternString, tmp_pattern_set);
@@ -3806,7 +3806,7 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 
 #ifdef TRIPLEX_DEBUG
-				::std::cerr << "transform (triplex): " << triplex << :: std::endl;
+				::std::cerr << "transform (triplex[tts]): " << triplex << :: std::endl;
 				::std::cerr << "transform (tfo): " << tfo << :: std::endl;
 #endif
 				THostIter itTTS=begin(triplex);
@@ -3816,7 +3816,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					}
 				}
 #ifdef TRIPLEX_DEBUG
-				::std::cerr << "to       : " << triplex << :: std::endl;
+				::std::cerr << "to new triplex (tts): " << triplex << :: std::endl;
 #endif
 				// run through TTS parser
  				TStringSet triplexSet;
@@ -4132,7 +4132,9 @@ namespace SEQAN_NAMESPACE_MAIN
 
             // prefilter for putative TTSs
     		if (options.forward) {
+#ifdef DEBUG
     			cout << "### Forward search" << std::flush << endl << endl;
+#endif
     			processDuplex(ttsSetForward, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
     	        if (length(ttsSetForward)>0) {
     	        	SEQAN_PROTIMESTART(time_search);
@@ -4143,7 +4145,9 @@ namespace SEQAN_NAMESPACE_MAIN
     	        eraseAll(gardenerForward);
     		}
     		if (options.reverse) {
+#ifdef DEBUG
     			cout << "### Reverse search" << std::flush << endl << endl;
+#endif
     			processDuplex(ttsSetReverse, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
     			if (length(ttsSetReverse)>0) {
     				SEQAN_PROTIMESTART(time_search);
