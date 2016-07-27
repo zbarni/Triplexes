@@ -13,7 +13,7 @@
 #include "local_container.h"
 
 //#define DEBUG
-#define TOLERATED_ERROR 2
+#define TOLERATED_ERROR 3
 #define TOLERATED_SEED_ERROR 2 // temporary error to allow for potentially long matches to be explored
 #define MIN_OVERLAP 0
 using namespace seqan;
@@ -1291,6 +1291,10 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int match = 0; match < numLocations; match++) {
+#ifdef DEBUG
+			cout << "'verifyLocalTrilexes'. Found " << numLocations
+					<< " possible match positions. Now doing fiber ePos: " << endLocations[match] << endl;
+#endif
 
 			int ePos = endLocations[match]; 			// end of current putative match in fiber
 			int bPos = ePos - options.minLength + 1; 	// beginning of --||--
