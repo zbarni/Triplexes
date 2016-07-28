@@ -1654,9 +1654,12 @@ namespace SEQAN_NAMESPACE_MAIN
 		// populate needle position map with beg / end positions
 		for (unsigned i = 0; i < length(needles); ++i) {
 			TIntervalCargo cargo(&(needles[i]), i);
-			addInterval(intervalTree, beginPosition(needles[i]), endPosition(needles[i]), cargo);
+			TPos tmp_bpos = std::max(0, ((int)beginPosition(needles[i]) - MAX_OFFSET));
+			TPos tmp_epos = endPosition(needles[i]) + MAX_OFFSET;
+			addInterval(intervalTree, tmp_bpos, tmp_epos, cargo);
 #ifdef DEBUG
-			cout << "needle #" << i << " : " << beginPosition(needles[i]) << " <-> " << endPosition(needles[i]) << endl;
+			cout 	<< "needle #" << i << " : " << beginPosition(needles[i]) << " <-> " << endPosition(needles[i])
+					<<  "; added interval: " << tmp_bpos << " <-> " << tmp_epos << endl;
 #endif
 		}
 

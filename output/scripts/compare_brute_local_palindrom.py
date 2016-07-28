@@ -31,8 +31,7 @@ def get_next_brute_line(idx, content):
 #        print "tts_end: " + str(tts_end)
 #        print "length: " + str(length)
 
-        # +1 ensures that MAX_SHIFT_OFFSET is considered strictly (0 = at least one basepair must overlap)
-        if abs(tts_end - tfo_end + 1) <= length + MAX_SHIFT_OFFSET:
+        if abs(tts_end - tfo_end ) <= length + MAX_SHIFT_OFFSET:
             return idx
         idx += 1
 

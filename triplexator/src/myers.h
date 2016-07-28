@@ -15,7 +15,7 @@
 //#define DEBUG
 #define TOLERATED_ERROR 3
 #define TOLERATED_SEED_ERROR 2 // temporary error to allow for potentially long matches to be explored
-#define MIN_OVERLAP 0
+#define MAX_OFFSET 1 // 1 means they must be at least adjacent
 using namespace seqan;
 
 namespace SEQAN_NAMESPACE_MAIN
@@ -1185,7 +1185,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		cout << "overlap offset: " << offset << ", returning: " << (abs(offset) <= (int)(getEndDim0(seed) - getBeginDim0(seed))) << endl;
 #endif
 		// TODO change max offset here
-		return abs(offset) <= (int)(getEndDim1(seed) - getBeginDim1(seed));
+		return abs(offset) <= (int)(getEndDim1(seed) - getBeginDim1(seed) + MAX_OFFSET - 1);
 	}
 
 	/**
@@ -1499,7 +1499,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		for (unsigned i = 0; i <= needleLength - options.minLength; ++i) {
 #ifdef DEBUG
-			cout << endl << "seedWindow (shifted again?): " << needleSearchWindow << endl;
+			cout << endl << "seedWindow (shifted): " << needleSearchWindow << endl;
 			cout << "nedle window (search space): " << infix(needle, getBeginDim1(needleSearchWindow), getEndDim1(needleSearchWindow) + 1) << endl;
 #endif
 
@@ -1513,9 +1513,8 @@ namespace SEQAN_NAMESPACE_MAIN
 					&endLocations, &startLocations, &numLocations,
 					&alignment, &alignmentLength);
 
-			verifyLocalTriplexes(plusStrand, addedSeedHashMap, hitList, seqNoKey, fiber,
-					/*parentFiber,*/ needle, /*parentNeedle,*/
-					needleSearchWindow,	/*fiberPosOffset,*/ numLocations, endLocations, eR, options, THit());
+			verifyLocalTriplexes(plusStrand, addedSeedHashMap, hitList, seqNoKey, fiber, needle,
+					needleSearchWindow,	numLocations, endLocations, eR, options, THit());
 			free(endLocations);
 
 			// shift window to the right
