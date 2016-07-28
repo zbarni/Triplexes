@@ -1336,8 +1336,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		unsigned char bitQGram[options.minLength];
 
 	    int k = ceil(errorRate * options.minLength);
-		unsigned targetLength 	= 0;
-		unsigned alphabetSize	= 6;	// 4 + Y and N
+		unsigned alphabetSize		= 6;	// 4 + Y and N
+		unsigned long targetLength 	= 0;
 
 		THitList		hitList;		// for each tts-tfo pair: keeps a
 										//
@@ -1454,139 +1454,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		cout << "=== " << (ret ? "True" : "False") << " ===" << endl << std::flush;
 #endif
 		return ret;
-	}
-
-	/**
-	 *
-	 */
-	template<
-	typename TNeedlePositionMap,
-	typename TFiberIt,
-	typename TLength,
-	typename TNeedlePositionMapIterator
-	>
-	TNeedlePositionMapIterator getLowestOverlappingNeedle(TNeedlePositionMap const &needlePosMap,
-			TFiberIt fiberIt,
-			TLength minLength,
-			TNeedlePositionMapIterator)
-	{
-		TNeedlePositionMapIterator needlePosIt = needlePosMap.lower_bound(beginPosition(*fiberIt));
-//		cout << "foo 1. cur needlePosIt: " << needlePosIt->first << " - " << needlePosIt->second.first << endl << std::flush;
-
-		if (needlePosIt == needlePosMap.end() || !overlap(fiberIt, needlePosIt, minLength)) {
-//			cout << "foo 2" << endl << std::flush;
-
-			--needlePosIt; // try the previous one, maybe it's good
-		}
-//		cout << "foo 2#: dist: " << std::distance(needlePosMap.begin(), needlePosIt) << endl << std::flush;
-		// find lowest which still overlaps, with an overlapping length of min. minLength
-		while (needlePosIt != needlePosMap.end() && overlap(fiberIt, needlePosIt, minLength)) {
-//			cout << "foo 3" << endl << std::flush;
-			if (needlePosIt == needlePosMap.begin()) {
-				break;
-			}
-//			cout << "foo 3x" << endl << std::flush;
-			needlePosIt--;
-		}
-//		cout << "foo 4" << endl;
-		// check if we went backwards one too many
-		while (needlePosIt != needlePosMap.end() && !overlap(fiberIt, needlePosIt, minLength)) {
-//			cout << "foo 5" << endl;
-			++needlePosIt;
-		}
-//		cout << "foo 6" << endl;
-		return needlePosIt;
-	}
-
-	/**
-	 *
-	 */
-	template<
-	typename TFiber,
-	typename TNeedle,
-	typename TOffset
-	>
-	void alignFiberAndNeedle(
-			TFiber 	*&alignedFiber,
-			TFiber 	 const &fiber,
-			TNeedle *&alignedNeedle,
-			TNeedle  const &needle,
-			TOffset  fiberPosOffset)
-	{
-#ifdef DEBUG
-		cout << "aligning fiber and needle: "
-				<< beginPosition(fiber) << " - " << endPosition(fiber)
-				<< " vs " << beginPosition(needle) << " - " << endPosition(needle) << endl << std::flush;
-#endif
-		// needle has a higher starting position, move start position of fiber to the right
-		if (fiberPosOffset > 0) {
-			TOffset newFiberSize = std::min(length(fiber) - fiberPosOffset, length(needle));
-			alignedFiber = new TFiber(
-					host(fiber),
-					beginPosition(fiber) + fiberPosOffset,
-					beginPosition(fiber) + fiberPosOffset + newFiberSize,
-					fiber.parallel,
-					fiber.seqNo,
-					fiber.isTFO,
-					fiber.motif,
-					fiber.copies);
-
-			// new fiber is shorter than needle, adjust (shorten) end of needle
-			if (newFiberSize < length(needle)) {
-				alignedNeedle = new TNeedle(
-						host(needle),
-						beginPosition(needle), beginPosition(needle) + newFiberSize,
-						needle.parallel,
-						needle.seqNo,
-						needle.isTFO,
-						needle.motif,
-						needle.copies);
-			}
-			else {
-				alignedNeedle = new TNeedle(needle);
-			}
-		}
-		// needle has lower starting position, move start position of needle to the right
-		else if (fiberPosOffset < 0) {
-			fiberPosOffset = -fiberPosOffset; // make it positive
-			TOffset newNeedleSize = std::min(length(needle) - fiberPosOffset, length(fiber));
-			alignedNeedle = new TNeedle(
-					host(needle),
-					beginPosition(needle) + fiberPosOffset,
-					beginPosition(needle) + fiberPosOffset + newNeedleSize,
-					needle.parallel,
-					needle.seqNo,
-					needle.isTFO,
-					needle.motif,
-					needle.copies);
-			// new needle is shorter than fiber, adjust (shorten) end of fiber
-			if (newNeedleSize < length(fiber)) {
-				alignedFiber = new TFiber(
-						host(fiber),
-						beginPosition(fiber), beginPosition(fiber) + newNeedleSize,
-						fiber.parallel,
-						fiber.seqNo,
-						fiber.isTFO,
-						fiber.motif,
-						fiber.copies);
-			}
-			else {
-				alignedFiber = new TFiber(fiber);
-			}
-		}
-		else {
-			alignedFiber  = new TFiber(fiber);
-			alignedNeedle = new TNeedle(needle);
-		}
-
-#ifdef DEBUG
-		cout << "aligned? : " << ((beginPosition(*alignedFiber) == beginPosition(*alignedNeedle)
-				&& endPosition(*alignedFiber) == endPosition(*alignedNeedle)) ? "yes" : "no") << endl;
-		cout << "after alignment: " << beginPosition(*alignedFiber) << " - " << endPosition(*alignedFiber)
-				<< " vs " << beginPosition(*alignedNeedle) << " - " << endPosition(*alignedNeedle) << endl << std::flush;
-		cout << "aligned fiber:  " << *alignedFiber << endl;
-		cout << "aligned needle: " << *alignedNeedle << endl;
-#endif
 	}
 
 	/**
