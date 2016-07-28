@@ -19,15 +19,20 @@ def get_next_brute_line(idx, content):
         if line[0][0] == '#':
             return None
 
-        tfo_end = int(line[2])
+        tfo_end = int(line[2]) - 1
 
         tts_beg = int(line[4])
-        tts_end = int(line[5])
+        tts_end = int(line[5]) - 1
 
-        length = tts_end - tts_beg
+        length = tts_end - tts_beg + 1
 
-        # print "get next: " + str(idx + 1) + ", val: " + str(abs(tts_end - tfo_end))
-        if abs(tts_end - tfo_end) <= length + MAX_SHIFT_OFFSET:
+#        print "get next: " + str(idx + 1) + ", val: " + str(abs(tts_end - tfo_end))
+#        print "tfo_end: " + str(tfo_end)
+#        print "tts_end: " + str(tts_end)
+#        print "length: " + str(length)
+
+        # +1 ensures that MAX_SHIFT_OFFSET is considered strictly (0 = at least one basepair must overlap)
+        if abs(tts_end - tfo_end + 1) <= length + MAX_SHIFT_OFFSET:
             return idx
         idx += 1
 
