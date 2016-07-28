@@ -81,19 +81,19 @@ def compare(pal_filename, bru_filename):
         if bru_idx is None:
             break
 
-        # print "> " + str(bru_idx + 1) + " vs " + str(pal_idx + 1)
         if not matching_palindrom(pal_idx, pal_content, bru_content[bru_idx]):
-            print "ERROR - mismatching palindrom found for line below:"
-            print "#" + str(bru_idx + 1) + "\tbrute line: ", bru_content[bru_idx]
-            print "#" + str(pal_idx + 1) + "\tbit-parallel line: ", pal_content[pal_idx]
-            print "!!! ERROR."
-            return
-            # exit(-1)
+#            print "ERROR - mismatching palindrom found for line below:"
+#            print "#" + str(bru_idx + 1) + "\tbrute line: ", bru_content[bru_idx]
+#            print "#" + str(pal_idx + 1) + "\tbit-parallel line: ", pal_content[pal_idx]
+#            print "!!! ERROR."
+            res  = "#" + str(bru_idx + 1) + "\tbrute line: ", bru_content[bru_idx]
+            res += "\n#" + str(pal_idx + 1) + "\tbit-parallel line: ", pal_content[pal_idx]
+            return (False, res)
 
         bru_idx += 1
         pal_idx += 1
 
-    print ">>> SUCCESS."
+    return (True, None)
 
 
 if __name__ == "__main__":
