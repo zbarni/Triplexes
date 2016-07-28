@@ -753,7 +753,8 @@ namespace SEQAN_NAMESPACE_MAIN
 			}
 
 			if (maxSeedFiberEnd == -1 || !maxSeedLength) {
-				cout << "BIG PROBLEM HERE, CAPTAIN! We have a seed of length 0?!!" << std::flush << endl;
+				continue;
+//				cout << "BIG PROBLEM HERE, CAPTAIN! We have a seed of length 0?!!" << std::flush << endl;
 			}
 			times["maxseedfind"] += sysTime() - t;
 
@@ -1373,7 +1374,8 @@ namespace SEQAN_NAMESPACE_MAIN
 
 			// make sure we have a valid maximum seed
 			if (!maxSeedLength) {
-				cout << "BIG PROBLEM HERE, CAPTAIN! We have a seed of length 0?!!" << std::flush << endl;
+				continue;
+//				cout << "BIG PROBLEM HERE, CAPTAIN! We have a seed of length 0?!!" << std::flush << endl;
 			}
 
 			if (!addedSeedHashMap.count(seqNoKey)) {
