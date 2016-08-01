@@ -39,7 +39,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	} SeedDimStruct;
 
 	ostream& operator << (ostream& os, const SeedDimStruct& s) {
-		return os << "\tbDim0, eDim0: " << s.bDim0 << ", " << s.eDim0 << endl
+		return os << "\n\tbDim0, eDim0: " << s.bDim0 << ", " << s.eDim0 << endl
 					<< "\tbDim1, eDim1: " << s.bDim1 << ", " << s.eDim1;
 	}
 
@@ -836,7 +836,9 @@ namespace SEQAN_NAMESPACE_MAIN
 	}
 
 	/**
-	 *
+	 * Given a haystack with individual fibers, creates a single 'merged haystack' by concatenating
+	 * all fibers one after the other. A map of which fiber starts where in the merged haystack
+	 * is kept in segmentMap param.
 	 */
 	template<
 	typename THaystack,		// haystack spec - double stranded sequences (tts)
@@ -850,7 +852,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TSegmentMap  		&segmentMap,
 			TPosToFiberSeqNo	&posToFiberSeqNo,
 			unsigned char  	   *&bitTarget,
-			unsigned int 		&totalHaystackLength)
+			unsigned long 		&totalHaystackLength)
 	{
 
 		// calculate total length of segments in haystack
@@ -871,43 +873,38 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		for (int i = 0; i < length(haystack); ++i) {
 			segmentMap.push_back(totalHaystackLength);
-	#ifdef DEBUG
-			std::cout 	<< "seq no: " << i << " (len = " << length(haystack[i]) << "): " << std::flush ;
-	#endif
 			// fill mergedHaystack and Myers vector
 			for (int j = 0; j < length(haystack[i]); ++j) {
 				mergedHaystack[totalHaystackLength + j] = haystack[i][j];
 				// rewrite double stranded seq (tts) in a proper form for Myers (char -> index)
-				bitTarget[totalHaystackLength + j] = charToBit(haystack[i][j]);//static_cast<unsigned int>(haystack[i][j]);
+				bitTarget[totalHaystackLength + j] = charToBit(haystack[i][j]);
 
 				// add starting position in mergedHaystack for current fiber
 				posToFiberSeqNo.push_back(i);
 			}
 			totalHaystackLength += length(haystack[i]);
-	#ifdef DEBUG
-			std::cout 	<< haystack[i] << std::endl << std::flush ;
-	#endif
 		}
 	}
 
 	/**
-	 *
+	 * Computes guanine 'G' rate of a triplex, only matching guanines are considered valid.
 	 */
 	template<
 	typename TFiber,
 	typename TNeedle,
 	typename TPos,
-	typename TLength
+	typename TSize
 	>
 	int calcGuanines (
 			TFiber	const 	&fiber,
 			TNeedle	const	&needle,
 			TPos			fiberPos,
 			TPos			ndlPos,
-			TLength	const	&mergedLength)
+			TSize	const	&mergedLength)
 	{
 		int guanines = 0;
 		for (int i = 0; i < mergedLength; ++i) {
+			// must be guanine and fiber and needle position must match
 			if (isGuanine(fiber[fiberPos + i]) && fiber[fiberPos + i] == needle[ndlPos + i]) {
 				++guanines;
 			}
@@ -1096,9 +1093,6 @@ namespace SEQAN_NAMESPACE_MAIN
 					}
 					// no overlap --> add all hits and stop verifying current dim0It
 					else {
-#ifdef DEBUG
-						cout << "no overlap! stop after this" << endl;
-#endif
 						noMoreOverlap = true;
 					}
 				}
@@ -1128,33 +1122,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	 ***************************************************************************************************
 	 ***************************************************************************************************
 	 */
-//	TODO @next: check negative fiber offset
-
-	/**
-	 *
-	 */
-	template<
-	typename TLength,
-	typename TOptions,
-	typename TSeed>
-	TSeed initSeedWindow(
-			bool 		  	  plusStrand,
-			bool		  	  needleParallel,
-			TLength 	const &windowSize,
-			TLength 	const &fiberLength,
-			TLength 	const &needleLength,
-			TOptions 	const &options,
-			TSeed)
-	{
-		TSeed seed;
-
-		setBeginDim0(seed, plusStrand ? 0 : fiberLength - windowSize);
-		setEndDim0(seed, plusStrand ?  windowSize - 1 : fiberLength - 1);
-		setBeginDim1(seed, needleParallel ? 0 : needleLength - options.minLength);
-		setEndDim1(seed, needleParallel ? options.minLength - 1 : needleLength - 1);
-
-		return seed;
-	}
 
 	/**
 	 * Check if matching positions on fiber and needle are not? too far apart - we want locality!
@@ -1187,67 +1154,6 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 		// TODO change max offset here
 		return abs(offset) <= (int)(getEndDim1(seed) - getBeginDim1(seed) + MAX_OFFSET - 1);
-	}
-
-	/**
-	 * Maximum fiber window size is 3 * minLength TODO change here if required
-	 */
-	template<typename TSize>
-	TSize maxFiberWindowSize(TSize const minLength) {
-		return minLength * 3;
-	}
-
-	/**
-	 * Resizes seedWindow for fiber according to its orientation (plusStrand?): this can be
-	 * a (partial) shift in any direction. The needle window is never resized but only shifted
-	 * to left or right.
-	 * Returns true if there is a valid shift and false otherwise, i.e., false if window size
-	 * gets smaller than minLength, or one of the limits is reached.
-	 */
-	template<typename TSeed>
-	inline bool shiftWindow(bool plusStrand, bool isNeedleParallel,
-			int fiberLength, int needleLength, int minLength, TSeed &seedWindow)
-	{
-		// shift needle window to right / left
-		int needleWindowShift = isNeedleParallel ? 1 : -1;
-
-		// check for left limits if we have to shift to the left
-		if ((getBeginDim1(seedWindow) == 0 && needleWindowShift == -1))
-		{
-			return false;
-		}
-
-		unsigned long fiberWindowSize = getEndDim0(seedWindow) - getBeginDim0(seedWindow) + 1;
-#ifdef DEBUG
-		cout << "shiftWindow --> fiberWindowSize: " << fiberWindowSize << endl << std::flush;
-#endif
-		if (plusStrand) {
-			if (fiberWindowSize >= maxFiberWindowSize(minLength)) {
-				setBeginDim0(seedWindow, getBeginDim0(seedWindow) + 1);
-			}
-			if (getEndDim0(seedWindow) < fiberLength - 1) {
-				setEndDim0(seedWindow, getEndDim0(seedWindow) + 1);
-			}
-		}
-		else {
-			// only decrease fiber window size if it's sufficiently large
-			if (fiberWindowSize >= maxFiberWindowSize(minLength)) {
-				setEndDim0(seedWindow, getEndDim0(seedWindow) - 1);
-			}
-			if (getBeginDim0(seedWindow) > 0) {
-				setBeginDim0(seedWindow, getBeginDim0(seedWindow) - 1);
-			}
-		}
-
-		setBeginDim1(seedWindow, getBeginDim1(seedWindow) + needleWindowShift);
-		setEndDim1(seedWindow, getEndDim1(seedWindow) + needleWindowShift);
-
-#ifdef DEBUG
-		cout << "shiftWindow new temp seed is: " << seedWindow << endl << std::flush;
-#endif
-		return (getBeginDim1(seedWindow) >= 0 && getEndDim1(seedWindow) < needleLength &&
-				getEndDim0(seedWindow) - getBeginDim0(seedWindow) >= minLength - 1 &&
-				getEndDim1(seedWindow) - getBeginDim1(seedWindow) >= minLength - 1);
 	}
 
 	/**
@@ -1465,9 +1371,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		int *endLocations;
 		int *startLocations;
 		int alignmentLength;
-
 		unsigned char *alignment;
-		unsigned char *bitNeedle;
 
 		// compute error rate
 		double eR = options.errorRate;
@@ -1481,9 +1385,9 @@ namespace SEQAN_NAMESPACE_MAIN
 				<< endl << "fiber (" << (plusStrand ? "+" : "-") << "): " << fiber << endl
 				<< "nedle (" << isParallel(needle) << " = " << getMotif(needle) << "): " << needle << endl;
 #endif
-		int fiberLength   = length(fiber);
-		int needleLength  = length(needle);
-		bitNeedle 		  = new unsigned char [needleLength];
+		unsigned fiberLength   = length(fiber);
+		unsigned needleLength  = length(needle);
+		unsigned char *bitNeedle = new unsigned char [needleLength];
 		unsigned char * const bitNeedleBase = bitNeedle; // store original address for deletion later
 
 		// init seed window and number of shifts
@@ -1499,7 +1403,8 @@ namespace SEQAN_NAMESPACE_MAIN
 			bitNeedle[i] = charToBit((needle)[i]);
 		}
 
-		for (unsigned i = 0; i <= needleLength - options.minLength; ++i) {
+		unsigned shifts = needleLength - options.minLength;
+		for (unsigned i = 0; i <= shifts; ++i) {
 #ifdef DEBUG
 			cout << endl << "seedWindow (shifted): " << needleSearchWindow << endl;
 			cout << "nedle window (search space): " << infix(needle, getBeginDim1(needleSearchWindow), getEndDim1(needleSearchWindow) + 1) << endl;
