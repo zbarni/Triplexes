@@ -1565,7 +1565,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				// reset bitFiber to initial encoding (without shifts)
 				bitFiber = bitFiberBase;
 
-				computeLocalTriplexes(seedHashMap, hitList, *fiberIt, *(cargoIt->i1), bitFiber,
+				computeLocalTriplexes(times, seedHashMap, hitList, *fiberIt, *(cargoIt->i1), bitFiber,
 						(unsigned long)std::distance(begin(haystack), fiberIt), // fiberSeqNo
 						cargoIt->i2,	// needleSeqNo
 						k, alphabetSize, plusStrand, options, TSeed(), THit());
@@ -1575,7 +1575,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 
 		// merge hits
+		t = sysTime();
 		mergeOverlappingHits(hitList, hitSetPointerMap, haystack, needles, errorRate, options, THit());
+		times["merge"] += sysTime() - t;
 
 		// add hits to gardener
 		for (int i = 0; i < length(haystack); ++i) {
