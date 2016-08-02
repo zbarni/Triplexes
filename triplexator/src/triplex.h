@@ -545,7 +545,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		double		timeTriplexSearch;	// time for searching only
 		double		timeFindTfos;		// time for finding tfos
 		double		timeFindTtss;		// time for finding ttss
-		double		timeIOReadingTts;	//
+		double		timeIO;	//
 		double		timeCreateTtssIndex;// time for creating ttss index
 		double		timeQgramFind;		// find_index_qgrams find function
 		double		timeCollectSeeds;
@@ -4100,9 +4100,9 @@ namespace SEQAN_NAMESPACE_MAIN
         //////////////////////////////////////////////////////////////////////////////
         // iterate over duplex sequences, and add them to ttsSet after processing ////
         //////////////////////////////////////////////////////////////////////////////
-        SEQAN_PROTIMESTART(time_tts_io);
 		for(; !_streamEOF(file); ++duplexSeqNoWithinFile) {
-//			::std::cerr << "Processing:\t" << duplexName << "\t(seq " << duplexSeqNoWithinFile << ")\r" << ::std::flush;
+			double timeIO = sysTime();
+			::std::cerr << "Processing:\t" << duplexName << "\t(seq " << duplexSeqNoWithinFile << ")\r" << ::std::flush;
 			TDuplex	duplexSeq;
 			CharString duplexName;
 			readShortID(file, duplexName, Fasta());	// read Fasta id up to first whitespace
@@ -4122,7 +4122,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					replace(duplexSeq, repeat.beginPosition, repeat.endPosition, replacement);
 				}
 			}
-			
+			options.timeIO += sysTime() - timeIO;
 	        TDuplexModSet 	ttsSetForward;
 	        TDuplexModSet 	ttsSetReverse;
 	        TGardener 		gardenerForward;
@@ -4135,11 +4135,14 @@ namespace SEQAN_NAMESPACE_MAIN
 #ifdef DEBUG
     			cout << "### Forward search" << std::flush << endl << endl;
 #endif
+    			timeIO = sysTime();
     			processDuplex(ttsSetForward, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
+    			options.timeIO += sysTime() - timeIO;
     	        if (length(ttsSetForward)>0) {
-    	        	SEQAN_PROTIMESTART(time_search);
+    	        	double timeSearch = sysTime();
+    	            options.logFileHandle << _getTimeStamp() <<  " Started forward search." << ::std::endl;
     	        	_filterTriplexMyers(times, gardenerForward, ttsSetForward, index, tfoMotifSet, true, options);
-    	        	options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
+    	        	options.timeTriplexSearch 	+= sysTime() - timeSearch;
     	        	_verifyAndStoreMyers(triplexHashes, matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, duplexSeqNoWithinFile, true, options);
     	        }
     	        eraseAll(gardenerForward);
@@ -4148,11 +4151,14 @@ namespace SEQAN_NAMESPACE_MAIN
 #ifdef DEBUG
     			cout << "### Reverse search" << std::flush << endl << endl;
 #endif
+    			timeIO = sysTime();
     			processDuplex(ttsSetReverse, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
+    			options.timeIO += sysTime() - timeIO;
     			if (length(ttsSetReverse)>0) {
-    				SEQAN_PROTIMESTART(time_search);
+    				double timeSearch = sysTime();
+    				options.logFileHandle << _getTimeStamp() <<  " Started reverse search." << ::std::endl;
     				_filterTriplexMyers(times, gardenerReverse, ttsSetReverse, index, tfoMotifSet, false, options);
-    				options.timeTriplexSearch 	+= SEQAN_PROTIMEDIFF(time_search);
+    	        	options.timeTriplexSearch 	+= sysTime() - timeSearch;
     				triplexHashes.clear();
     				_verifyAndStoreMyers(triplexHashes, matches, potentials, gardenerReverse, tfoMotifSet, ttsSetReverse, duplexSeqNoWithinFile, false, options);
     			}
@@ -4166,12 +4172,8 @@ namespace SEQAN_NAMESPACE_MAIN
     		// clean up
             clear(matches);
 		}
-        options.timeIOReadingTts += SEQAN_PROTIMEDIFF(time_tts_io);
 		file.close();
 
-        options.timeCollectSeedsLoop+= timeCollectSeedsLoop;
-        options.timeCSFreeSpace		+= timeCSFreeSpace;
-        options.cntCSFind			+= cntCSFind;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time myers " << ::std::setprecision(3) << times["myers"] << " sec" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time verify " << ::std::setprecision(3) << times["verify"] << " sec" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time merge  " << ::std::setprecision(3) << times["merge"] << " sec" << ::std::endl;

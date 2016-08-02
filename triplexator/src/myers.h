@@ -1162,7 +1162,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	 * all hits are appended to hitList.
 	 */
 	template<
-//	typename TTimes,
+	typename TTimes,
 	typename TSeedMap,
 	typename THitList,
 	typename TPair,
@@ -1174,7 +1174,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename THit
 	>
 	void verifyLocalTriplexes(
-//			TTimes					&times,
+			TTimes					&times,
 			bool 		const	plusStrand,
 			TSeedMap			&addedSeedHashMap,
 			THitList			&hitList,
@@ -1195,6 +1195,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		TSeedList extendedSeeds;
 
 		int k = floor(options.errorRate * options.minLength); // #mismatches allowed
+		double t = sysTime();
 
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int match = 0; match < numLocations; match++) {
@@ -1294,8 +1295,10 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 
 			// extend valid maximum seed
+			double tt = sysTime();
 			extendSimpleSeed(addedSeedHashMap[seqNoKey], maxSeed, extendedSeeds,
 					fiber, needle, errorRate, k, guanine, options);
+			times["seedextend"] += sysTime() - tt;
 
 			for (TSeedListIterator seed = extendedSeeds.begin(); seed != extendedSeeds.end(); ++seed) {
 #ifdef DEBUG
@@ -1331,6 +1334,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 			}
 		}
+		times["verify"] += sysTime() - t;
 	}
 
 	/**
@@ -1338,6 +1342,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	 * between the two satisfying some maximum shift constraint.
 	 */
 	template<
+	typename TTimes,
 	typename TSeedHashMap,
 	typename THitList,
 	typename TFiber,
@@ -1349,6 +1354,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename THit
 	>
 	void computeLocalTriplexes(
+			TTimes				&times,
 			TSeedHashMap 		&addedSeedHashMap,
 			THitList			&hitList,
 			TFiber 		const 	&fiber,
@@ -1412,6 +1418,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 			//calculate Myers distance - this yields putative matches in endLocations
 			numLocations = 0;
+			double t = sysTime();
 			edlibCalcEditDistance(bitNeedle + getBeginDim1(needleSearchWindow),
 					options.minLength,
 					bitFiber, //
@@ -1419,8 +1426,10 @@ namespace SEQAN_NAMESPACE_MAIN
 					alphabetSize, k + TOLERATED_SEED_ERROR, EDLIB_MODE_HW, false, false, &score,
 					&endLocations, &startLocations, &numLocations,
 					&alignment, &alignmentLength);
+    		times["myers"] += sysTime() - t;
 
-			verifyLocalTriplexes(plusStrand, addedSeedHashMap, hitList, seqNoKey, fiber, needle,
+
+			verifyLocalTriplexes(times, plusStrand, addedSeedHashMap, hitList, seqNoKey, fiber, needle,
 					needleSearchWindow,	numLocations, endLocations, eR, options, THit());
 			free(endLocations);
 

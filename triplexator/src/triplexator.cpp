@@ -746,31 +746,23 @@ namespace SEQAN_NAMESPACE_MAIN
         unsigned errorCode = TRIPLEX_NORMAL_PROGAM_EXIT;
         options.timeCreateTtssIndex = 0;
         options.timeTriplexSearch 	= 0;
-        options.timeIOReadingTts 	= 0;
+        options.timeIO 				= 0;
         
-        SEQAN_PROTIMESTART(find_time);
         options.logFileHandle << _getTimeStamp() << " * Started searching for triplexes (Myers)" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << " * Processing " << options.duplexFileNames[0] << ::std::endl;
 
-        if (options.filterMode == FILTERING_GRAMS){
-            options.logFileHandle << _getTimeStamp() <<  " - Myers Qgram index creation." << ::std::endl;
-            TQGramIndex index_qgram(tfoMotifSet);
-            resize(indexShape(index_qgram), weight(shape));
-            indexRequire(index_qgram, QGramCounts());
-            indexRequire(index_qgram, QGramSADir());
-            errorCode = startTriplexSearchSerialBitParallelGlobal(tfoMotifSet, tfoNames, index_qgram, outputfile, shape, options, TGardener());
-        }
-        else {
-            assert(false && "Should handle brute force inverted here. TODO");
-        }   
+        options.logFileHandle << _getTimeStamp() <<  " - Myers Qgram index creation." << ::std::endl;
+        TQGramIndex index_qgram(tfoMotifSet);
+        resize(indexShape(index_qgram), weight(shape));
+        indexRequire(index_qgram, QGramCounts());
+        indexRequire(index_qgram, QGramSADir());
+        errorCode = startTriplexSearchSerialBitParallelGlobal(tfoMotifSet, tfoNames, index_qgram, outputfile, shape, options, TGardener());
         
         if (errorCode == TRIPLEX_NORMAL_PROGAM_EXIT){
             options.logFileHandle << _getTimeStamp() << " * Finished processing " << options.duplexFileNames[0] << ::std::endl;
             options.logFileHandle << std::endl;
-            options.timeFindTriplexes += SEQAN_PROTIMEDIFF(find_time);
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished searching (including IO) for triplexes  within " << ::std::setprecision(3) << options.timeFindTriplexes << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for triplex search only (search + verify - triplex.h) " << ::std::setprecision(3) << options.timeTriplexSearch << " seconds (summed over all cpus)" << ::std::endl;
-            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIOReadingTts << " seconds (summed over all cpus)" << ::std::endl;
+            options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIO << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `verifyAndStore` function in triplex.h " << ::std::setprecision(3) << options.timeVerifyAndStore << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << std::endl;
         }
@@ -1625,7 +1617,7 @@ namespace SEQAN_NAMESPACE_MAIN
     int _mainWithOptions(int argc, char const ** argv, Options &options)
     {
         SEQAN_PROTIMESTART(runtime);
-        
+        double t_runtime = sysTime();
         openLogFile(options);
         openSummaryFile(options);
         
@@ -1654,7 +1646,8 @@ namespace SEQAN_NAMESPACE_MAIN
         
         closeSummaryFile(options);
         
-        options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished program within " <<  ::std::setprecision(3)  << SEQAN_PROTIMEDIFF(runtime) << " seconds" << ::std::endl;
+//        options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished program within " <<  ::std::setprecision(3)  << SEQAN_PROTIMEDIFF(runtime) << " seconds" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished program within " <<  ::std::setprecision(3)  << sysTime() - t_runtime << " seconds" << ::std::endl;
         closeLogFile(options);
         
         return result;
