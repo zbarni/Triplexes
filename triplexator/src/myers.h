@@ -1195,7 +1195,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		TSeedList extendedSeeds;
 
 		int k = floor(options.errorRate * options.minLength); // #mismatches allowed
-		double t = sysTime();
 
 		// iterate over all putative matches (end locations), find max seed and then extend
 		for (int match = 0; match < numLocations; match++) {
@@ -1334,7 +1333,6 @@ namespace SEQAN_NAMESPACE_MAIN
 				}
 			}
 		}
-		times["verify"] += sysTime() - t;
 	}
 
 	/**
@@ -1428,9 +1426,11 @@ namespace SEQAN_NAMESPACE_MAIN
 					&alignment, &alignmentLength);
     		times["myers"] += sysTime() - t;
 
-
+    		t = sysTime();
 			verifyLocalTriplexes(times, plusStrand, addedSeedHashMap, hitList, seqNoKey, fiber, needle,
 					needleSearchWindow,	numLocations, endLocations, eR, options, THit());
+    		times["verify"] += sysTime() - t;
+
 			free(endLocations);
 
 			// shift window to the right

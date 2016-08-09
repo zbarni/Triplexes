@@ -4074,6 +4074,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef std::map<TTriplexHashKey, std::set<unsigned long> > TTriplexHashes;
 
 		std::map<std::string, double> times;
+		times["findInterval"] = 0;
+		times["bpl"] = 0;
 		TTriplexHashes triplexHashes;
 		// open duplex file
 		::std::ifstream file;
@@ -4178,10 +4180,13 @@ namespace SEQAN_NAMESPACE_MAIN
         options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time verify " << ::std::setprecision(3) << times["verify"] << " sec" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time merge  " << ::std::setprecision(3) << times["merge"] << " sec" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time seedExtend " << ::std::setprecision(3) << times["seedextend"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time maxSeedFind " << ::std::setprecision(3) << times["maxseedfind"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time addIfNewSeed " << ::std::setprecision(3) << times["addifnewseed"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time consecutive & mismatches " << ::std::setprecision(3) << times["consmm"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time getHaystackFiberNo " << ::std::setprecision(3) << times["gethaystackfiberno"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time plantBitParallelLocal " << ::std::setprecision(3) << times["bpl"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time fiberLoop " << ::std::setprecision(3) << times["fiberLoop"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time findInterval " << ::std::setprecision(3) << times["findInterval"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time computeLocalTriplexes " << ::std::setprecision(3) << times["computeLocalTriplexes"] << " sec" << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time createIntervalTree " << ::std::setprecision(3) << times["createIntervalTree"] << " sec" << ::std::endl;
+//        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time consecutive & mismatches " << ::std::setprecision(3) << times["consmm"] << " sec" << ::std::endl;
+//        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time getHaystackFiberNo " << ::std::setprecision(3) << times["gethaystackfiberno"] << " sec" << ::std::endl;
 
         return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}

@@ -41,6 +41,7 @@
 #include "helper.h"
 #include "edlib.h"
 #include "myers.h"
+#include "simpleintervaltree.h"
 #include <seqan/seeds2.h>  // Include module under test.
 #include <seqan/sequence/adapt_std_list.h>
 #include <seqan/misc/priority_type_base.h>
@@ -1485,6 +1486,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TWorker)
 	{
 		double t;
+		double timeBPL = sysTime();
 		typedef typename Value<Gardener<TId, TSpec> >::Type		THitMap;
 		typedef typename Value<THitMap>::Type					THitMapEntry;
 		typedef typename Value<THitMapEntry,2>::Type			THitSetPointer;
@@ -1505,6 +1507,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		typedef			 Pair<const TNeedle*, unsigned long>		TIntervalCargo;
 		typedef			 IntervalAndCargo<TPos, TIntervalCargo >	TInterval;
+		typedef typename Iterator< String<TIntervalCargo> >::Type 	TIntervalCargoIterator;
 
 		int 	 k 				= ceil(errorRate * options.minLength); // #overall mismatches allowed
 		unsigned targetLength 	= 0;
@@ -1516,19 +1519,26 @@ namespace SEQAN_NAMESPACE_MAIN
 		THitSetPointerMap hitSetPointerMap; // for each needle in query set (needles/tfoSet), stores a
 											// hitSetPointer containing all corresponding hits
 
-		IntervalTree<TPos, TIntervalCargo> intervalTree;
+		double timeCreateIntervalTree = sysTime();
 
-		// populate needle position map with beg / end positions
+		// create interval tree with needle intervals
+//		std::vector<IntervalSimple<TIntervalCargo> > *intervalResults = 0;
+		std::vector<IntervalSimple<TIntervalCargo> > intervals;
 		for (unsigned i = 0; i < length(needles); ++i) {
 			TIntervalCargo cargo(&(needles[i]), i);
 			TPos tmp_bpos = std::max(0, ((int)beginPosition(needles[i]) - MAX_OFFSET));
 			TPos tmp_epos = endPosition(needles[i]) + MAX_OFFSET;
-			addInterval(intervalTree, tmp_bpos, tmp_epos, cargo);
-#ifdef DEBUG
-			cout 	<< "needle #" << i << " : " << beginPosition(needles[i]) << " <-> " << endPosition(needles[i])
-					<<  "; added interval: " << tmp_bpos << " <-> " << tmp_epos << endl;
-#endif
+
+			intervals.push_back(IntervalSimple<TIntervalCargo>(tmp_bpos, tmp_epos, cargo));
+			// ---------------------------------
+//#ifdef DEBUG
+//			cout 	<< "needle #" << i << " : " << beginPosition(needles[i]) << " <-> " << endPosition(needles[i])
+//					<<  "; added interval: " << tmp_bpos << " <-> " << tmp_epos << endl;
+//#endif
 		}
+		SimpleIntervalTree<TIntervalCargo> intervalTree;
+		intervalTree = SimpleIntervalTree<TIntervalCargo>(intervals);
+		times["createIntervalTree"] += sysTime() - timeCreateIntervalTree;
 
 		// add a new hitset object for each fiber in haystack
 		for (int i = 0; i < length(haystack); ++i) {
@@ -1544,35 +1554,40 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 
 		// iterate over each fiber in haystack
+		double timeFiberLoop = sysTime();
 		for (THaystackIterator fiberIt = begin(haystack); fiberIt != end(haystack); ++fiberIt) {
 #ifdef DEBUG
 			cout << "!fiber #?" << " : " << beginPosition(*fiberIt) << " <-> " << endPosition(*fiberIt) << endl;
 #endif
-			typedef typename Iterator< String<TIntervalCargo> >::Type TIntervalCargoIterator;
-			String<TIntervalCargo> results;
-			findIntervals(intervalTree, beginPosition(*fiberIt), endPosition(*fiberIt), results);
+			double timeFindIntervals = sysTime();
+//			intervalResults = new std::vector<IntervalSimple<TIntervalCargo> >();
+			std::vector<IntervalSimple<TIntervalCargo> > intervalResults;
+			intervalTree.findOverlapping(beginPosition(*fiberIt), endPosition(*fiberIt), intervalResults);
+			times["findInterval"] += sysTime() - timeFindIntervals;
+
+			bitFiber = new unsigned char[length(*fiberIt)];
+			// transform fiber to bit encoding for Myers
+			for (int i = 0; i < length(*fiberIt); ++i) {
+				bitFiber[i] = charToBit((*fiberIt)[i]);
+			}
+			unsigned char * const bitFiberBase = bitFiber;
 
 			// iterate over all needles that overlap somehow with this fiber
-			for (TIntervalCargoIterator cargoIt = begin(results); cargoIt != end(results); ++cargoIt) {
-				bitFiber = new unsigned char[length(*fiberIt)];
-
-				// transform fiber to bit encoding for Myers
-				for (int i = 0; i < length(*fiberIt); ++i) {
-					bitFiber[i] = charToBit((*fiberIt)[i]);
-				}
-				unsigned char * const bitFiberBase = bitFiber;
-
+			for (unsigned i = 0; i < intervalResults.size(); ++i) {
 				// reset bitFiber to initial encoding (without shifts)
 				bitFiber = bitFiberBase;
-
-				computeLocalTriplexes(times, seedHashMap, hitList, *fiberIt, *(cargoIt->i1), bitFiber,
+				TIntervalCargo *cargo = &(intervalResults[i].value);
+				double timeComputeLocalTriplexes = sysTime();
+				computeLocalTriplexes(times, seedHashMap, hitList, *fiberIt, /**(cargoIt->i1)*/*(cargo->i1), bitFiber,
 						(unsigned long)std::distance(begin(haystack), fiberIt), // fiberSeqNo
-						cargoIt->i2,	// needleSeqNo
+						cargo->i2,	// needleSeqNo
 						k, alphabetSize, plusStrand, options, TSeed(), THit());
-
-				delete [] bitFiberBase;
+				times["computeLocalTriplexes"] += sysTime() - timeComputeLocalTriplexes;
 			}
+			delete [] bitFiberBase;
+//			delete intervalResults;
 		}
+		times["fiberLoop"] += sysTime() - timeFiberLoop;
 
 		// merge hits
 		t = sysTime();
@@ -1583,6 +1598,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		for (int i = 0; i < length(haystack); ++i) {
 			insert(gardener.hits, i, hitSetPointerMap[i]);
 		}
+		times["bpl"] += sysTime() - timeBPL;
 	}
 
 	/** 

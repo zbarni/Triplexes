@@ -41,6 +41,7 @@ if (SHAREDLIBRARY)
             triplex_functors.h
             triplex_pattern.h
             local_container.h
+            simpleintervaltree.h
             )
 else()
     add_executable(triplexator triplexator.cpp 
@@ -54,6 +55,7 @@ else()
             triplex_functors.h
             triplex_pattern.h
             local_container.h
+            simpleintervaltree.h
             )
 endif()
 
