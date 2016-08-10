@@ -73,9 +73,7 @@ namespace SEQAN_NAMESPACE_MAIN {
 			left(other.left ? copyTree(*other.left) : 0),
 			right(other.right ? copyTree(*other.right) : 0),
 			center(other.center)
-			{
-			cout << "foo\n";
-			}
+			{}
 
 	public:
 
@@ -205,7 +203,7 @@ namespace SEQAN_NAMESPACE_MAIN {
 
 		}
 
-		~SimpleIntervalTree(void) { };
+		~SimpleIntervalTree(void) { /*std::cout << "destroy me!" << std::endl;*/ delete left; delete right; };
 
 	};
 }
