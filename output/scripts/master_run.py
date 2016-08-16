@@ -90,8 +90,8 @@ def run_cluster(options):
                 out_file_tpx = out_file_template + ".tpx"
 
                 cmd = PATH_CLUSTER + "meta_bsub.sh bsub " + options.dataPrefix + \
-                      " " + options.dataPrefix + '_l' + str(l) + '--' + str(options.maxLength) + '_e' + str(e) + '_c' + str(c) + \
-                      " " + options.clusterHour + " " + options.clusterMemory + \
+                      " " + out_dir + "/" + options.dataPrefix + '_l' + str(l) + '--' + str(options.maxLength) + '_e' + str(e) + '_c' + str(c) + \
+                      " " + options.clusterHour + " " + options.clusterMemory + " " +\
                       PATH_TRIPLEXATOR_HOME + " " + '-ss ' + options.inputTFO + " -ds " + options.inputTTS + " " + \
                       get_triplexator_option(options.mode) + " -e " + str(e) + " -c " + str(c) + " -l " + str(l) + \
                       " -L " + options.maxLength + " " + " -od " + PATH_CLUSTER + result_dir[options.mode] + " -o " \
