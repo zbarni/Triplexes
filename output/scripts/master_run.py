@@ -10,6 +10,7 @@ from random import randint
 from optparse import OptionParser
 import subprocess
 import shlex
+import data_analysis as da
 
 if os.environ.get("TRIPLEXATOR_HOME") is None:
     print("Please set TRIPLEXATOR_HOME environment variable properly!")
@@ -137,6 +138,11 @@ def run_test(options):
 
 
 def check_input(options, parser):
+    # checks for data analysis
+    if options.dataAnalysis:
+        return options
+
+    ####################################################################
     if options.inputTTS is None or options.inputTFO is None:
         parser.error("Both TTS and TFO input files are required!")
     if os.path.isfile(options.inputTTS) is False:
@@ -171,6 +177,10 @@ def create_parser():
     parser.add_option("--max-length", dest="maxLength", default="30", help="double stranded file (tts), usually dna", metavar="TTS")
     parser.add_option("-m", "--mode", dest="mode", help="double stranded file (tts), usually dna", metavar="TTS")
     parser.add_option("--data-prefix", dest="dataPrefix", default="", help="double stranded file (tts), usually dna", metavar="TTS")
+    parser.add_option("--data-input-dir", dest="dataInDir", default="", help="double stranded file (tts), usually dna",
+                      metavar="TTS")
+    parser.add_option("--data-output-dir", dest="dataOutDir", default="", help="double stranded file (tts), usually dna")
+    parser.add_option("--data-analysis", dest="dataAnalysis", default=False, action="store_true")
     parser.add_option("--cluster-time", dest="clusterHour", help="double stranded file (tts), usually dna", metavar="TTS")
     parser.add_option("--cluster-mem", dest="clusterMemory", help="double stranded file (tts), usually dna", metavar="TTS")
     parser.add_option("--valgrind", dest="valgrind", default=False, action="store_true", help="double stranded file (tts), usually dna", metavar="TTS")
@@ -182,8 +192,10 @@ if __name__ == "__main__":
 
     options = check_input(options, parser)
 
+    if options.dataAnalysis:
+        da.do_data_analysis(options)
 
-    if options.type == "benchmark":
+    elif options.type == "benchmark":
         pass
     elif options.type == "cluster":
         run_cluster(options)
