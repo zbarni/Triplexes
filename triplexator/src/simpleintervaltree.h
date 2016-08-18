@@ -203,22 +203,7 @@ namespace SEQAN_NAMESPACE_MAIN {
 
 		}
 
-		~SimpleIntervalTree(void) { /*std::cout << "destroy me!" << std::endl;*/ delete left; delete right; };
+		~SimpleIntervalTree(void) { delete left; delete right; };
 
 	};
 }
-//int main () {
-//    std::vector<IntervalSimple<Needle> > intervals;
-//    Needle a(1), b(2), c(3);
-//    intervals.push_back(IntervalSimple<Needle>(2, 10, a));
-//    intervals.push_back(IntervalSimple<Needle>(12, 15, b));
-//    intervals.push_back(IntervalSimple<Needle>(20, 100, c));
-//    SimpleIntervalTree<Needle> tree;
-//    tree = SimpleIntervalTree<Needle>(intervals);
-//
-//    std::vector<IntervalSimple<Needle> > results;
-//    tree.findOverlapping(10, 12, results);
-//    std::cout << "found " << results.size() << " overlapping intervals" << std::endl;
-//
-//    return 0;
-//}
