@@ -18,7 +18,7 @@ PATH_TEST_DATA = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/data/"
 PATH_TEST_BPL = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/bit_parallel_local/"
 PATH_TEST_BP = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/"
 PATH_TEST_BRUTE = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/brute/"
-PATH_TEST_RANDOM = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/random/"
+PATH_TEST_RANDOM = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/random_5/"
 
 sys.path.append(os.environ.get("TRIPLEXATOR_HOME") + '/python_bindings/')
 
@@ -27,16 +27,16 @@ import compare_brute_local_palindrom as compare
 import time
 
 # test variables
-TESTS = 100
+TESTS = 2
 TEST_SIZE = 50000
 
 # options
 ERROR_RATE_LO = 10  # percentage
 ERROR_RATE_HI = 20  # percentage
 CONS_ERROR_LO = 1
-CONS_ERROR_HI = 3
+CONS_ERROR_HI = 1
 MIN_LENGTH_LO = 15
-MIN_LENGTH_HI = 25
+MIN_LENGTH_HI = 15
 MAX_LENGTH    = ""
 
 if __name__ == "__main__":

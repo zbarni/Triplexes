@@ -1,0 +1,24 @@
+*** README for masters_run.py ***
+
+
+This script attempts to unify all pipelines / data processing steps in one place.
+These include:
+    1. submitting (multiple) jobs on the cluster
+    2. testing / debugging locally
+    3. benchmarking (runtime) locally
+    4. profiling with valgrind for memory errors
+    5. data analysis TBD
+
+Directory structure for "TRIPLEXATOR_HOME/output/"
+    output
+        |--benchmarks
+        |--cluster
+        |--scripts
+        |--tests
+
+
+
+Examples master_run.py usage:
+
+    1. [cluster] : ./master_run.py --tts ../../data/dna/genome_hg38.fa --tfo ../../data/dna/genome_hg38.fa -t cluster -m bpl --error-low 10 --error-high 15 --cons-low 1 --cons-high 3 --min-length-low 15 --min-length-high 20 --data-prefix hg38 --cluster-time "24:00" --cluster-mem 64000 --max-length -1
+    2. [data-analysis] [plotting triplex lengths] : python master_run.py -t="data-analysis" --data-input-dir=/home/zbarni/code/triplexator/output/cluster/bpl/ --data-output-dir=/home/zbarni/code/triplexator/output/cluster/analysis/bpl/ --data-prefix="hg38_l20"
