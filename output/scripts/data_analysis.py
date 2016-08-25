@@ -97,30 +97,49 @@ def get_first_line(full_file_path):
 def create_triplex_superset_tree(full_file_path):
     print ("Creating triplex superset TREE VERSION for file: " + full_file_path)
     tree = intervaltree.IntervalTree()
-    content = get_tpx_lines(full_file_path)
-    result = []
+    content = get_tpx_lines_by_chromosome(full_file_path)
 
-    for index, line in enumerate(content):
-        cols = line.split('\t')
-        (tfo_chr, tfo_start_offset) = cols[0].split(':')
-        (tts_chr, tts_start_offset) = cols[3].split(':')
-        tfo_start_offset = int(tfo_start_offset)
-        tts_start_offset = int(tts_start_offset)
-        (tfo_start_pos, tfo_end_pos, tts_start_pos, tts_end_pos) = (int(cols[1]) + tfo_start_offset,
-                                                                    int(cols[2]) + tfo_start_offset,
-                                                                    int(cols[4]) + tts_start_offset,
-                                                                    int(cols[5]) + tts_start_offset)
-        new_interval = intervaltree.Interval(tts_start_pos, tts_end_pos)
-        tree.add(new_interval)
-        assert (tfo_chr == tts_chr)
+    output_file = open(full_file_path.replace('.tpx', '.ss.tpx'), 'w')
+    output_file.write(get_first_line(full_file_path))
 
-    tree_size = len(tree.all_intervals)
+    def compare(iv1, iv2):
+        if iv1[0] < iv2[0]:  # start is smaller
+            return -1
+        elif iv1[0] > iv2[0]:  # start is larger
+            return 1
+        else:  # starts are equal, check for end point
+            return iv2[1] - iv1[1]
 
-    while tree_size > 0:
-        sorted(tree.all_intervals, key=lambda t: (t.begin, t.end))
+    for chrom in content.keys():
+        print ("Processing #" + str(len(content[chrom])) + " triplexes from chromosome " + chrom)
+        sorted_intervals = set()
+        for index, line in enumerate(content[chrom]):
+            cols = line.split('\t')
+            (tfo_chr, tfo_start_offset) = cols[0].split(':')
+            (tts_chr, tts_start_offset) = cols[3].split(':')
+            tfo_start_offset = int(tfo_start_offset)
+            tts_start_offset = int(tts_start_offset)
+            (tfo_start_pos, tfo_end_pos, tts_start_pos, tts_end_pos) = (int(cols[1]) + tfo_start_offset,
+                                                                        int(cols[2]) + tfo_start_offset,
+                                                                        int(cols[4]) + tts_start_offset,
+                                                                        int(cols[5]) + tts_start_offset)
+            sorted_intervals.add((tts_start_pos, tts_end_pos, index))
+            assert (tfo_chr == tts_chr)
 
-        tree_size = len(tree.all_intervals)
-        break
+        sorted_intervals = sorted(sorted_intervals, cmp=compare)
+
+        # add first interval always
+        tree.add(intervaltree.Interval(sorted_intervals[0][0], sorted_intervals[0][1], sorted_intervals[0][2]))
+        output_file.write(content[chrom][sorted_intervals[0][2]])
+        for iv in sorted_intervals[1:]:
+            overlaps_start = set([x.data for x in tree.top_node.search_overlap([iv[0]])])
+            contained = False
+            for iv_overlap in tree.top_node.search_overlap([iv[1]]):
+                if iv_overlap.data in overlaps_start:
+                    contained = True
+            if not contained:
+                tree.add(intervaltree.Interval(iv[0], iv[1], iv[2]))
+                output_file.write(content[chrom][iv[2]])
 
 
 ##########################################################################################################
@@ -185,6 +204,7 @@ def do_data_analysis(options):
             if os.path.isfile(full_file_path):
                 # clean_nonmatching_chromosomes(full_file_path, tpx_content)
                 # plot_length_distributions(tpx_content, f, options)
-                create_triplex_superset(full_file_path)
+                # create_triplex_superset(full_file_path)
+                create_triplex_superset_tree(full_file_path)
                 pass
 
