@@ -1525,8 +1525,8 @@ namespace SEQAN_NAMESPACE_MAIN
 		std::vector<IntervalSimple<TIntervalCargo> > intervals;
 		for (unsigned i = 0; i < length(needles); ++i) {
 			TIntervalCargo cargo(&(needles[i]), i);
-			TPos tmp_bpos = std::max(0, ((int)beginPosition(needles[i]) - MAX_OFFSET));
-			TPos tmp_epos = endPosition(needles[i]) + MAX_OFFSET;
+			TPos tmp_bpos = std::max(0, ((int)beginPosition(needles[i]) - options.autoBindingOffset));
+			TPos tmp_epos = endPosition(needles[i]) + options.autoBindingOffset;
 
 			intervals.push_back(IntervalSimple<TIntervalCargo>(tmp_bpos, tmp_epos, cargo));
 		}

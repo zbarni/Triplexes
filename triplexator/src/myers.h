@@ -15,7 +15,7 @@
 //#define DEBUG
 #define TOLERATED_ERROR 3
 #define TOLERATED_SEED_ERROR 2 // temporary error to allow for potentially long matches to be explored
-#define MAX_OFFSET 1 // 1 means they must be at least adjacent
+//#define MAX_OFFSET 1 // 1 means they must be at least adjacent
 using namespace seqan;
 
 namespace SEQAN_NAMESPACE_MAIN
@@ -1128,13 +1128,14 @@ namespace SEQAN_NAMESPACE_MAIN
 	 * The distance is calculated by computing the absolute starting positions of the current
 	 * seed (+/-, A/P considered) on the genome.
 	 */
-	template<typename TSeed, typename TFiber, typename TNeedle>
+	template<typename TSeed, typename TFiber, typename TNeedle, typename TOffset>
 	bool checkLocalOverlapConstraints(
 			bool  	const	plusStrand,
 			bool  	const	needleParallel,
 			TSeed 	const 	&seed,
 			TFiber 	const 	&fiber,
-			TNeedle const 	&needle)
+			TNeedle const 	&needle,
+			TOffset const	autoBindingOffset)
 	{
 		typedef typename Position<TFiber>::Type TPos;
 		int offset; // can be negative as well
@@ -1153,7 +1154,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		cout << "overlap offset: " << offset << ", returning: " << (abs(offset) <= (int)(getEndDim0(seed) - getBeginDim0(seed))) << endl;
 #endif
 		// TODO change max offset here
-		return abs(offset) <= (int)(getEndDim1(seed) - getBeginDim1(seed) + MAX_OFFSET - 1);
+		return abs(offset) <= (int)(getEndDim1(seed) - getBeginDim1(seed) + autoBindingOffset - 1);
 	}
 
 	/**
@@ -1309,7 +1310,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				cout << "+++++ ------- +++++++ ------ ++++++ will try to add new? seed" << endl << std::flush ;
 #endif
 				// check if extended seed / match fits overlap (shift) constraints
-				if (!checkLocalOverlapConstraints(plusStrand, isParallel(needle), *seed, fiber, needle))
+				if (!checkLocalOverlapConstraints(plusStrand, isParallel(needle), *seed, fiber, needle, options.autoBindingOffset))
 				{
 #ifdef DEBUG
 					cout << "Overlap / offset constraint violated, discarding extended seed." << endl;

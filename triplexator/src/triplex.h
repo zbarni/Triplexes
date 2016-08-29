@@ -136,7 +136,7 @@ namespace SEQAN_NAMESPACE_MAIN
 	
 	enum ERROR_REFERENCE
 	{
-		WATSON_STAND				= 0,
+		WATSON_STRAND				= 0,
 		PURINE_STRAND				= 1,
 		THIRD_STRAND				= 2
 	};
@@ -477,6 +477,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		// 3..TRIPLEX_TRIPLEX_SEARCH
         bool        bitParallel;        // use Myers' bit-parallel algorithm
         bool        bitParallelLocal;   // use Myers' bit-parallel algorithm and restrict search to local area (semi-palindrom)
+        int        	autoBindingOffset; 	// offset for local area search (semi-palindrom)
 		bool		ttsFileSupplied;  	// indicates that at least one file as triplex target has been specified
 		bool		tfoFileSupplied;  	// indicates that one file as triplex source has been specified
 		bool		forward;			// compute forward oriented read matches
@@ -610,12 +611,14 @@ namespace SEQAN_NAMESPACE_MAIN
 			
 			prettyString = false;
 			outputFormat = 0;
-			errorReference = WATSON_STAND;
+			errorReference = WATSON_STRAND;
 			mergeFeatures = false;
 			runID = "s";
 			mixed_parallel_max_guanine     = 1.;
 			mixed_antiparallel_min_guanine = 0.;
 			
+			autoBindingOffset = 1;
+
 #ifdef BOOST
 			compressOutput = false;
 #endif
@@ -1344,7 +1347,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		CharString psTFO = prettyString(tfo_);
 		CharString psTTS = prettyString(tts_);
 		
-		if (options.errorReference == WATSON_STAND){
+		if (options.errorReference == WATSON_STRAND){
 			// requires consideration of pruine tract and parallel/anti-parallel triplex formation
 			if (match.strand == '-'){
 				reverse(psTTS);

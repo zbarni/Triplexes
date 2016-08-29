@@ -90,6 +90,7 @@ namespace SEQAN_NAMESPACE_MAIN
         addSection(parser, "Main Options:");
         addOption(parser, CommandLineOption("bp", "bit-parallel",                 			"use bit-parallel computation when searching for triplex pairs", OptionType::Boolean));
         addOption(parser, CommandLineOption("bpl","bit-parallel-local",                 	"use bit-parallel computation when searching for triplex pairs, and restrict search to local match (semi-palindrom)", OptionType::Boolean));
+        addOption(parser, CommandLineOption("abo","auto-binding-offset",                 	"maximum offset between auto binding regions (must be positive, >= 0), e.g., 1 for regions to be at least adjacent, 2 if there can be 1 bp space between segments, etc.", OptionType::Int));
         addOption(parser, CommandLineOption("l",  "lower-length-bound",                     "minimum triplex feature length required", OptionType::Int| OptionType::Label, options.minLength));
         addOption(parser, CommandLineOption("L",  "upper-length-bound",                     "maximum triplex feature length permitted, -1 = unrestricted ", OptionType::Int | OptionType::Label, options.maxLength ));
         addOption(parser, CommandLineOption("e",  "error-rate",                             "set the maximal error-rate in % tolerated", OptionType::Double | OptionType::Label, (100.0 * options.errorRate)));
@@ -186,6 +187,7 @@ namespace SEQAN_NAMESPACE_MAIN
         options.bitParallel 	 = isSetLong(parser, "bit-parallel");
         options.bitParallelLocal = isSetLong(parser, "bit-parallel-local");
 
+        getOptionValueLong(parser, "auto-binding-offset", options.autoBindingOffset);
         getOptionValueLong(parser, "error-rate", options.errorRate);
         getOptionValueLong(parser, "maximal-error", options.maximalError);
         getOptionValueLong(parser, "min-guanine", options.minGuanineRate);
@@ -278,20 +280,6 @@ namespace SEQAN_NAMESPACE_MAIN
             appendValue(options.duplexFileNames, tmpVal, Generous());
             options.ttsFileSupplied = true;
         }
-        
-        //  getOptionValueLong(parser, "duplex-file", tmpVal);
-        //  unsigned int beg = 0;
-        //  for(unsigned int i = 0; i<tmpVal.length(); ++i) {
-        //      if (tmpVal[i] == ',') {
-        //          appendValue(options.duplexFileNames, tmpVal.substr(beg, i - beg));
-        //          beg = i + 1;
-        //          options.ttsFileSupplied = true;
-        //      }
-        //  }
-        //  if (beg != tmpVal.length()){
-        //      appendValue(options.duplexFileNames, tmpVal.substr(beg, tmpVal.length() - beg));
-        //      options.ttsFileSupplied = true;
-        //  }
         
         if (options.ttsFileSupplied && options.tfoFileSupplied)
             options.runmode=TRIPLEX_TRIPLEX_SEARCH;
@@ -407,9 +395,9 @@ namespace SEQAN_NAMESPACE_MAIN
             ::std::cerr << "Duplicate filtering with specified cutoff requires duplicate detection mode to be enabled" << ::std::endl;
         if (! (options.filterMode==BRUTE_FORCE || options.filterMode==FILTERING_GRAMS) && (stop = true))
             ::std::cerr << "Filtering mode not known" << ::std::endl;
-        if (! (options.errorReference==WATSON_STAND || options.errorReference==PURINE_STRAND || options.errorReference==THIRD_STRAND) && (stop = true))
+        if (! (options.errorReference==WATSON_STRAND || options.errorReference==PURINE_STRAND || options.errorReference==THIRD_STRAND) && (stop = true))
             ::std::cerr << "Error reference not known" << ::std::endl;
-        if ((options.errorReference==WATSON_STAND || options.errorReference==PURINE_STRAND) && options.runmode==TRIPLEX_TFO_SEARCH)
+        if ((options.errorReference==WATSON_STRAND || options.errorReference==PURINE_STRAND) && options.runmode==TRIPLEX_TFO_SEARCH)
             ::std::cerr << "Note: reference defaulted to thrid strand for TFO search" << ::std::endl;
         if (options.errorReference==THIRD_STRAND && options.runmode==TRIPLEX_TTS_SEARCH)
             ::std::cerr << "Note: reference defaulted to Watson strand for TTS search" << ::std::endl;
@@ -523,8 +511,8 @@ namespace SEQAN_NAMESPACE_MAIN
     #endif  
         options.logFileHandle << "- error reference : " ;
         switch (options.errorReference) {
-            case WATSON_STAND:
-                options.logFileHandle << WATSON_STAND << " = Watson strand (TTS)" << ::std::endl;
+            case WATSON_STRAND:
+                options.logFileHandle << WATSON_STRAND << " = Watson strand (TTS)" << ::std::endl;
                 break;
             case PURINE_STRAND:
                 options.logFileHandle << PURINE_STRAND << " = purine strand (TTS)" << ::std::endl;
@@ -537,8 +525,6 @@ namespace SEQAN_NAMESPACE_MAIN
         }       
         options.logFileHandle << "*************************************************************" << ::std::endl;
         options.logFileHandle << "*** Main Options:" << ::std::endl;
-	//	options.logFileHandle << "- consider forward strand in duplex : " << (options.forward?"Yes":"No") << ::std::endl;
-	//	options.logFileHandle << "- consider reverse strand in duplex : " << (options.reverse?"Yes":"No") << ::std::endl;
         options.logFileHandle << "- maximum error-rate : " << (options.errorRate*100) << "%" << ::std::endl;
         if (options.maximalError>=0)
             options.logFileHandle << "- maximum total error : " << (options.maximalError) << ::std::endl;   
@@ -608,7 +594,14 @@ namespace SEQAN_NAMESPACE_MAIN
 				options.logFileHandle << "- min. threshold specified: " << options.qgramThreshold << ::std::endl;
 				int minSeedsThreshold = static_cast<int>(options.minLength+1-(min(static_cast<int>(ceil(options.errorRate*options.minLength)), options.maximalError)+1)*length(options.shape));
 				options.logFileHandle << "- min. threshold actual: " << minSeedsThreshold << ::std::endl;			
-			} else {
+			}
+			else if (options.bitParallel) {
+				options.logFileHandle << "- bit-parallel triplex search" << ::std::endl;
+			}
+			else if (options.bitParallelLocal) {
+				options.logFileHandle << "- auto binding (bit-parallel local) mode with max. auto binding offset: " << options.autoBindingOffset << ::std::endl;
+			}
+			else {
 				options.logFileHandle << "- filtering : none - brute force" << ::std::endl;
 			}
 		}
