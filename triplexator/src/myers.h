@@ -12,7 +12,7 @@
 #include <seqan/misc/misc_dequeue.h>
 #include "local_container.h"
 
-//#define DEBUG
+#define DEBUG
 #define TOLERATED_ERROR 3
 #define TOLERATED_SEED_ERROR 2 // temporary error to allow for potentially long matches to be explored
 #define MAX_OFFSET 1 // 1 means they must be at least adjacent

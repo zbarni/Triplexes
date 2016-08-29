@@ -1522,7 +1522,6 @@ namespace SEQAN_NAMESPACE_MAIN
 		double timeCreateIntervalTree = sysTime();
 
 		// create interval tree with needle intervals
-//		std::vector<IntervalSimple<TIntervalCargo> > *intervalResults = 0;
 		std::vector<IntervalSimple<TIntervalCargo> > intervals;
 		for (unsigned i = 0; i < length(needles); ++i) {
 			TIntervalCargo cargo(&(needles[i]), i);
@@ -1530,11 +1529,6 @@ namespace SEQAN_NAMESPACE_MAIN
 			TPos tmp_epos = endPosition(needles[i]) + MAX_OFFSET;
 
 			intervals.push_back(IntervalSimple<TIntervalCargo>(tmp_bpos, tmp_epos, cargo));
-			// ---------------------------------
-//#ifdef DEBUG
-//			cout 	<< "needle #" << i << " : " << beginPosition(needles[i]) << " <-> " << endPosition(needles[i])
-//					<<  "; added interval: " << tmp_bpos << " <-> " << tmp_epos << endl;
-//#endif
 		}
 		SimpleIntervalTree<TIntervalCargo> intervalTree;
 		intervalTree = SimpleIntervalTree<TIntervalCargo>(intervals);

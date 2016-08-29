@@ -436,20 +436,18 @@ namespace SEQAN_NAMESPACE_MAIN
         }
         
         //  optimizing shape/q-gram for threshold >= 2 
-        if (options.filterMode == FILTERING_GRAMS && options.runmode==TRIPLEX_TRIPLEX_SEARCH){
-        	if (!options.bitParallel && !options.bitParallelLocal) {
-        		int qgram = _calculateShape(options);
-        		if (qgram <= 4 && (stop = true)){
-        			::std::cerr << "Error-rate, minimum length and qgram-threshold settings do not allow for efficient filtering with q-grams of weight >= 5 (currently " << qgram << ")." << ::std::endl;
-        			::std::cerr << "Consider disabling filtering-mode (brute-force approach)" << ::std::endl;
-        		}
+        if (options.filterMode == FILTERING_GRAMS && options.runmode==TRIPLEX_TRIPLEX_SEARCH && !(options.bitParallel || options.bitParallelLocal)) {
+        	int qgram = _calculateShape(options);
+        	if (qgram <= 4 && (stop = true)){
+        		::std::cerr << "Error-rate, minimum length and qgram-threshold settings do not allow for efficient filtering with q-grams of weight >= 5 (currently " << qgram << ")." << ::std::endl;
+        		::std::cerr << "Consider disabling filtering-mode (brute-force approach)" << ::std::endl;
         	}
+        }
+        else if (options.runmode==TRIPLEX_TRIPLEX_SEARCH && (options.bitParallel || options.bitParallelLocal)) {
         	// when using Myers, qgram size is min length
-        	else {
-        		resize(options.shape, options.minLength);
-        		for (int i=0; i<options.minLength; ++i){
-        			options.shape[i]='1';
-        		}
+        	resize(options.shape, options.minLength);
+        	for (int i=0; i<options.minLength; ++i){
+        		options.shape[i]='1';
         	}
         }
         if ((options.minBlockRun > options.minLength - 2*options.tolError) && (stop = true)) {
@@ -687,7 +685,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				options.timeFindTriplexes = 0;
 				// create index
 				if (options._debugLevel >= 1)
-					options.logFileHandle << _getTimeStamp() <<  " - Finised creating q-gram index for all TFOs" << ::std::endl;
+					options.logFileHandle << _getTimeStamp() <<  " - Finished creating q-gram index for all TFOs" << ::std::endl;
 				
 				errorCode = startTriplexSearchParallelDuplex(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, TGardener());
 			} else {
@@ -708,7 +706,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				options.timeFindTriplexes = 0;
 				// create index
 				if (options._debugLevel >= 1)
-					options.logFileHandle << _getTimeStamp() <<  " - Finised creating q-gram index for all TFOs" << ::std::endl;
+					options.logFileHandle << _getTimeStamp() <<  " - Finished creating q-gram index for all TFOs" << ::std::endl;
 				
 				errorCode = startTriplexSearchSerial(tfoMotifSet, tfoNames, pattern, outputfile, duplexSeqNo, options, TGardener());
 			} else {
