@@ -476,10 +476,10 @@ namespace SEQAN_NAMESPACE_MAIN
 		// 2..TRIPLEX_TFO_SEARCH
 		// 3..TRIPLEX_TRIPLEX_SEARCH
         bool        bitParallel;        // use Myers' bit-parallel algorithm
-        bool        bitParallelLocal;   // use Myers' bit-parallel algorithm and restrict search to local area (semi-palindrom)
         int        	autoBindingOffset; 	// offset for local area search (semi-palindrom)
 		bool		ttsFileSupplied;  	// indicates that at least one file as triplex target has been specified
 		bool		tfoFileSupplied;  	// indicates that one file as triplex source has been specified
+		bool		autoBindingFileSupplied; // indicates that one file as auto-binding triplex source has been specified
 		bool		forward;			// compute forward oriented read matches
 		bool		reverse;			// compute reverse oriented read matches
 		double		errorRate;			// Criteria 1 threshold (max)
@@ -563,8 +563,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		// data
 		StringSet<CharString>	tfoFileNames;
 		StringSet<CharString>	duplexFileNames;
+		StringSet<CharString>	autoBindingFileNames;
 		
-		// 
+		// parser
 		TGraph triplexParser;
 		
 		Options()
@@ -575,6 +576,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			hashsize = 127;
 			ttsFileSupplied = false;
 			tfoFileSupplied = false;
+			autoBindingFileSupplied = false;
 			runmode = TRIPLEX_TRIPLEX_SEARCH;
 			forward = true;
 			reverse = true;
@@ -2029,6 +2031,7 @@ namespace SEQAN_NAMESPACE_MAIN
 #endif
 	}
 
+
 	// Search for triplexes given a set of duplexes and a set of TFOs
 	template<
 	typename TTimes,
@@ -2038,7 +2041,8 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TQGramIndex,
 	typename TQuery
 	>
-	inline void _filterTriplexMyers(TTimes	&times,
+	inline void _filterTriplexAutoBinding(
+			TTimes	&times,
 			Gardener< TId, TGardenerSpec>	&gardener,
 			THaystack 	const				&haystack,
 			TQGramIndex const				&index,
@@ -2053,11 +2057,40 @@ namespace SEQAN_NAMESPACE_MAIN
 			eR = min(options.errorRate, max(double(options.maximalError)/options.minLength, 0.0));
 		}
 
-		if (options.bitParallel) {
-			plantBitParallelGlobal(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER() );
+	}
+
+
+	// Search for triplexes given a set of duplexes and a set of TFOs
+	template<
+	typename TTimes,
+	typename TId,
+	typename TGardenerSpec,
+	typename THaystack,
+	typename TQGramIndex,
+	typename TQuery
+	>
+	inline void _filterTriplexExtended(
+			TTimes &times,
+			Gardener<TId, TGardenerSpec> 		&gardener,
+			THaystack 					const 	&haystack,
+			TQGramIndex 				const 	&index,
+			TQuery 								&tfoSet,
+			CharString 					const 	&duplexName,
+			StringSet<CharString> 		const 	&tfoNames,
+			bool 						const 	&plusStrand,
+			Options 					const 	&options)
+	{
+
+		// adjust errorRate if maximalError is set and caps the errorRate setting wrt the minimum length constraint
+		double eR = options.errorRate;
+		if (options.maximalError >= 0) {
+			eR = min(options.errorRate, max(double(options.maximalError)/options.minLength, 0.0));
 		}
-		else {
-			plantBitParallelLocal(times, gardener, haystack, tfoSet, eR, plusStrand, options, unsigned(), SINGLE_WORKER() );
+		if (options.bitParallel) {
+			plantBitParallelGlobal(times, gardener, haystack, index, tfoSet, eR, options, SINGLE_WORKER());
+		}
+		else if (options.autoBindingFileSupplied) {
+			plantAutoBinding(times, gardener, haystack, tfoSet, duplexName, tfoNames, eR, plusStrand, options, unsigned(), SINGLE_WORKER());
 		}
 	}
 	
@@ -3736,7 +3769,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	
 	// Store all matches in a vector and convert the references accordingly
 	template<
-	typename TTriplexHashes,
 	typename TMatches,
 	typename TPotentials,
 	typename TId,
@@ -3745,7 +3777,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TDuplexSet
 	>
 	void _verifyAndStoreMyers(
-						 TTriplexHashes					&triplexHashes,
 						 TMatches						&matches,
 						 TPotentials					&potentials,
 						 Gardener<TId, TGardenerSpec>	&gardener,
@@ -3779,10 +3810,13 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename Key<TPotValue>::Type				TPotKey;
 		typedef typename Cargo<TPotValue>::Type				TPotCargo;
 
+		typedef std::pair<unsigned, unsigned> 						TTriplexHashKey;
+		typedef std::map<TTriplexHashKey, std::set<unsigned long> > TTriplexHashes;
 		typedef typename Value<TTriplexHashes>::Type		TTriplexHashValue;
 		typedef typename Key<TTriplexHashValue>::Type		TTriplexHashKey;
 		typedef typename Cargo<TTriplexHashValue>::Type		TTriplexHashEntry;
 
+		TTriplexHashes triplexHashes;
 		// check all queries for hits
 		for (TId queryid=0; queryid<(TId)length(ttsSet); ++queryid){
 			for (TIter it = harvestBegin(gardener,queryid); it != harvestEnd(gardener, queryid); ++it){
@@ -4035,10 +4069,10 @@ namespace SEQAN_NAMESPACE_MAIN
 			::std::cerr << "read " << length(sequences) << " sequences.\n";
 		return (seqCount > 0);
 	}
-		
+
+
 	//////////////////////////////////////////////////////////////////////////////
-	// Inverted. Find triplexes in many duplex sequences (import from Fasta) in parallel
-	// by reading in all duplex sequences and storing the results on memory
+	//
 	template <
 	typename TMotifSet,
 	typename TQGramIndex,
@@ -4047,15 +4081,14 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TId,
 	typename TGardenerSpec
 	>
-	int inline startTriplexSearchSerialBitParallelGlobal(
-                                        TMotifSet					&tfoMotifSet,
-										StringSet<CharString> const	&tfoNames,
-							            TQGramIndex const			&index,
-										TFile						&outputfile,
-                                        TShape const                &shape,
-										Options						&options,
-										Gardener<TId, TGardenerSpec>
-										)
+	int inline startTriplexSearchSerialExtended(
+			TMotifSet 					&tfoMotifSet,
+			StringSet<CharString> const &tfoNames,
+			TQGramIndex 		  const &index,
+			TFile 						&outputfile,
+			TShape 				  const &shape,
+			Options 					&options,
+			Gardener<TId, TGardenerSpec>)
 	{
 		typedef TriplexString										TDuplex;
 		typedef StringSet<ModStringTriplex<TDuplex, TDuplex> >		TDuplexModSet;
@@ -4073,22 +4106,24 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef String<TRepeat>										TRepeatString; 
 		typedef typename Iterator<TRepeatString, Rooted>::Type		TRepeatIterator;
 
-		typedef std::pair<unsigned, unsigned> 						TTriplexHashKey;
-		typedef std::map<TTriplexHashKey, std::set<unsigned long> > TTriplexHashes;
+		StringSet<CharString>   		duplexFileNames;
+		StringSet<CharString>   		tfoFileNames;
+		std::map<std::string, double> 	times;
 
-		std::map<std::string, double> times;
+        tfoFileNames 	= (options.autoBindingFileSupplied) ? options.autoBindingFileNames : options.tfoFileNames;
+        duplexFileNames = (options.autoBindingFileSupplied) ? options.autoBindingFileNames : options.duplexFileNames;
+		times["bpl"] 	= 0;
 		times["findInterval"] = 0;
-		times["bpl"] = 0;
-		TTriplexHashes triplexHashes;
+
 		// open duplex file
 		::std::ifstream file;
-		file.open(toCString(options.duplexFileNames[0]), ::std::ios_base::in | ::std::ios_base::binary);
+		file.open(toCString(duplexFileNames[0]), ::std::ios_base::in | ::std::ios_base::binary);
 		if (!file.is_open()) {
 			return TRIPLEX_READFILE_FAILED;
 		}
 		
 		// remove the directory prefix of current duplex file
-		::std::string duplexFile(toCString(options.duplexFileNames[0]));
+		::std::string duplexFile(toCString(duplexFileNames[0]));
 		size_t lastPos = duplexFile.find_last_of('/') + 1;
 		if (lastPos == duplexFile.npos) lastPos = duplexFile.find_last_of('\\') + 1;
 		if (lastPos == duplexFile.npos) lastPos = 0;
@@ -4107,14 +4142,9 @@ namespace SEQAN_NAMESPACE_MAIN
         //////////////////////////////////////////////////////////////////////////////
 		for(; !_streamEOF(file); ++duplexSeqNoWithinFile) {
 			double timeIO = sysTime();
-			::std::cerr << "Processing:\t" << duplexName << "\t(seq " << duplexSeqNoWithinFile << ")\r" << ::std::flush;
 			TDuplex	duplexSeq;
 			CharString duplexName;
 			readShortID(file, duplexName, Fasta());	// read Fasta id up to first whitespace
-			if (options._debugLevel >= 2) {
-				::std::cerr << "Processing:\t" << duplexName << "\t(seq " << duplexSeqNoWithinFile << ")\r" << ::std::flush;
-			}
-			
 			read(file, duplexSeq, Fasta());
 
 			// find low complexity regions and mask sequences if requested
@@ -4135,7 +4165,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	        TMatches 		matches;
 	        TPotentials 	potentials;
 
-            // prefilter for putative TTSs
     		if (options.forward) {
 #ifdef DEBUG
     			cout << "### Forward search" << std::flush << endl << endl;
@@ -4143,12 +4172,13 @@ namespace SEQAN_NAMESPACE_MAIN
     			timeIO = sysTime();
     			processDuplex(ttsSetForward, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
     			options.timeIO += sysTime() - timeIO;
+
     	        if (length(ttsSetForward)>0) {
     	        	double timeSearch = sysTime();
-    	            options.logFileHandle << _getTimeStamp() <<  " Started forward search." << ::std::endl;
-    	        	_filterTriplexMyers(times, gardenerForward, ttsSetForward, index, tfoMotifSet, true, options);
+					_filterTriplexExtended(times, gardenerForward, ttsSetForward, index, tfoMotifSet, duplexName, tfoNames, true, options);
     	        	options.timeTriplexSearch 	+= sysTime() - timeSearch;
-    	        	_verifyAndStoreMyers(triplexHashes, matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, duplexSeqNoWithinFile, true, options);
+
+    	        	_verifyAndStoreMyers(matches, potentials, gardenerForward, tfoMotifSet, ttsSetForward, duplexSeqNoWithinFile, true, options);
     	        }
     	        eraseAll(gardenerForward);
     		}
@@ -4159,13 +4189,13 @@ namespace SEQAN_NAMESPACE_MAIN
     			timeIO = sysTime();
     			processDuplex(ttsSetReverse, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
     			options.timeIO += sysTime() - timeIO;
+
     			if (length(ttsSetReverse)>0) {
     				double timeSearch = sysTime();
-    				options.logFileHandle << _getTimeStamp() <<  " Started reverse search." << ::std::endl;
-    				_filterTriplexMyers(times, gardenerReverse, ttsSetReverse, index, tfoMotifSet, false, options);
+					_filterTriplexExtended(times, gardenerReverse, ttsSetReverse, index, tfoMotifSet, duplexName, tfoNames, false, options);
     	        	options.timeTriplexSearch 	+= sysTime() - timeSearch;
-    				triplexHashes.clear();
-    				_verifyAndStoreMyers(triplexHashes, matches, potentials, gardenerReverse, tfoMotifSet, ttsSetReverse, duplexSeqNoWithinFile, false, options);
+
+    				_verifyAndStoreMyers(matches, potentials, gardenerReverse, tfoMotifSet, ttsSetReverse, duplexSeqNoWithinFile, false, options);
     			}
     			eraseAll(gardenerReverse);
     		}
@@ -4179,17 +4209,14 @@ namespace SEQAN_NAMESPACE_MAIN
 		}
 		file.close();
 
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time myers " << ::std::setprecision(3) << times["myers"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time verify " << ::std::setprecision(3) << times["verify"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time merge  " << ::std::setprecision(3) << times["merge"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time seedExtend " << ::std::setprecision(3) << times["seedextend"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time plantBitParallelLocal " << ::std::setprecision(3) << times["bpl"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time fiberLoop " << ::std::setprecision(3) << times["fiberLoop"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time findInterval " << ::std::setprecision(3) << times["findInterval"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time computeLocalTriplexes " << ::std::setprecision(3) << times["computeLocalTriplexes"] << " sec" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time createIntervalTree " << ::std::setprecision(3) << times["createIntervalTree"] << " sec" << ::std::endl;
-//        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time consecutive & mismatches " << ::std::setprecision(3) << times["consmm"] << " sec" << ::std::endl;
-//        options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time getHaystackFiberNo " << ::std::setprecision(3) << times["gethaystackfiberno"] << " sec" << ::std::endl;
+		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time myers " << ::std::setprecision(3) << times["myers"] << " sec" << ::std::endl;
+		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time verify " << ::std::setprecision(3) << times["verify"] << " sec" << ::std::endl;
+		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time merge  " << ::std::setprecision(3) << times["merge"] << " sec" << ::std::endl;
+		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time seedExtend " << ::std::setprecision(3) << times["seedextend"] << " sec" << ::std::endl;
+		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time fiberLoop " << ::std::setprecision(3) << times["fiberLoop"] << " sec" << ::std::endl;
+		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time findInterval " << ::std::setprecision(3) << times["findInterval"] << " sec" << ::std::endl;
+		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time computeLocalTriplexes " << ::std::setprecision(3) << times["computeLocalTriplexes"] << " sec" << ::std::endl;
+		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time createIntervalTree " << ::std::setprecision(3) << times["createIntervalTree"] << " sec" << ::std::endl;
 
         return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}

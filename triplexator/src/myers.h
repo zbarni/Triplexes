@@ -5,7 +5,7 @@
 #include "triplex_alphabet.h"
 #include "helper.h"
 #include "edlib.h"
-#include <seqan/seeds2.h>  // Include module under test.
+#include <seqan/seeds2.h>
 #include <seqan/sequence/adapt_std_list.h>
 #include <seqan/misc/priority_type_base.h>
 #include <seqan/misc/priority_type_heap.h>
@@ -48,12 +48,15 @@ namespace SEQAN_NAMESPACE_MAIN
 	 * Returns true if parameter char is guanine, false otherwise.
 	 */
 	template<typename TChar>
-	bool isGuanine(TChar const &c) {
+	bool _isGuanine(TChar const &c) {
 		return c == 'G';
 	}
 
+	/**
+	 * Convert base pair char to unique number to be used in Myers' bit-parallel algorithm.
+	 */
 	template<typename TChar>
-	unsigned int charToBit(TChar const &c) {
+	unsigned int _charToBit(TChar const &c) {
 		switch(char(c)) {
 		case 'A': return 0;
 		case 'C': return 1;
@@ -66,7 +69,22 @@ namespace SEQAN_NAMESPACE_MAIN
 	}
 
 	/**
-	 *
+	 * Shifts a seed window to the right by 1 positions.
+	 */
+	void _shiftSeedToRight(SeedDimStruct &extSeedDim) {
+		++extSeedDim.bDim0;
+		++extSeedDim.eDim0;
+		++extSeedDim.bDim1;
+		++extSeedDim.eDim1;
+	}
+
+	/**
+	 * Compute vectors of (fiber-needle) mismatch offsets to the left and right of the seed, but
+	 * not more than the maximum allowed / tolerated error / mismatch rate. The
+	 * offsets are stored in the `lMmOffsets` and `rMmOffsets` vectors. At the same time, similar
+	 * vectors with offsets for guanines are computed to left and right from seed. These offset
+	 * vectors are basically storing a compact version of mismatches and guanine positions for fast
+	 * lookup.
 	 */
 	template<
 	typename THaystackFiber,
@@ -88,7 +106,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			TOptions		const 	&options)
 	{
 		int posFiber;
-		int posQuery;
+		int posNeedle;
 		int mismatches;
 		int consecutiveMm;
 		unsigned int guanine;
@@ -102,17 +120,17 @@ namespace SEQAN_NAMESPACE_MAIN
 		guanine 		= 0;
 		mismatches 		= 0;
 		consecutiveMm 	= 0;
-		posFiber = getBeginDim0(seed) - 1;
-		posQuery = getBeginDim1(seed) - 1;
+		posFiber 	= getBeginDim0(seed) - 1;
+		posNeedle 	= getBeginDim1(seed) - 1;
 
-		while (posFiber >= 0 && posQuery >= 0 && mismatches <= localK + TOLERATED_ERROR
+		while (posFiber >= 0 && posNeedle >= 0 && mismatches <= localK + TOLERATED_ERROR
 				&& consecutiveMm <= options.maxInterruptions) {
-			if (fiber[posFiber] != needle[posQuery]) {
+			if (fiber[posFiber] != needle[posNeedle]) {
 				// update guanine counts (left from seed, not including those within seed)
 				lGuanines.push_back(guanine);
 				lMmOffsets.push_back(getBeginDim0(seed) - posFiber);
 				++mismatches;
-				if (posFiber == 0 || posQuery == 0) {
+				if (posFiber == 0 || posNeedle == 0) {
 					isLeftZeroIncluded = true;
 				}
 				++consecutiveMm;
@@ -120,17 +138,17 @@ namespace SEQAN_NAMESPACE_MAIN
 			else {
 				consecutiveMm = 0;
 
-				if (isGuanine(fiber[posFiber])) {
+				if (_isGuanine(fiber[posFiber])) {
 					++guanine;
 				}
 			}
 			localK = std::max((int)floor((getEndDim0(seed) - posFiber + 1) * errorRate), k);
 			--posFiber;
-			--posQuery;
+			--posNeedle;
 		}
 
 		// add corresponding end points if required
-		if ((posFiber == -1 || posQuery == -1) && !isLeftZeroIncluded) {
+		if ((posFiber == -1 || posNeedle == -1) && !isLeftZeroIncluded) {
 			lGuanines.push_back(guanine);
 			lMmOffsets.push_back(std::min((int)(getBeginDim0(seed)),(int)(getBeginDim1(seed))));
 		}
@@ -140,20 +158,20 @@ namespace SEQAN_NAMESPACE_MAIN
 		mismatches 				= 0;
 		consecutiveMm 	= 0;
 		posFiber = getEndDim0(seed) + 1;
-		posQuery = getEndDim1(seed) + 1;
+		posNeedle = getEndDim1(seed) + 1;
 
 		const int endFiber  = length(fiber);
 		const int endNeedle = length(needle);
 
 		// only go until the second last element, the last one is added later if needed (end* - 1)
-		while (posFiber < endFiber && posQuery < endNeedle && mismatches <= localK + TOLERATED_ERROR
+		while (posFiber < endFiber && posNeedle < endNeedle && mismatches <= localK + TOLERATED_ERROR
 				&& consecutiveMm <= options.maxInterruptions) {
-			if (fiber[posFiber] != needle[posQuery]) {
+			if (fiber[posFiber] != needle[posNeedle]) {
 				// update guanine counts (left from seed, not including those within seed)
 				rGuanines.push_back(guanine);
 				rMmOffsets.push_back(posFiber - getEndDim0(seed));
 				mismatches++;
-				if (posFiber == endFiber - 1 || posQuery == endNeedle - 1) {
+				if (posFiber == endFiber - 1 || posNeedle == endNeedle - 1) {
 					isRightEndIncluded = true;
 				}
 				++consecutiveMm;
@@ -161,17 +179,17 @@ namespace SEQAN_NAMESPACE_MAIN
 			else {
 				consecutiveMm = 0;
 
-				if (isGuanine(fiber[posFiber])) {
+				if (_isGuanine(fiber[posFiber])) {
 					++guanine;
 				}
 			}
 			localK = std::max((int)floor((posFiber - getBeginDim0(seed) + 1) * errorRate), k);
 			++posFiber;
-			++posQuery;
+			++posNeedle;
 		}
 
 		// add corresponding end points if required
-		if ((posFiber == endFiber || posQuery == endNeedle) && !isRightEndIncluded) {
+		if ((posFiber == endFiber || posNeedle == endNeedle) && !isRightEndIncluded) {
 			rGuanines.push_back(guanine);
 			rMmOffsets.push_back(std::min((int)(endNeedle - getEndDim1(seed) - 1), (int)(endFiber - getEndDim0(seed) - 1)));
 		}
@@ -254,7 +272,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 			// adjust right end until needed
 			while (fiber[tmp_eDim0 - 1] == needle[tmp_eDim1 - 1]// as long as we have matches only
-					&& !isGuanine(fiber[tmp_eDim0])				// stop if 'G' reached
+					&& !_isGuanine(fiber[tmp_eDim0])				// stop if 'G' reached
 					&& tmp_eDim0 > tmp_bDim0					// to stay in valid index range
 					&& initGuanines < ceil(tmp_diag * options.minGuanineRate))
 			{
@@ -291,7 +309,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			--diag;
 
 			// break if previous was Guanine, since we'd skip it in next step
-			if (isGuanine(fiber[tmp_bDim0 - 1])) {
+			if (_isGuanine(fiber[tmp_bDim0 - 1])) {
 				break;
 			}
 		}
@@ -302,16 +320,6 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// true if any potential was found
 		return guaninePotentials.size() > 0;
-	}
-
-	/**
-	 * Shifts a seed window to the right by 1 positions.
-	 */
-	void shiftSeedToRight(SeedDimStruct &extSeedDim) {
-		++extSeedDim.bDim0;
-		++extSeedDim.eDim0;
-		++extSeedDim.bDim1;
-		++extSeedDim.eDim1;
 	}
 
 	/**
@@ -341,7 +349,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		// find max diag that satisfies maxLength by reducing the right end
 		while (diag > options.maxLength && fiber[extSeedDim.eDim0 - 1] == needle[extSeedDim.eDim1 - 1]) {
 			// adjust guanineRate if skipping a 'G'
-			if (isGuanine(fiber[extSeedDim.eDim0])) {
+			if (_isGuanine(fiber[extSeedDim.eDim0])) {
 				--guanineRate;
 			}
 			--extSeedDim.eDim0;
@@ -362,7 +370,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			// find max diag that satisfies maxLength by reducing the right end
 			while (diag > options.maxLength && fiber[extSeedDim.bDim0 + 1] == needle[extSeedDim.bDim1 + 1]) {
 				// adjust guanineRate if skipping a 'G'
-				if (isGuanine(fiber[extSeedDim.bDim0])) {
+				if (_isGuanine(fiber[extSeedDim.bDim0])) {
 					--guanineRate;
 				}
 				++extSeedDim.bDim0;
@@ -383,6 +391,9 @@ namespace SEQAN_NAMESPACE_MAIN
 		return true;
 	}
 
+	/**
+	 *
+	 */
 	template<
 	typename TSeedHashMap,
 	typename TSeed,
@@ -560,12 +571,12 @@ namespace SEQAN_NAMESPACE_MAIN
 					}
 #endif
 					// shift seed to the right
-					shiftSeedToRight(extSeedDim);
+					_shiftSeedToRight(extSeedDim);
 					// update temp guanine numbers within current / updated seed
-					if (extSeedDim.eDim0 < fiberSize && isGuanine(fiber[extSeedDim.eDim0])) {
+					if (extSeedDim.eDim0 < fiberSize && _isGuanine(fiber[extSeedDim.eDim0])) {
 						++guanineRate;
 					}
-					if (extSeedDim.bDim0 > 0 && isGuanine(fiber[extSeedDim.bDim0 - 1])) {
+					if (extSeedDim.bDim0 > 0 && _isGuanine(fiber[extSeedDim.bDim0 - 1])) {
 						--guanineRate;
 					}
 				} // end while window shift left
@@ -734,7 +745,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				int matchLength = 0;
 
 				while (qPos >= 0 && mergedHaystack[pos] == suffixQGram[qPos]) {
-					if (isGuanine(mergedHaystack[pos])) {
+					if (_isGuanine(mergedHaystack[pos])) {
 						++tempGuanine;
 					}
 					matchLength++;
@@ -877,7 +888,7 @@ namespace SEQAN_NAMESPACE_MAIN
 			for (int j = 0; j < length(haystack[i]); ++j) {
 				mergedHaystack[totalHaystackLength + j] = haystack[i][j];
 				// rewrite double stranded seq (tts) in a proper form for Myers (char -> index)
-				bitTarget[totalHaystackLength + j] = charToBit(haystack[i][j]);
+				bitTarget[totalHaystackLength + j] = _charToBit(haystack[i][j]);
 
 				// add starting position in mergedHaystack for current fiber
 				posToFiberSeqNo.push_back(i);
@@ -905,7 +916,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		int guanines = 0;
 		for (int i = 0; i < mergedLength; ++i) {
 			// must be guanine and fiber and needle position must match
-			if (isGuanine(fiber[fiberPos + i]) && fiber[fiberPos + i] == needle[ndlPos + i]) {
+			if (_isGuanine(fiber[fiberPos + i]) && fiber[fiberPos + i] == needle[ndlPos + i]) {
 				++guanines;
 			}
 		}
@@ -1118,7 +1129,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	/***************************************************************************************************
 	 ***************************************************************************************************
-	 *										PALINDROMIC STUFF
+	 *										AUTO BINDING STUFF
 	 ***************************************************************************************************
 	 ***************************************************************************************************
 	 */
@@ -1259,7 +1270,7 @@ namespace SEQAN_NAMESPACE_MAIN
 				int tempGuanine = 0;
 				int matchLength = 0;
 				while (ndlCurPos >= needleWindowBPos && fiber[fibCurPos] == needle[ndlCurPos]) {
-					if (isGuanine(fiber[fibCurPos])) {
+					if (_isGuanine(fiber[fibCurPos])) {
 						++tempGuanine;
 					}
 					matchLength++;
@@ -1405,7 +1416,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		// transform query into index for Myers
 		for (int i = 0; i < needleLength; ++i) {
-			bitNeedle[i] = charToBit((needle)[i]);
+			bitNeedle[i] = _charToBit((needle)[i]);
 		}
 
 		unsigned shifts = needleLength - options.minLength;

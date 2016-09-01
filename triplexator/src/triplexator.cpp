@@ -78,18 +78,19 @@ namespace SEQAN_NAMESPACE_MAIN
         addTitleLine(parser, "***                 Comments, Bugs, Feedback: f.buske@uq.edu.au                 ***");
         addTitleLine(parser, "***********************************************************************************");
         addUsageLine(parser, "[OPTIONS] -ss <FASTA FILE> -ds <FASTA FILE>");
+        addUsageLine(parser, "[OPTIONS] -as <FASTA FILE>");
         addSection(parser, "Input:");
         addHelpLine(parser, "Triplexator will run in different modes depending on the input. Providing:");
         addHelpLine(parser, "1) only the third strand (-ss) - search for putative triplex-forming oligonucleotides (TFO)");
         addHelpLine(parser, "2) only the duplex (-ds) - search for putative triplex target sites (TTS)");
         addHelpLine(parser, "3) both - search for triplexes (matching TFO-TTS pairs)");
-        addHelpLine(parser, "4) inverted preprocessing - search for triplexes (matching TFO-TTS pairs), but use preprocessing on DNA instead of RNA");
+        addHelpLine(parser, "4) only the auto-binding strand (-as) - search for putative, locally auto-binding triplexes ");
         addHelpLine(parser, "");
         addOption(parser, addArgumentText(CommandLineOption("ss",  "single-strand-file",    "File in FASTA format that is searched for TFOs (e.g. RNA or DNA)", OptionType::String), "<FILE>"));
         addOption(parser, addArgumentText(CommandLineOption("ds", "duplex-file",            "File in FASTA format that is searched for TTSs (e.g. DNA)", OptionType::String), "<FILE>"));
+        addOption(parser, addArgumentText(CommandLineOption("as", "auto-binding-file",      "File in FASTA format that is searched for autobinding triplexes (can be DNA, RNA, etc.)", OptionType::String), "<FILE>"));
         addSection(parser, "Main Options:");
         addOption(parser, CommandLineOption("bp", "bit-parallel",                 			"use bit-parallel computation when searching for triplex pairs", OptionType::Boolean));
-        addOption(parser, CommandLineOption("bpl","bit-parallel-local",                 	"use bit-parallel computation when searching for triplex pairs, and restrict search to local match (semi-palindrom)", OptionType::Boolean));
         addOption(parser, CommandLineOption("abo","auto-binding-offset",                 	"maximum offset between auto binding regions (must be positive, >= 0), e.g., 1 for regions to be at least adjacent, 2 if there can be 1 bp space between segments, etc.", OptionType::Int));
         addOption(parser, CommandLineOption("l",  "lower-length-bound",                     "minimum triplex feature length required", OptionType::Int| OptionType::Label, options.minLength));
         addOption(parser, CommandLineOption("L",  "upper-length-bound",                     "maximum triplex feature length permitted, -1 = unrestricted ", OptionType::Int | OptionType::Label, options.maxLength ));
@@ -185,7 +186,6 @@ namespace SEQAN_NAMESPACE_MAIN
         //////////////////////////////////////////////////////////////////////////////
         // Extract options
         options.bitParallel 	 = isSetLong(parser, "bit-parallel");
-        options.bitParallelLocal = isSetLong(parser, "bit-parallel-local");
 
         getOptionValueLong(parser, "auto-binding-offset", options.autoBindingOffset);
         getOptionValueLong(parser, "error-rate", options.errorRate);
@@ -281,7 +281,13 @@ namespace SEQAN_NAMESPACE_MAIN
             options.ttsFileSupplied = true;
         }
         
-        if (options.ttsFileSupplied && options.tfoFileSupplied)
+        getOptionValueLong(parser, "auto-binding-file", tmpVal);
+        if (tmpVal.length()>0){
+            appendValue(options.autoBindingFileNames, tmpVal, Generous());
+            options.autoBindingFileSupplied = true;
+        }
+
+        if ((options.ttsFileSupplied && options.tfoFileSupplied) || options.autoBindingFileSupplied)
             options.runmode=TRIPLEX_TRIPLEX_SEARCH;
         else if (options.ttsFileSupplied && !options.tfoFileSupplied)
             options.runmode=TRIPLEX_TTS_SEARCH;
@@ -367,8 +373,7 @@ namespace SEQAN_NAMESPACE_MAIN
             options.showHelp = true;
             return 0;
         }
-        if ((options.runmode != TRIPLEX_TRIPLEX_SEARCH && (options.bitParallel || options.bitParallelLocal)) && (stop = true))
-            ::std::cerr << "Bit parallel (local) mode enabled but running mode is not triplex search." << ::std::endl;
+
         if ((options.errorRate > 20 || options.errorRate < 0) && (stop = true))
             ::std::cerr << "Error-rate must be a value between 0 and 20" << ::std::endl;
         if ((options.minGuanineRate < 0 || options.minGuanineRate > 100) && (stop = true))
@@ -424,14 +429,14 @@ namespace SEQAN_NAMESPACE_MAIN
         }
         
         //  optimizing shape/q-gram for threshold >= 2 
-        if (options.filterMode == FILTERING_GRAMS && options.runmode==TRIPLEX_TRIPLEX_SEARCH && !(options.bitParallel || options.bitParallelLocal)) {
+        if (options.filterMode == FILTERING_GRAMS && options.runmode==TRIPLEX_TRIPLEX_SEARCH && !(options.bitParallel || options.autoBindingFileSupplied)) {
         	int qgram = _calculateShape(options);
         	if (qgram <= 4 && (stop = true)){
         		::std::cerr << "Error-rate, minimum length and qgram-threshold settings do not allow for efficient filtering with q-grams of weight >= 5 (currently " << qgram << ")." << ::std::endl;
         		::std::cerr << "Consider disabling filtering-mode (brute-force approach)" << ::std::endl;
         	}
         }
-        else if (options.runmode==TRIPLEX_TRIPLEX_SEARCH && (options.bitParallel || options.bitParallelLocal)) {
+        else if (options.runmode==TRIPLEX_TRIPLEX_SEARCH && (options.bitParallel || options.autoBindingFileSupplied)) {
         	// when using Myers, qgram size is min length
         	resize(options.shape, options.minLength);
         	for (int i=0; i<options.minLength; ++i){
@@ -598,8 +603,8 @@ namespace SEQAN_NAMESPACE_MAIN
 			else if (options.bitParallel) {
 				options.logFileHandle << "- bit-parallel triplex search" << ::std::endl;
 			}
-			else if (options.bitParallelLocal) {
-				options.logFileHandle << "- auto binding (bit-parallel local) mode with max. auto binding offset: " << options.autoBindingOffset << ::std::endl;
+			else if (options.autoBindingFileSupplied) {
+				options.logFileHandle << "- auto binding mode with max. auto binding offset: " << options.autoBindingOffset << ::std::endl;
 			}
 			else {
 				options.logFileHandle << "- filtering : none - brute force" << ::std::endl;
@@ -718,40 +723,45 @@ namespace SEQAN_NAMESPACE_MAIN
 		return errorCode;
 	}
 
+
     //////////////////////////////////////////////////////////////////////////////
     // Inverted. Find triplexes in many duplex sequences (import from Fasta)
     template <
     typename TMotifSet,
     typename TFile,
     typename TShape>
-    int _findTriplexMyers(TMotifSet              	&tfoMotifSet,
-                     StringSet<CharString> const    &tfoNames,
-                     TFile                          &outputfile,
-                     Options                        &options,
-                     TShape const                   &shape)
+    int _findTriplexExtended(
+            TMotifSet                   &tfoMotifSet,
+            StringSet<CharString> const &tfoNames,
+            TFile                       &outputfile,
+            Options                     &options,
+            TShape const                &shape)
     {
         typedef Index<TMotifSet, IndexQGram<TShape, OpenAddressing> >   TQGramIndex;
         typedef __int64                                                 TId;
         typedef Gardener<TId, GardenerUngapped>                         TGardener;
         
+        StringSet<CharString> duplexFileNames;
+        duplexFileNames = (options.autoBindingFileSupplied) ? options.autoBindingFileNames : options.duplexFileNames;
+
         unsigned errorCode = TRIPLEX_NORMAL_PROGAM_EXIT;
         options.timeCreateTtssIndex = 0;
         options.timeTriplexSearch 	= 0;
         options.timeIO 				= 0;
         
         options.logFileHandle << _getTimeStamp() << " * Started searching for triplexes (Myers)" << ::std::endl;
-        options.logFileHandle << _getTimeStamp() << " * Processing " << options.duplexFileNames[0] << ::std::endl;
+        options.logFileHandle << _getTimeStamp() << " * Processing " << duplexFileNames[0] << ::std::endl;
 
         options.logFileHandle << _getTimeStamp() <<  " - Myers Qgram index creation." << ::std::endl;
         TQGramIndex index_qgram(tfoMotifSet);
         resize(indexShape(index_qgram), weight(shape));
         indexRequire(index_qgram, QGramCounts());
         indexRequire(index_qgram, QGramSADir());
-        errorCode = startTriplexSearchSerialBitParallelGlobal(tfoMotifSet, tfoNames, index_qgram, outputfile, shape, options, TGardener());
+        errorCode = startTriplexSearchSerialExtended(tfoMotifSet, tfoNames, index_qgram, outputfile, shape, options, TGardener());
         
         if (errorCode == TRIPLEX_NORMAL_PROGAM_EXIT){
-            options.logFileHandle << _getTimeStamp() << " * Finished processing " << options.duplexFileNames[0] << ::std::endl;
-            options.logFileHandle << std::endl;
+            options.logFileHandle << _getTimeStamp() << " * Finished processing " << duplexFileNames[0];
+            options.logFileHandle << std::endl << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for triplex search only (search + verify - triplex.h) " << ::std::setprecision(3) << options.timeTriplexSearch << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for ds IO reading/processing only " << ::std::setprecision(3) << options.timeIO << " seconds (summed over all cpus)" << ::std::endl;
             options.logFileHandle << _getTimeStamp() << std::fixed << " * Time for `verifyAndStore` function in triplex.h " << ::std::setprecision(3) << options.timeVerifyAndStore << " seconds (summed over all cpus)" << ::std::endl;
@@ -765,46 +775,49 @@ namespace SEQAN_NAMESPACE_MAIN
     ////////////////////////////////////////////////////////////////////////////////
     //// Main inverted triplex mapper function
     template <typename TOligoSet, typename TMotifSet> // TTriplexSet, TMotifSet
-    int mapTriplexesMyers(Options &options)
+    int mapTriplexesExtended(Options &options)
     {
         typedef typename Iterator<TOligoSet, Standard>::Type    TOligoIter;
         typedef typename Iterator<TMotifSet, Standard>::Type    TIterMotifSet;
 
         TOligoSet               				oligoSequences;
         StringSet<CharString>   			  	oligoNames;     // tfo names, taken from the Fasta file
+        StringSet<CharString>   			  	duplexFileNames;
+        StringSet<CharString>   			  	tfoFileNames;
         String< Pair<CharString, unsigned> >  	ttsnoToFileMap;
 
         typedef Repeat<unsigned, unsigned>                      TRepeat;
         typedef String<TRepeat>                                 TRepeatString;
         typedef typename Iterator<TRepeatString, Rooted>::Type  TRepeatIterator;
         
+        tfoFileNames 	= (options.autoBindingFileSupplied) ? options.autoBindingFileNames : options.tfoFileNames;
+        duplexFileNames = (options.autoBindingFileSupplied) ? options.autoBindingFileNames : options.duplexFileNames;
+
         //////////////////////////////////////////////////////////////////////////////
         // Step 1: verify duplex file
         options.logFileHandle << _getTimeStamp() << " * Started checking duplex file" << ::std::endl;
+
         // try opening each duplex file once before running the whole searching procedure
-        int filecount = 0;
+        int filecount 	= 0;
         int numTTSFiles = 0;
         while(filecount < numTTSFiles){
             ::std::ifstream file;
-            file.open(toCString(options.duplexFileNames[filecount]), ::std::ios_base::in | ::std::ios_base::binary);
+            file.open(toCString(duplexFileNames[filecount]), ::std::ios_base::in | ::std::ios_base::binary);
             if (!file.is_open())
                 return TRIPLEX_READFILE_FAILED;
             file.close();
             ++filecount;
         }
         options.logFileHandle << _getTimeStamp() << " * Finished checking duplex file" << ::std::endl;
-
         
         //////////////////////////////////////////////////////////////////////////////
         // Step 2: read in TFO files
-        options.logFileHandle << _getTimeStamp() << " * Started reading single-stranded file:" << options.tfoFileNames[0] << ::std::endl;
-        
-        if (!_loadOligos(oligoSequences, oligoNames, toCString(options.tfoFileNames[0]), options)) {
+        options.logFileHandle << _getTimeStamp() << " * Started reading single-stranded file:" << tfoFileNames[0] << ::std::endl;
+        if (!_loadOligos(oligoSequences, oligoNames, toCString(tfoFileNames[0]), options)) {
             options.logFileHandle << "ERROR: Failed to load single-stranded sequence set" << ::std::endl;
             cerr << "Failed to load sequence set containing the triplex forming oligonucleotides" << endl;
             return TRIPLEX_TFOREAD_FAILED;
         }
-
         options.logFileHandle << _getTimeStamp() << " * Finished reading single-stranded file (" << length(oligoSequences) << " sequences read)" << ::std::endl;
         
         //////////////////////////////////////////////////////////////////////////////
@@ -813,21 +826,14 @@ namespace SEQAN_NAMESPACE_MAIN
         options.logFileHandle << _getTimeStamp() << " * Started detecting triplex-forming oligonucleotides in single-stranded sequences" << ::std::endl;
         
         Shape<Triplex, SimpleShape > ungappedShape;
-        
-    #ifdef TRIPLEX_DEBUG
-        ::std::cout << options.shape << ::std::endl;
-    #endif
-
         if (!stringToShape(ungappedShape, options.shape)){
             return TRIPLEX_SHAPE_FAILED;
         }
 
         bool reduceSet = true; // merge overlapping features
-        
         unsigned oligoSeqNo = 0;
         TMotifSet tfoMotifSet;
         for (TOligoIter it = begin(oligoSequences); it != end(oligoSequences); ++it){
-            
             // find low complexity regions and mask sequences if requested
             if (options.filterRepeats){
                 TRepeatString data_repeats;
@@ -875,39 +881,24 @@ namespace SEQAN_NAMESPACE_MAIN
         
         options.timeFindTfos += SEQAN_PROTIMEDIFF(find_time);   
         options.logFileHandle << _getTimeStamp() << " * Finished detecting TFOs within " << ::std::setprecision(3)  << options.timeFindTfos << " seconds (" << length(tfoMotifSet) << " TFOs detected)" << ::std::endl;
-        
-    #ifdef TRIPLEX_DEBUG
-        TIterMotifSet itr = begin(tfoMotifSet,Standard());
-        TIterMotifSet itrEnd = end(tfoMotifSet,Standard());
-        ::std::cout << "@@@ printing all tfo segments" << ::std::endl;
-        while (itr != itrEnd){
-            //::std::cout << "tfo: " << tfoString(*itr) << " type: " << (*itr).motif << " length: "<< length(*itr) <<  " position: "<< beginPosition(*itr) << " " << (*itr).parallel << ::std::endl;
-        	::std::cout << tfoString(*itr) << ::std::endl;
-            ++itr;
-        }
-        ::std::cout << "@@@" << ::std::endl;
-    #endif
 
         //////////////////////////////////////////////////////////////////////////////
         // Step 4: prepare output file & scan duplex sequences with tfo patterns
-        // 
-    
         unsigned errorCode = TRIPLEX_NORMAL_PROGAM_EXIT;
     
         ::std::ofstream filehandle;
         if (!empty(options.output) && options.outputFormat != 2){
             openOutputFile(filehandle, options);
             printTriplexHeader(filehandle, options);
-            errorCode = _findTriplexMyers(tfoMotifSet, oligoNames, filehandle, options, ungappedShape);
+            errorCode = _findTriplexExtended(tfoMotifSet, oligoNames, filehandle, options, ungappedShape);
             closeOutputFile(filehandle, options);
         } else {
             printTriplexHeader(::std::cout, options);
-            errorCode = _findTriplexMyers(tfoMotifSet, oligoNames, ::std::cout, options, ungappedShape);
+            errorCode = _findTriplexExtended(tfoMotifSet, oligoNames, ::std::cout, options, ungappedShape);
         }
 
         return errorCode;
     }
-
 
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1615,13 +1606,16 @@ namespace SEQAN_NAMESPACE_MAIN
         _populateLogFile(argc, argv, options);
         
         int result = TRIPLEX_NORMAL_PROGAM_EXIT;
-        if (options.runmode == TRIPLEX_TTS_SEARCH){ // investigate TTS only
+        if (options.runmode == TRIPLEX_TTS_SEARCH) { // investigate TTS only
             result = investigateTTS<TTargetSet>(options);
-        } else if (options.runmode == TRIPLEX_TFO_SEARCH){ // investigate TFO only
+        }
+        else if (options.runmode == TRIPLEX_TFO_SEARCH) { // investigate TFO only
             result = investigateTFO<TTriplexSet, TMotifSet>(options);
-        } else if (options.runmode == TRIPLEX_TRIPLEX_SEARCH){ // map TFO and TTSs
-            result = (options.bitParallel || options.bitParallelLocal) ? mapTriplexesMyers<TTriplexSet, TMotifSet>(options) : mapTriplexes<TTriplexSet, TMotifSet>(options);
-        } else {
+        }
+        else if (options.runmode == TRIPLEX_TRIPLEX_SEARCH) { // map TFO and TTSs
+            result = (options.bitParallel || options.autoBindingFileSupplied) ? mapTriplexesExtended<TTriplexSet, TMotifSet>(options) : mapTriplexes<TTriplexSet, TMotifSet>(options);
+        }
+        else {
             cerr << "Exiting ... invalid runmode" << endl;
             options.logFileHandle << "ERROR: Exit due to invalid options " << ::std::endl;  
             closeLogFile(options);
@@ -1637,7 +1631,6 @@ namespace SEQAN_NAMESPACE_MAIN
         
         closeSummaryFile(options);
         
-//        options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished program within " <<  ::std::setprecision(3)  << SEQAN_PROTIMEDIFF(runtime) << " seconds" << ::std::endl;
         options.logFileHandle << _getTimeStamp() << std::fixed << " * Finished program within " <<  ::std::setprecision(3)  << sysTime() - t_runtime << " seconds" << ::std::endl;
         closeLogFile(options);
         

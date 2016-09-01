@@ -1393,7 +1393,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 	    		// transform query into index for Myers and update array
 				for (int i = 0; i < options.minLength; ++i) {
-					bitQGram[i] = charToBit(suffixQGram[i]);//static_cast<unsigned int>(suffixQGram[i]);
+					bitQGram[i] = _charToBit(suffixQGram[i]);//static_cast<unsigned int>(suffixQGram[i]);
 				}
 
 				t = sysTime();
@@ -1457,6 +1457,52 @@ namespace SEQAN_NAMESPACE_MAIN
 		return ret;
 	}
 
+
+	/**
+	 *
+	 */
+	template<
+	typename TIntervalTreeMap,
+	typename TNeedleSet,
+	typename TInterval,
+	typename TIntervalCargo,
+	typename TPos
+	>
+	void _buildIntervalTreeMap(
+			TIntervalTreeMap 				&intervalTreeMap,
+			TNeedleSet 				const 	&needles,
+			StringSet<CharString> 	const 	&tfoNames,
+			int						const	&autoBindingOffset,
+			TInterval,
+			TIntervalCargo,
+			TPos)
+	{
+		typedef std::vector<IntervalSimple<TIntervalCargo> > TIntervalVector;
+		typedef	std::map<CharString, TIntervalVector> TIntervalVectorMap;
+
+		TIntervalVectorMap intervalVectorMap;
+		// create interval tree with needle intervals
+		for (unsigned i = 0; i < length(needles); ++i) {
+			CharString needleSeqName = tfoNames[needles[i].seqNo];
+
+			if (intervalVectorMap.find(needleSeqName) == intervalVectorMap.end()) {
+				// add empty interval vector for key
+				intervalVectorMap[needleSeqName] = TIntervalVector();
+			}
+
+			TIntervalCargo cargo(&(needles[i]), i);
+			TPos tmp_bpos = std::max(0, ((int)beginPosition(needles[i]) - autoBindingOffset));
+			TPos tmp_epos = endPosition(needles[i]) + autoBindingOffset;
+
+			intervalVectorMap[needleSeqName].push_back(IntervalSimple<TIntervalCargo>(tmp_bpos, tmp_epos, cargo));
+		}
+
+		// iterate over keys (tfoNames) and create an interval tree for/from each vector of intervals
+		for (typename TIntervalVectorMap::iterator it = intervalVectorMap.begin(); it != intervalVectorMap.end(); ++it) {
+			intervalTreeMap[it->first] = SimpleIntervalTree<TIntervalCargo>(it->second);
+		}
+	}
+
 	/**
 	 * One parameter is the q-gram index of the TFO set. This function iterates over each double
 	 * stranded sequence in the haystack, and for each of these sequences iterates over each substring
@@ -1474,14 +1520,16 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TId,			 // sequence id
 	typename TWorker
 	>
-	void plantBitParallelLocal(
-			TTimes 					&times,
-			Gardener<TId, TSpec>	&gardener,
-			THaystack 		const	&haystack, 			// TTS set
-			TNeedleSet		const	&needles,			// TFO set
-			TError 			const	&errorRate,
-			bool			const 	&plusStrand,
-			TOptions		const	&options,
+	void plantAutoBinding(
+			TTimes 							&times,
+			Gardener<TId, TSpec>			&gardener,
+			THaystack 				const	&haystack, 			// TTS set
+			TNeedleSet				const	&needles,			// TFO set
+			CharString 				const 	&duplexName,
+			StringSet<CharString> 	const 	&tfoNames,
+			TError 					const	&errorRate,
+			bool					const 	&plusStrand,
+			TOptions				const	&options,
 			TPos,
 			TWorker)
 	{
@@ -1507,7 +1555,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 		typedef			 Pair<const TNeedle*, unsigned long>		TIntervalCargo;
 		typedef			 IntervalAndCargo<TPos, TIntervalCargo >	TInterval;
-		typedef typename Iterator< String<TIntervalCargo> >::Type 	TIntervalCargoIterator;
+		typedef			 std::map<CharString, SimpleIntervalTree<TIntervalCargo> > TIntervalTreeMap;
 
 		int 	 k 				= ceil(errorRate * options.minLength); // #overall mismatches allowed
 		unsigned targetLength 	= 0;
@@ -1519,19 +1567,10 @@ namespace SEQAN_NAMESPACE_MAIN
 		THitSetPointerMap hitSetPointerMap; // for each needle in query set (needles/tfoSet), stores a
 											// hitSetPointer containing all corresponding hits
 
+		// build interval tree map
 		double timeCreateIntervalTree = sysTime();
-
-		// create interval tree with needle intervals
-		std::vector<IntervalSimple<TIntervalCargo> > intervals;
-		for (unsigned i = 0; i < length(needles); ++i) {
-			TIntervalCargo cargo(&(needles[i]), i);
-			TPos tmp_bpos = std::max(0, ((int)beginPosition(needles[i]) - options.autoBindingOffset));
-			TPos tmp_epos = endPosition(needles[i]) + options.autoBindingOffset;
-
-			intervals.push_back(IntervalSimple<TIntervalCargo>(tmp_bpos, tmp_epos, cargo));
-		}
-		SimpleIntervalTree<TIntervalCargo> intervalTree;
-		intervalTree = SimpleIntervalTree<TIntervalCargo>(intervals);
+		TIntervalTreeMap  intervalTreeMap;
+		_buildIntervalTreeMap(intervalTreeMap, needles, tfoNames, options.autoBindingOffset, TInterval(), TIntervalCargo(), TPos());
 		times["createIntervalTree"] += sysTime() - timeCreateIntervalTree;
 
 		// add a new hitset object for each fiber in haystack
@@ -1554,15 +1593,17 @@ namespace SEQAN_NAMESPACE_MAIN
 			cout << "!fiber #?" << " : " << beginPosition(*fiberIt) << " <-> " << endPosition(*fiberIt) << endl;
 #endif
 			double timeFindIntervals = sysTime();
-//			intervalResults = new std::vector<IntervalSimple<TIntervalCargo> >();
+
+			assert(intervalTreeMap.count(duplexName) > 0 && "FFFF**k we have an invalid duplexName!");
+			SimpleIntervalTree<TIntervalCargo> *intervalTree = &intervalTreeMap[duplexName];
 			std::vector<IntervalSimple<TIntervalCargo> > intervalResults;
-			intervalTree.findOverlapping(beginPosition(*fiberIt), endPosition(*fiberIt), intervalResults);
+			intervalTree->findOverlapping(beginPosition(*fiberIt), endPosition(*fiberIt), intervalResults);
 			times["findInterval"] += sysTime() - timeFindIntervals;
 
 			bitFiber = new unsigned char[length(*fiberIt)];
 			// transform fiber to bit encoding for Myers
 			for (int i = 0; i < length(*fiberIt); ++i) {
-				bitFiber[i] = charToBit((*fiberIt)[i]);
+				bitFiber[i] = _charToBit((*fiberIt)[i]);
 			}
 			unsigned char * const bitFiberBase = bitFiber;
 
@@ -1579,7 +1620,6 @@ namespace SEQAN_NAMESPACE_MAIN
 				times["computeLocalTriplexes"] += sysTime() - timeComputeLocalTriplexes;
 			}
 			delete [] bitFiberBase;
-//			delete intervalResults;
 		}
 		times["fiberLoop"] += sysTime() - timeFiberLoop;
 

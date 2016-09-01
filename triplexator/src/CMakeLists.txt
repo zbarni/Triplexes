@@ -1,4 +1,3 @@
-
 cmake_minimum_required (VERSION 2.6)
 project (triplexator)
 
@@ -42,6 +41,7 @@ if (SHAREDLIBRARY)
             triplex_pattern.h
             local_container.h
             simpleintervaltree.h
+            myers.h
             )
 else()
     add_executable(triplexator triplexator.cpp 
@@ -56,6 +56,7 @@ else()
             triplex_pattern.h
             local_container.h
             simpleintervaltree.h
+            myers.h
             )
 endif()
 
