@@ -1,5 +1,4 @@
 import os
-import gc
 import sys
 
 if os.environ.get("TRIPLEXATOR_HOME") is None:
@@ -7,28 +6,48 @@ if os.environ.get("TRIPLEXATOR_HOME") is None:
     print("Exiting..")
     exit(-1)
 
-FILE_DNA_DATA_CHR1 = os.environ.get("TRIPLEXATOR_HOME") + "/data/dna/mm9/mm9.chr1.oneline.fa"
-PATH_TRIPLEXATOR_HOME = os.environ.get("TRIPLEXATOR_HOME")
-PATH_RGT_HOME = os.environ.get("RGT_HOME")
-TRIPLEXATOR_BINARY = PATH_TRIPLEXATOR_HOME + "/triplexator/bin/triplexator"
-PATH_TEST_DATA = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/data/"
-PATH_TEST_BPL = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/bit_parallel_local/"
-PATH_TEST_BP = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/"
-PATH_TEST_BRUTE = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/brute/"
-PATH_TEST_RANDOM = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/random_4/"
-PATH_CLUSTER = os.environ.get("TRIPLEXATOR_HOME") + "/output/cluster/"
-PATH_TEST = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/"
-PATH_DIR_BPL = "bpl/"
-PATH_DIR_BRUTE = "brute/"
-PATH_DIR_BP = "bp/"
+PATH_TRIPLEXATOR_HOME   = os.environ.get("TRIPLEXATOR_HOME")
+PATH_RGT_HOME           = os.environ.get("RGT_HOME")
+TRIPLEXATOR_BINARY      = PATH_TRIPLEXATOR_HOME + "/triplexator/bin/triplexator"
+PATH_TEST_DATA          = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/data/"
+PATH_TEST_BPL           = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/bit_parallel_local/"
+PATH_TEST_BP            = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/"
+PATH_TEST_BRUTE         = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/brute/"
+PATH_TEST_RANDOM        = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/random_4/"
+PATH_CLUSTER            = os.environ.get("TRIPLEXATOR_HOME") + "/output/cluster/"
+PATH_TEST               = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/"
+PATH_UNIT_TESTS         = os.environ.get("TRIPLEXATOR_HOME") + "/output/unit_tests/"
+PATH_DIR_BPL    = "bpl/"
+PATH_DIR_BRUTE  = "brute/"
+PATH_DIR_BP     = "bp/"
 
 import_RNADNABindingSet = None
+lib_triplexator = None
 
-if PATH_RGT_HOME is not None:
-    sys.path.append(PATH_RGT_HOME)
-    import GenomicRegionSet as grs
-    from triplex import RNADNABindingSet as _RNADNABindingSet
-    import_RNADNABindingSet = _RNADNABindingSet
+
+def lazy_imports():
+    """Do lazy import of """
+    global PATH_RGT_HOME
+    global PATH_TRIPLEXATOR_HOME
+
+    # triplexator python binding
+    sys.path.append(PATH_TRIPLEXATOR_HOME + '/python_bindings/')
+    import triplexator as _triplexator
+    global lib_triplexator
+    lib_triplexator = _triplexator
+
+    # RGT library
+    if PATH_RGT_HOME is not None:
+        sys.path.append(PATH_RGT_HOME)
+        from triplex import RNADNABindingSet as _RNADNABindingSet
+        global import_RNADNABindingSet
+        import_RNADNABindingSet = _RNADNABindingSet
+
+
+def get_output_filename_from_parameters(prefix, lmin, lmax, e, c):
+    out_file_template = prefix + '_l' + str(lmin) + '--' + str(lmax) + '_c' + str(c) + '_e' + str(e)
+    out_file_tpx = out_file_template + ".tpx"
+    return out_file_tpx
 
 
 def get_files_with_extension(directory, prefix="", ext=""):

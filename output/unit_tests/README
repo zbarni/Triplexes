@@ -1,0 +1,10 @@
+*** Small unit tests for fast triplexator (bit-parallel) ***
+
+HowTo:
+    - get inspired from the example test directories, such as "test_1"
+    - to create and run a new test:
+        = just make a new directory with any name, e.g., "mytest"
+        = create a dna.data (double strand) and rna.data (single strand) input files, fasta format
+        = run triplexator with "brute force (default mode)" on this input, and name the output file "reference_lMIN--MAX_cXY_eCD.tpx"
+        = run TRIPLEXATOR_HOME/output/scripts/master_run.py --unit-test="mytest"
+

@@ -12,10 +12,9 @@ import subprocess
 import shlex
 import data_analysis as da
 import utils
-from random import randint
+import unit_tests as unit
 
 result_dir = {"bpl": utils.PATH_DIR_BPL, "bp": utils.PATH_DIR_BP, "brute": utils.PATH_DIR_BRUTE}
-triplexator = None
 # import compare_brute_local_palindrom as compare
 
 
@@ -24,11 +23,6 @@ def check_setup():
         print("Please set TRIPLEXATOR_HOME environment variable properly!")
         print("Exiting..")
         exit(-1)
-
-    sys.path.append(os.environ.get("TRIPLEXATOR_HOME") + '/python_bindings/')
-    import triplexator as _triplexator
-    global triplexator
-    triplexator = _triplexator
 
 
 def get_triplexator_option(mode):
@@ -70,9 +64,9 @@ def run_cluster(options):
                 out_file_tpx = out_file_template + ".tpx"
 
                 cmd = utils.PATH_CLUSTER + "meta_bsub.sh bsub " + options.dataPrefix + \
-                      " " + out_dir + "/" + options.dataPrefix + '_l' + str(l) + '--' + str(options.maxLength) + '_e' + str(e) + '_c' + str(c) + \
-                      " " + options.clusterHour + " " + options.clusterMemory + " " + \
-                      utils.PATH_TRIPLEXATOR_HOME + " " + '-ss ' + options.inputTFO + " -ds " + options.inputTTS + " " + \
+                      " " + out_dir + "/" + options.dataPrefix + '_l' + str(l) + '--' + str(options.maxLength) + '_e' +\
+                      str(e) + '_c' + str(c) + " " + options.clusterHour + " " + options.clusterMemory + " " + \
+                      utils.PATH_TRIPLEXATOR_HOME + " " + '-ss ' + options.inputTFO + " -ds " + options.inputTTS + " " +\
                       get_triplexator_option(options.mode) + " -e " + str(e) + " -c " + str(c) + " -l " + str(l) + \
                       " -L " + options.maxLength + " " + " -od " + utils.PATH_CLUSTER + result_dir[options.mode] + " -o " \
                       + out_file_tpx + options.tpxOptions
@@ -157,17 +151,22 @@ def create_parser():
     parser.add_option("--data-analysis", dest="dataAnalysis", default=None, metavar=('plot'))
     parser.add_option("--convert", dest="convert", default=None, metavar=('tpx-to-bed'))
 
+    parser.add_option("--unit-tests", dest="unitTests", default=None, metavar=("test_directory_name", ""))
+
     parser.add_option("--cluster-time", dest="clusterHour", help="time for submitted job (cluster only)", metavar="2:00")
     parser.add_option("--cluster-mem", dest="clusterMemory", help="memory for submitted job (cluster only)", metavar="16000")
     parser.add_option("--valgrind", dest="valgrind", default=False, action="store_true", help="profile with valgrind", metavar="TTS")
     return parser
 
 if __name__ == "__main__":
+    utils.lazy_imports()
     check_setup()
     m_parser = create_parser()
     (m_options, args) = m_parser.parse_args()
 
-    if m_options.convert == "tpx-to-bed":
+    if m_options.unitTests is not None:
+        unit.run_bit_parallel_unit_test(m_options.unitTests)
+    elif m_options.convert == "tpx-to-bed":
         utils.convert(m_options)
     elif m_options.dataAnalysis is not None:
         da.do_data_analysis(m_options)
