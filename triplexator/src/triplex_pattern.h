@@ -73,11 +73,14 @@ public:
 
 	typedef ModifiedString<TSegment, ModView< FunctorTCMotif > >		TtcMotif;
 	typedef ModifiedString<TSegment, ModView< FunctorGTMotif > >		TgtMotif;
+	typedef ModifiedString<TSegment, ModView< FunctorGAMotif > >		TgaMotifRev;
 	typedef ModifiedString< ModifiedString<TSegment, ModView< FunctorGTMotif > >,ModReverse>  TgtMotifRev;
-	typedef ModifiedString< ModifiedString<TSegment, ModView< FunctorGAMotif > >,ModReverse>  	TgaMotif;
+	typedef ModifiedString< ModifiedString<TSegment, ModView< FunctorGAMotif > >,ModReverse>  TgaMotif;
+
 	typedef ModifiedString<TSegment, ModView< FunctorTTSMotif > >		TttsMotif;
 	typedef ModifiedString< ModifiedString<TString, ModView< FunctorTTSMotifCompl > >, ModReverse>	TttsMotifRevComp;
 	
+//	static bool parallelPurine;				// NOT USED CURRENTLY, otherwise should be a flag for enabling parallel purine motifs
 	TString mask_string;					// a string which masks the host segment
 	bool parallel;							// whether the motif string is parallel or antiparallel oriented to the host
 	TSegment segment;						// the host segment masked by the string
@@ -101,6 +104,9 @@ public:
 					mask_string = TgtMotif(segment);
 				else if (motif == 'Y')
 					mask_string = TtcMotif(segment);
+				// @barni
+				else if (motif == 'R')
+					mask_string = TgaMotifRev(segment);
 			} else {
 				if (motif == 'M')
 					mask_string = TgtMotifRev(segment);

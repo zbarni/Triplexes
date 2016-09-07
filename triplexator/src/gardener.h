@@ -1521,17 +1521,17 @@ namespace SEQAN_NAMESPACE_MAIN
 	typename TWorker
 	>
 	void plantAutoBinding(
-			TTimes 							&times,
-			Gardener<TId, TSpec>			&gardener,
-			THaystack 				const	&haystack, 			// TTS set
-			TNeedleSet				const	&needles,			// TFO set
-			CharString 				const 	&duplexName,
-			StringSet<CharString> 	const 	&tfoNames,
-			TError 					const	&errorRate,
-			bool					const 	&plusStrand,
-			TOptions				const	&options,
-			TPos,
-			TWorker)
+						  TTimes 						&times,
+						  Gardener<TId, TSpec>			&gardener,
+						  THaystack 			const	&haystack, 			// TTS set
+						  TNeedleSet			const	&needles,			// TFO set
+						  CharString 			const 	&duplexName,
+						  StringSet<CharString> const 	&tfoNames,
+						  TError 				const	&errorRate,
+						  bool					const 	&plusStrand,
+						  TOptions				const	&options,
+						  TPos,
+						  TWorker)
 	{
 		double t;
 		double timeBPL = sysTime();
@@ -1541,21 +1541,18 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename Value<THitSetPointer>::Type			THitSet;
 		typedef typename Value<THitSet>::Type					THit;
 
-		typedef typename Value<THaystack>::Type               	TFiber;
 	    typedef typename Iterator<THaystack const>::Type        THaystackIterator;
-	    typedef typename Iterator<TNeedleSet const>::Type       TNeedleIterator;
 		typedef typename Value<TNeedleSet>::Type               	TNeedle;
 		typedef Seed<Simple, DefaultSeedConfig>					TSeed;
 		typedef			 std::pair<int, int> 					TPair;
 
-		typedef 		 std::map<int, THitSetPointer> 					THitSetPointerMap;
-		typedef 		 std::map<TPair, std::set<unsigned long long> > TSeedHashesMap;
-		typedef			 std::map<TPair, std::map<TPair, std::vector<THit*> > >	THitList;
-		typedef typename Infix<typename GetSequenceByNo<TNeedleSet const>::Type >::Type	TInfix;
+		typedef  std::map<int, THitSetPointer> 					THitSetPointerMap;
+		typedef  std::map<TPair, std::set<unsigned long long> > TSeedHashesMap;
+		typedef	 std::map<TPair, std::map<TPair, std::vector<THit*> > >	THitList;
 
-		typedef			 Pair<const TNeedle*, unsigned long>		TIntervalCargo;
-		typedef			 IntervalAndCargo<TPos, TIntervalCargo >	TInterval;
-		typedef			 std::map<CharString, SimpleIntervalTree<TIntervalCargo> > TIntervalTreeMap;
+		typedef	 Pair<const TNeedle*, unsigned long>		TIntervalCargo;
+		typedef	 IntervalAndCargo<TPos, TIntervalCargo >	TInterval;
+		typedef	 std::map<CharString, SimpleIntervalTree<TIntervalCargo> > TIntervalTreeMap;
 
 		int 	 k 				= ceil(errorRate * options.minLength); // #overall mismatches allowed
 		unsigned targetLength 	= 0;

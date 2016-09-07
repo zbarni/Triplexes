@@ -92,6 +92,7 @@ namespace SEQAN_NAMESPACE_MAIN
         addSection(parser, "Main Options:");
         addOption(parser, CommandLineOption("bp", "bit-parallel",                 			"use bit-parallel computation when searching for triplex pairs", OptionType::Boolean));
         addOption(parser, CommandLineOption("abo","auto-binding-offset",                 	"maximum offset between auto binding regions (must be positive, >= 0), e.g., 1 for regions to be at least adjacent, 2 if there can be 1 bp space between segments, etc.", OptionType::Int));
+        addOption(parser, CommandLineOption("pp", "parallel-purine",                 		"consider parallel purine motifs as well", OptionType::Boolean));
         addOption(parser, CommandLineOption("l",  "lower-length-bound",                     "minimum triplex feature length required", OptionType::Int| OptionType::Label, options.minLength));
         addOption(parser, CommandLineOption("L",  "upper-length-bound",                     "maximum triplex feature length permitted, -1 = unrestricted ", OptionType::Int | OptionType::Label, options.maxLength ));
         addOption(parser, CommandLineOption("e",  "error-rate",                             "set the maximal error-rate in % tolerated", OptionType::Double | OptionType::Label, (100.0 * options.errorRate)));
@@ -185,7 +186,8 @@ namespace SEQAN_NAMESPACE_MAIN
         
         //////////////////////////////////////////////////////////////////////////////
         // Extract options
-        options.bitParallel 	 = isSetLong(parser, "bit-parallel");
+        options.bitParallel 	= isSetLong(parser, "bit-parallel");
+        options.parallelPurine 	= isSetLong(parser, "parallel-purine");
 
         getOptionValueLong(parser, "auto-binding-offset", options.autoBindingOffset);
         getOptionValueLong(parser, "error-rate", options.errorRate);
@@ -198,8 +200,6 @@ namespace SEQAN_NAMESPACE_MAIN
         
         getOptionValueLong(parser, "mixed-parallel-max-guanine", options.mixed_parallel_max_guanine);
         getOptionValueLong(parser, "mixed-antiparallel-min-guanine", options.mixed_antiparallel_min_guanine);
-        
-        
         
         ::std::string tmpVal;
         getOptionValueLong(parser, "filter-repeats", tmpVal);
@@ -699,7 +699,7 @@ namespace SEQAN_NAMESPACE_MAIN
 					options.logFileHandle << _getTimeStamp() <<  " - Started creating q-gram index for all TFOs" << ::std::endl;
 				TQGramIndex index_qgram(tfoMotifSet);
 				resize(indexShape(index_qgram), weight(shape));
-				// create pattern	
+				// create pattern
 				TPattern pattern(index_qgram,shape);
 				options.timeFindTriplexes = 0;
 				// create index
@@ -725,7 +725,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 
     //////////////////////////////////////////////////////////////////////////////
-    // Inverted. Find triplexes in many duplex sequences (import from Fasta)
+    //
     template <
     typename TMotifSet,
     typename TFile,
@@ -773,7 +773,7 @@ namespace SEQAN_NAMESPACE_MAIN
 
 
     ////////////////////////////////////////////////////////////////////////////////
-    //// Main inverted triplex mapper function
+    //// Main extended triplex mapper function
     template <typename TOligoSet, typename TMotifSet> // TTriplexSet, TMotifSet
     int mapTriplexesExtended(Options &options)
     {

@@ -71,6 +71,7 @@ _Pragma(STRINGIFY(code))
 namespace io = boost::iostreams;
 #endif
 
+//#define TRIPLEX_DEBUG
 using namespace std;
 namespace SEQAN_NAMESPACE_MAIN
 {
@@ -482,6 +483,7 @@ namespace SEQAN_NAMESPACE_MAIN
 		bool		autoBindingFileSupplied; // indicates that one file as auto-binding triplex source has been specified
 		bool		forward;			// compute forward oriented read matches
 		bool		reverse;			// compute reverse oriented read matches
+		bool		parallelPurine;		// if true, also check for parallel purine orientation, not only antiparallel
 		double		errorRate;			// Criteria 1 threshold (max)
 		int			maximalError;		// maximal absolute error tolerated
 		double		minGuanineRate;		// Criteria 2 threshold (min)
@@ -1873,7 +1875,8 @@ namespace SEQAN_NAMESPACE_MAIN
 								   TId const		&tfoSeqNo,
 								   bool const		reduceSet,
 								   Options const	&options
-								   ){
+								   )
+	{
 		typedef typename Value<TOligoMotifSet>::Type			TTfoMotif;
 		typedef typename Iterator<TString>::Type				TIter;
 		typedef typename Infix<TString>::Type					TSegment;
@@ -1891,12 +1894,17 @@ namespace SEQAN_NAMESPACE_MAIN
 		// split tfo sequence into valid parts
 		TSegString seqString;	// target segment container
 		_parse(seqString,parser, sequence, options);
-		
+
 		// convert tfo sequences into matching tts to allow pattern search
 		unsigned totalNumberOfMatches = 0;
 		for (TSegStringIter it = begin(seqString, Standard()); it != end(seqString, Standard()); ++it){
 			TTfoMotif tfomotif(*it, false, tfoSeqNo, true, 'R');
 			totalNumberOfMatches += _filterWithGuanineAndErrorRate(motifSet, tfomotif, 'G', 'N', reduceSet, TRIPLEX_ORIENTATION_ANTIPARALLEL, options, PURINEMOTIF());
+
+			if (options.parallelPurine) {
+				TTfoMotif tfomotif_parallel(*it, true, tfoSeqNo, true, 'R');
+				totalNumberOfMatches += _filterWithGuanineAndErrorRate(motifSet, tfomotif_parallel, 'G', 'N', reduceSet, TRIPLEX_ORIENTATION_PARALLEL, options, PURINEMOTIF());
+			}
 		}
 		return totalNumberOfMatches;
 	}
@@ -3359,11 +3367,11 @@ namespace SEQAN_NAMESPACE_MAIN
 		typedef typename Value<TMotifSet>::Type	TPattern;
 		typedef typename Position<TPattern>::Type	TPos;
 		
-		if (pattern.parallel){
+		if (pattern.parallel) {
 			TPattern seqpattern(host(pattern),beginPosition(pattern)+start, beginPosition(pattern)+end, isParallel(pattern), getSequenceNo(pattern), isTFO(pattern), getMotif(pattern));
 			setScore(seqpattern,end-start-errors);
 			appendValue(patternString, seqpattern);
-		} else{
+		} else {
 			TPattern seqpattern(host(pattern),beginPosition(pattern)+(length(pattern)-end), beginPosition(pattern)+(length(pattern)-start), isParallel(pattern), getSequenceNo(pattern), isTFO(pattern), getMotif(pattern));
 			setScore(seqpattern,end-start-errors);
 			appendValue(patternString, seqpattern);
