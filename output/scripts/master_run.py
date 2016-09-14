@@ -84,10 +84,10 @@ def run_anything(options):
             for c in range(int(options.consLow), int(options.consHigh) + 1, 1):
                 out_file_tpx = get_output_filename(options, l, e, c)
 
-                triplexator.runTriplexator('-ss ' + options.inputTFO + " -ds " + options.inputTTS + " " + \
+                utils.lib_triplexator.runTriplexator('-ss ' + options.inputTFO + " -ds " + options.inputTTS + " " + \
                                            get_triplexator_option(options.mode) + " -e " + str(e) + " -c " + str(c) + \
-                                           " -l " + str(l) + " -L " + options.maxLength + " " + " -od " + options.dataOutDir + \
-                                           + " -o " + out_file_tpx + options.tpxOptions)
+                                           " -l " + str(l) + " -L " + str(options.maxLength) + " " + " -od " + options.dataOutDir + \
+                                           " -o " + out_file_tpx + options.tpxOptions)
 
 
 def run_test(options):
@@ -104,7 +104,7 @@ def run_test(options):
                 out_file_tpx = get_output_filename(options, l, e, c)
 
                 if not options.valgrind:
-                    triplexator.runTriplexator('-ss ' + options.inputTFO + " -ds " + options.inputTTS + " " + \
+                    utils.lib_triplexator.runTriplexator('-ss ' + options.inputTFO + " -ds " + options.inputTTS + " " + \
                                                get_triplexator_option(options.mode) + " -e " + str(e) + " -c " + str(c) + \
                                                " -l " + str(l) + " -L " + options.maxLength + " " + " -od " + utils.PATH_TEST + \
                                                result_dir[options.mode] + " -o " + out_file_tpx + options.tpxOptions)
