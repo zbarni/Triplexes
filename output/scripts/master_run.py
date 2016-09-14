@@ -74,6 +74,22 @@ def run_cluster(options):
                 subprocess.call(cmd)
 
 
+def run_anything(options):
+    # create path if non-existing
+    if not os.path.isdir(options.dataOutDir):
+        os.mkdir(options.dataOutDir)
+
+    for l in range(int(options.minLengthLow), int(options.minLengthHigh) + 1, 5):
+        for e in range(int(options.errLow), int(options.errHigh) + 1, 5):
+            for c in range(int(options.consLow), int(options.consHigh) + 1, 1):
+                out_file_tpx = get_output_filename(options, l, e, c)
+
+                triplexator.runTriplexator('-ss ' + options.inputTFO + " -ds " + options.inputTTS + " " + \
+                                           get_triplexator_option(options.mode) + " -e " + str(e) + " -c " + str(c) + \
+                                           " -l " + str(l) + " -L " + options.maxLength + " " + " -od " + options.dataOutDir + \
+                                           + " -o " + out_file_tpx + options.tpxOptions)
+
+
 def run_test(options):
     global result_dir
 
@@ -173,7 +189,7 @@ if __name__ == "__main__":
     else:
         m_options = check_input(m_options, m_parser)
         if m_options.type == "benchmark":
-            pass
+            run_anything(m_options)
         elif m_options.type == "cluster":
             run_cluster(m_options)
         elif m_options.type == "test":
