@@ -1,3 +1,7 @@
+"""
+Utils module containing some global path variables and useful functions.
+"""
+
 import os
 import sys
 
@@ -17,16 +21,20 @@ PATH_TEST_RANDOM        = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/res
 PATH_CLUSTER            = os.environ.get("TRIPLEXATOR_HOME") + "/output/cluster/"
 PATH_TEST               = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/"
 PATH_UNIT_TESTS         = os.environ.get("TRIPLEXATOR_HOME") + "/output/unit_tests/"
-PATH_DIR_BPL    = "bpl/"
-PATH_DIR_BRUTE  = "brute/"
-PATH_DIR_BP     = "bp/"
 
-import_RNADNABindingSet = None
+defaultMinLength = 15
+defaultConsError = 1
+defaultErrorRate = 20
+
+lib_RNADNABindingSet = None
 lib_triplexator = None
 
 
 def lazy_imports():
-    """Do lazy import of """
+    """
+    Do lazy import of triplexator library and some RGT library.
+    :return:
+    """
     global PATH_RGT_HOME
     global PATH_TRIPLEXATOR_HOME
 
@@ -40,14 +48,22 @@ def lazy_imports():
     if PATH_RGT_HOME is not None:
         sys.path.append(PATH_RGT_HOME)
         from triplex import RNADNABindingSet as _RNADNABindingSet
-        global import_RNADNABindingSet
-        import_RNADNABindingSet = _RNADNABindingSet
+        global lib_RNADNABindingSet
+        lib_RNADNABindingSet = _RNADNABindingSet
 
 
 def get_output_filename_from_parameters(prefix, lmin, lmax, e, c):
+    # out_file_template = "valgrind_" if options.valgrind else ""
     out_file_template = prefix + '_l' + str(lmin) + '--' + str(lmax) + '_c' + str(c) + '_e' + str(e)
     out_file_tpx = out_file_template + ".tpx"
     return out_file_tpx
+
+
+def get_valgrind_filename(options, l, e, c):
+    out_file_template = "valgrind_" if options.valgrind else ""
+    out_file_template += options.dataPrefix + '_l' + str(l) + '--' + str(options.maxLength) + '_e' + str(e) + '_c' + str(c)
+    out_file_val = out_file_template + ".val"
+    return out_file_val
 
 
 def get_files_with_extension(directory, prefix="", ext=""):
@@ -62,6 +78,12 @@ def get_files_with_extension(directory, prefix="", ext=""):
 
 
 def convert_file(input_file_path, output_file_path):
+    """
+
+    :param input_file_path:
+    :param output_file_path:
+    :return:
+    """
     bed_file = open(output_file_path, 'w')
     with open(input_file_path) as input_file:
         for line in input_file.readlines():
@@ -87,7 +109,11 @@ def convert_file(input_file_path, output_file_path):
 
 
 def convert(options):
-    """ """
+    """
+
+    :param options:
+    :return:
+    """
     if options.convert == "tpx-to-bed":
         files = get_files_with_extension(options.dataInDir, options.dataPrefix, options.dataExtension)
         for f in files:
@@ -95,7 +121,6 @@ def convert(options):
             dbs_out_filename = f.replace(options.dataExtension, '.tts.bed')
             convert_file(f, dbs_out_filename)
             print("Goodbye Conversion.")
-            # gc.collect()
     else:
         print("Invalid convert option.")
 

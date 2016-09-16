@@ -1,3 +1,7 @@
+"""
+
+"""
+
 import utils
 import os
 import re
@@ -5,7 +9,7 @@ import re
 
 def compare_result(file1, file2):
     """
-        Reads both files via .readlines() in, sorts the lines and returns
+    Reads both files via .readlines() in and sorts the lines using `sorted()`.
     :param file1:
     :param file2:
     :return: True if sorted lines match, False otherwise
@@ -20,7 +24,7 @@ def compare_result(file1, file2):
 
 def run_bit_parallel_unit_test(test_id=""):
     """
-    
+
     :param test_id:
     :return:
     """
