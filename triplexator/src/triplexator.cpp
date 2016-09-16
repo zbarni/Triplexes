@@ -845,16 +845,16 @@ namespace SEQAN_NAMESPACE_MAIN
                 }
             }
             
-            // process TC motif
-            if (options.motifTC) {
+            // process TC motif, only if parallelPurine is not set
+            if (options.motifTC && !options.parallelPurine) {
                 processTCMotif(tfoMotifSet, *it, oligoSeqNo, reduceSet, options);
             }
             // process GA motif
             if (options.motifGA) {
                 processGAMotif(tfoMotifSet, *it, oligoSeqNo, reduceSet, options);
             }
-            // process GT motif
-            if (options.motifGT_p && options.motifGT_a) {
+            // process GT motif, only if parallelPurine is not set
+            if (options.motifGT_p && options.motifGT_a && !options.parallelPurine) {
                 processGTMotif(tfoMotifSet, *it, oligoSeqNo, TRIPLEX_ORIENTATION_BOTH, reduceSet, options);
             } else if (options.motifGT_p){
                 processGTMotif(tfoMotifSet, *it, oligoSeqNo, TRIPLEX_ORIENTATION_PARALLEL, reduceSet, options);

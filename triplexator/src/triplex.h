@@ -1898,10 +1898,11 @@ namespace SEQAN_NAMESPACE_MAIN
 		// convert tfo sequences into matching tts to allow pattern search
 		unsigned totalNumberOfMatches = 0;
 		for (TSegStringIter it = begin(seqString, Standard()); it != end(seqString, Standard()); ++it){
-			TTfoMotif tfomotif(*it, false, tfoSeqNo, true, 'R');
-			totalNumberOfMatches += _filterWithGuanineAndErrorRate(motifSet, tfomotif, 'G', 'N', reduceSet, TRIPLEX_ORIENTATION_ANTIPARALLEL, options, PURINEMOTIF());
-
-			if (options.parallelPurine) {
+			if (!options.parallelPurine) {
+				TTfoMotif tfomotif(*it, false, tfoSeqNo, true, 'R');
+				totalNumberOfMatches += _filterWithGuanineAndErrorRate(motifSet, tfomotif, 'G', 'N', reduceSet, TRIPLEX_ORIENTATION_ANTIPARALLEL, options, PURINEMOTIF());
+			}
+			else {
 				TTfoMotif tfomotif_parallel(*it, true, tfoSeqNo, true, 'R');
 				totalNumberOfMatches += _filterWithGuanineAndErrorRate(motifSet, tfomotif_parallel, 'G', 'N', reduceSet, TRIPLEX_ORIENTATION_PARALLEL, options, PURINEMOTIF());
 			}
