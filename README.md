@@ -18,9 +18,11 @@
 
     *) set your TRIPLEXATOR_LIBRARY environment variable to the location of the Triplexator shared library (libtriplexator.so)
     
-    *) call runTriplexator function with the regular Triplexator parameters as string param.
+    *) import triplexator module from TRIPLEXATOR_HOME/python_bindings/
+    
+    *) call __runTriplexator__ function with the regular Triplexator parameters as string param.
 
 3. Run Triplexator with the following options
     
     - **--bit-parallel**: for bit parallel (faster) version of brute-force
-    - **--bit-parallel-local**: for semi-palindrom search
+    - **--auto-binding-file [file]**: for semi-palindromic (local auto-binding) search
