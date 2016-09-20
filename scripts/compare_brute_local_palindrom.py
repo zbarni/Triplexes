@@ -7,7 +7,7 @@ This module compares the outputs of 2 .tpx files (usually bit-parallel-local and
 Author: Barna Zajzon
 """
 
-import sys, os
+import sys
 from subprocess import call
 MAX_SHIFT_OFFSET = 0
 
@@ -25,11 +25,6 @@ def get_next_brute_line(idx, content):
         tts_end = int(line[5]) - 1
 
         length = tts_end - tts_beg + 1
-
-#        print "get next: " + str(idx + 1) + ", val: " + str(abs(tts_end - tfo_end))
-#        print "tfo_end: " + str(tfo_end)
-#        print "tts_end: " + str(tts_end)
-#        print "length: " + str(length)
 
         if abs(tts_end - tfo_end ) <= length + MAX_SHIFT_OFFSET:
             return idx
@@ -93,7 +88,7 @@ def compare(pal_filename, bru_filename):
         bru_idx += 1
         pal_idx += 1
 
-    return (True, None)
+    return True, None
 
 
 if __name__ == "__main__":

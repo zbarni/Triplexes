@@ -1,5 +1,5 @@
 """
-
+Simple unit tests for bit-parallel vs brute-force output correctness comparison.
 """
 
 import utils

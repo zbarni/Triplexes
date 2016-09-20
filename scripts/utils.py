@@ -5,22 +5,18 @@ Utils module containing some global path variables and useful functions.
 import os
 import sys
 
-if os.environ.get("TRIPLEXATOR_HOME") is None:
-    print("Please set TRIPLEXATOR_HOME environment variable properly!")
-    print("Exiting..")
-    exit(-1)
-
 PATH_TRIPLEXATOR_HOME   = os.environ.get("TRIPLEXATOR_HOME")
 PATH_RGT_HOME           = os.environ.get("RGT_HOME")
 TRIPLEXATOR_BINARY      = PATH_TRIPLEXATOR_HOME + "/triplexator/bin/triplexator"
-PATH_TEST_DATA          = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/data/"
-PATH_TEST_BPL           = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/bit_parallel_local/"
-PATH_TEST_BP            = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/"
-PATH_TEST_BRUTE         = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/brute/"
-PATH_TEST_RANDOM        = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/results/random_4/"
-PATH_CLUSTER            = os.environ.get("TRIPLEXATOR_HOME") + "/output/cluster/"
-PATH_TEST               = os.environ.get("TRIPLEXATOR_HOME") + "/output/test/"
-PATH_UNIT_TESTS         = os.environ.get("TRIPLEXATOR_HOME") + "/output/unit_tests/"
+PATH_TEST_DATA          = os.environ.get("TRIPLEXATOR_HOME") + "/results/test/data/"
+PATH_TEST_BPL           = os.environ.get("TRIPLEXATOR_HOME") + "/results/test/results/bit_parallel_local/"
+PATH_TEST_BP            = os.environ.get("TRIPLEXATOR_HOME") + "/results/test/results/"
+PATH_TEST_BRUTE         = os.environ.get("TRIPLEXATOR_HOME") + "/results/test/results/brute/"
+PATH_TEST_RANDOM        = os.environ.get("TRIPLEXATOR_HOME") + "/results/test/results/random_4/"
+PATH_CLUSTER            = os.environ.get("TRIPLEXATOR_HOME") + "/results/cluster/"
+PATH_TEST               = os.environ.get("TRIPLEXATOR_HOME") + "/results/test/"
+PATH_UNIT_TESTS         = os.environ.get("TRIPLEXATOR_HOME") + "/results/unit_tests/"
+PATH_PYTHON_BINDINGS    = PATH_TRIPLEXATOR_HOME + '/python_bindings/'
 
 defaultMinLength = 15
 defaultConsError = 1
@@ -37,19 +33,15 @@ def lazy_imports():
     """
     global PATH_RGT_HOME
     global PATH_TRIPLEXATOR_HOME
+    global PATH_PYTHON_BINDINGS
 
     # triplexator python binding
+    if not os.path.isdir(PATH_PYTHON_BINDINGS):
+        raise ImportError('Python bindings directory not found, make sure you checked out the repo correctly!')
     sys.path.append(PATH_TRIPLEXATOR_HOME + '/python_bindings/')
     import triplexator as _triplexator
     global lib_triplexator
     lib_triplexator = _triplexator
-
-    # RGT library
-    if PATH_RGT_HOME is not None:
-        sys.path.append(PATH_RGT_HOME)
-        from triplex import RNADNABindingSet as _RNADNABindingSet
-        global lib_RNADNABindingSet
-        lib_RNADNABindingSet = _RNADNABindingSet
 
 
 def get_output_filename_from_parameters(prefix, lmin, lmax, e, c):

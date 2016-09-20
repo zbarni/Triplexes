@@ -23,6 +23,11 @@ def check_setup():
 
 
 def get_triplexator_option(mode):
+    """
+
+    :param mode:
+    :return:
+    """
     if mode == "ab":
         return "--bit-parallel-local"
     elif mode == "br":
@@ -113,18 +118,23 @@ def run_cluster(options):
     if not os.path.isdir(options.dataOutDir):
         os.mkdir(options.dataOutDir)
 
+    # set input files according to mode
+    if options.mode == "br" or options.mode == "bp":
+        input_file_options = '-ss ' + options.inputTFO + " -ds " + options.inputTTS + " "
+    else:
+        input_file_options = '-as ' + options.inputAB + " "
+
     for l in range(int(options.minLengthLow), int(options.minLengthHigh) + 1, 5):
         for e in range(int(options.errLow), int(options.errHigh) + 1, 5):
             for c in range(int(options.consLow), int(options.consHigh) + 1, 1):
-                out_file_template = options.dataPrefix + '_l' + str(l) + '--' + str(options.maxLength) + '_e' + str(e)\
-                                    + '_c' + str(c)
-                out_file_tpx = out_file_template + ".tpx"
+                out_file_tpx = options.dataPrefix + '_l' + str(l) + '--' + str(options.maxLength) + '_e' + str(e)\
+                                    + '_c' + str(c) + ".tpx"
 
                 cmd = (utils.PATH_CLUSTER + "meta_bsub.sh bsub " + options.dataPrefix +
                        " " + options.dataOutDir + "/" + options.dataPrefix + '_l' + str(l) + '--' +
                        str(options.maxLength) + '_e' + str(e) + '_c' + str(c) + " " + options.clusterHour + " " +
-                       options.clusterMemory + " " + utils.PATH_TRIPLEXATOR_HOME + " " + '-ss ' + options.inputTFO +
-                       " -ds " + options.inputTTS + " " + get_triplexator_option(options.mode) + " -e " + str(e) +
+                       options.clusterMemory + " " + utils.PATH_TRIPLEXATOR_HOME + " " + input_file_options + " " +
+                       get_triplexator_option(options.mode) + " -e " + str(e) +
                        " -c " + str(c) + " -l " + str(l) + " -L " + options.maxLength + " " + " -od " +
                        utils.PATH_CLUSTER + options.dataOutDir + " -o " + out_file_tpx + options.tpxOptions)
                 cmd = shlex.split(cmd)
@@ -179,7 +189,7 @@ def create_parser():
     parser.add_option("--max-length", dest="maxLength", default="30", help="maximum triplex length")
     parser.add_option("--tpx-options", dest="tpxOptions", default="",
                       help="other options for triplexator, manually specified")
-    parser.add_option("-m", "--mode", dest="mode", help="brute (br), bit-parallel (bp) or auto-binding (bpl)",
+    parser.add_option("-m", "--mode", dest="mode", help="brute (br), bit-parallel (bp) or auto-binding (ab)",
                       metavar=('br', 'bp', 'ab'))
 
     parser.add_option("--data-prefix", dest="dataPrefix", default="",
@@ -216,7 +226,7 @@ if __name__ == "__main__":
     elif m_options.convert == "tpx-to-bed":
         utils.convert(m_options)
     elif m_options.dataAnalysis is not None:
-        da.do_data_analysis(m_options)
+        da.main(m_options)
     else:
         if m_options.type == "local":
             m_options = check_input_local(m_options, m_parser)
