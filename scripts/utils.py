@@ -108,9 +108,14 @@ def convert(options):
     """
     if options.convert == "tpx-to-bed":
         files = get_files_with_extension(options.dataInDir, options.dataPrefix, options.dataExtension)
+
         for f in files:
             print("Converting file " + f)
-            dbs_out_filename = f.replace(options.dataExtension, '.tts.bed')
+            ext = options.dataExtension
+            if options.dataExtension is None or options.dataExtension == "":
+                ext = f.split('.')[-1]
+
+            dbs_out_filename = f.replace(ext, 'tts.bed')
             convert_file(f, dbs_out_filename)
             print("Goodbye Conversion.")
     else:

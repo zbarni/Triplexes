@@ -202,6 +202,8 @@ def create_parser():
                       help="directory of output files, e.g., plots, etc.")
 
     parser.add_option("--data-analysis", dest="dataAnalysis", default=None, metavar='plot')
+    parser.add_option("--jaccard-reference", dest="jaccardReference", default=None, metavar='jref')
+    parser.add_option("--jaccard-query", dest="jaccardQuery", default=None, metavar='jquery')
     parser.add_option("--convert", dest="convert", default=None, metavar='tpx-to-bed')
 
     parser.add_option("--unit-tests", dest="unitTests", default=None, metavar=("test_directory_name", ""))
