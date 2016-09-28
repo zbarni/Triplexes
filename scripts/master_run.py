@@ -29,7 +29,7 @@ def get_triplexator_option(mode):
     :return:
     """
     if mode == "ab":
-        return "--bit-parallel-local"
+        return " "
     elif mode == "br":
         return ""
     elif mode == "bp":
@@ -136,7 +136,7 @@ def run_cluster(options):
                        options.clusterMemory + " " + utils.PATH_TRIPLEXATOR_HOME + " " + input_file_options + " " +
                        get_triplexator_option(options.mode) + " -e " + str(e) +
                        " -c " + str(c) + " -l " + str(l) + " -L " + options.maxLength + " " + " -od " +
-                       utils.PATH_CLUSTER + options.dataOutDir + " -o " + out_file_tpx + options.tpxOptions)
+                       options.dataOutDir + " -o " + out_file_tpx + options.tpxOptions)
                 cmd = shlex.split(cmd)
                 subprocess.call(cmd)
 
@@ -228,6 +228,7 @@ if __name__ == "__main__":
     elif m_options.convert == "tpx-to-bed":
         utils.convert(m_options)
     elif m_options.dataAnalysis is not None:
+        # unit.unit_data_analysis()
         da.main(m_options)
     else:
         if m_options.type == "local":
