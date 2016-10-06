@@ -1,2 +1,0 @@
-name    type    file    factor
-hg38_l15---1_e20_c2	regions	/home/zbarni/code/triplexator/results/analysis/jaccard/hg38_l15---1_e20_c2/hg38_l15---1_e10_c2.ss.tts.bed	XYZ

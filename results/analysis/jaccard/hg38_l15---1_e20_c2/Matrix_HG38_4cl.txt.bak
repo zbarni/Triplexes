@@ -1,5 +1,0 @@
-name    type    file    factor
-hg38_lncRNA_exons	regions	/home/zbarni/code/triplexator/data/classes/hg38_lncRNA_exons.bed	HG38_4cl
-hg38_protein_coding_exons	regions	/home/zbarni/code/triplexator/data/classes/hg38_protein_coding_exons.bed	HG38_4cl
-hg38_pseudogene_exons	regions	/home/zbarni/code/triplexator/data/classes/hg38_pseudogene_exons.bed	HG38_4cl
-hg38_sncRNA_exons	regions	/home/zbarni/code/triplexator/data/classes/hg38_sncRNA_exons.bed	HG38_4cl

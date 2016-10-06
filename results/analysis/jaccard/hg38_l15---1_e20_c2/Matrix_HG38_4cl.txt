@@ -1,2 +1,0 @@
-name    type    file    factor
-hg38_lncRNA_exons	regions	/home/zbarni/code/triplexator/data/classes/hg38_lncRNA_exons.bed	HG38_4cl
