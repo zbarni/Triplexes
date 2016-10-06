@@ -201,7 +201,10 @@ def create_parser():
     parser.add_option("--data-output-dir", dest="dataOutDir", default="",
                       help="directory of output files, e.g., plots, etc.")
 
-    parser.add_option("--data-analysis", dest="dataAnalysis", default=None, metavar='plot')
+    parser.add_option("--data-analysis", dest="dataAnalysis", default=None,
+                      metavar=('plot', 'len-dist', 'len-dist-multi'))
+    parser.add_option("--length-distribution-triplexes", dest="lenDistTpx", default=None)
+    parser.add_option("--length-distribution-regions", dest="lenDistRegions", default=None)
     parser.add_option("--jaccard-reference", dest="jaccardReference", default=None, metavar='jref')
     parser.add_option("--jaccard-query", dest="jaccardQuery", default=None, metavar='jquery')
     parser.add_option("--convert", dest="convert", default=None, metavar='tpx-to-bed')
@@ -218,8 +221,11 @@ def create_parser():
 
 
 if __name__ == "__main__":
+    # import required stuff which wasn't possible at the beginning
     utils.lazy_imports()
+    # some initial checking
     check_setup()
+
     m_parser = create_parser()
     (m_options, args) = m_parser.parse_args()
 

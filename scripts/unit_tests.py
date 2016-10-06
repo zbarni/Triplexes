@@ -5,6 +5,7 @@ Simple unit tests for bit-parallel vs brute-force output correctness comparison.
 import utils
 import os
 import re
+import data_analysis
 
 
 def compare_result(file1, file2):
@@ -72,3 +73,25 @@ def run_bit_parallel_unit_test(test_id=""):
         result_file = utils.PATH_UNIT_TESTS + _dir + "/" + result_file_name
         print "\n"
         print "Test passed." if compare_result(ref_file, result_file) else "Test failed."
+
+
+def unit_jaccard_score():
+    pass
+
+
+def unit_merge_overlapping():
+    res = data_analysis.merge_overlapping([(1, 4), (1, 4), (2, 3), (5, 10), (20, 25)])
+    assert res == [(1, 4), (5, 10), (20, 25)]
+
+    res = data_analysis.merge_overlapping([(1, 4), (1, 4), (2, 3), (5, 10), (9, 25)])
+    assert res == [(1, 4), (5, 25)]
+
+    res = data_analysis.merge_overlapping([(1, 10), (1, 4), (2, 3), (5, 10), (9, 25)])
+    assert res == [(1, 25)]
+
+    res = data_analysis.merge_overlapping([(1, 4), (1, 4), (2, 3), (5, 10), (10, 25)])
+    assert res == [(1, 4), (5, 25)]
+
+
+def unit_data_analysis():
+    unit_merge_overlapping()

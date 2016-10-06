@@ -69,6 +69,64 @@ def get_files_with_extension(directory, prefix="", ext=""):
     return files
 
 
+def get_tpx_lines(full_file_path):
+    """
+
+    :param full_file_path:
+    :return:
+    """
+    result = []
+    with open(full_file_path) as input_file:
+        for line in input_file.readlines():
+            if line[0] == "#":
+                continue
+            result.append(line)
+    return result
+
+
+def get_tpx_lines_by_chromosome(full_file_path):
+    """
+
+    :param full_file_path:
+    :return:
+    """
+    result = {}
+    with open(full_file_path) as input_file:
+        for line in input_file.readlines():
+            if line[0] == "#":
+                continue
+            cols = line.split('\t')
+            if cols[0] not in result:
+                result[cols[0]] = []
+            result[cols[0]].append(line)
+    return result
+
+
+def clean_nonmatching_chromosomes(full_file_path):
+    """
+    Remove triplexes which are located on different chromosomes.
+    :param full_file_path:
+    :param tpx_content:
+    :return:
+    """
+    print ("Cleaning " + full_file_path)
+
+    tpx_content = get_tpx_lines(full_file_path)
+    tpx_file_write = open(full_file_path, 'wb')
+
+    cleaned_content = []
+    for line in tpx_content:
+        cols = line.split('\t')
+        if line[0] != '#' and cols[0] != cols[3]:
+            continue
+        annotated_line = line.replace(cols[0], cols[0]+":0") if ':' not in cols[0] else line
+        # annotated_line = line.replace(":0:0", ":0")  # if ':' not in cols[0] else line
+        cleaned_content.append(annotated_line)
+
+    tpx_file_write.writelines(cleaned_content)
+    tpx_file_write.close()
+
+
 def convert_file(input_file_path, output_file_path):
     """
 
@@ -116,8 +174,24 @@ def convert(options):
                 ext = f.split('.')[-1]
 
             dbs_out_filename = f.replace(ext, 'tts.bed')
+            # clean_nonmatching_chromosomes(f)
             convert_file(f, dbs_out_filename)
             print("Goodbye Conversion.")
     else:
         print("Invalid convert option.")
 
+
+def check_io_files(files):
+    if files is None or type(files) is not list:
+        raise IOError("Invalid files parameter!")
+
+    for f in files:
+        if f is None:
+            raise IOError("Invalid files parameter!")
+        if ' ' in f:
+            for ff in f.split(' '):
+                if not os.path.isfile(ff):
+                    raise IOError("File " + ff + " doesn't exist!")
+        else:
+            if not os.path.isfile(f):
+                raise IOError("File " + f + " doesn't exist!")
