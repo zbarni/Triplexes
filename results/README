@@ -1,0 +1,10 @@
+*** Short info about directory structure ***
+
+├── analysis        = any kind of data analysis, plots, jaccard / projection test, etc.
+├── benchmarks      = *ab*, *bp* and *brute* tests ran on local computer (8x Intel Core i7-2600 @3.40GHz, 16GB RAM)
+├── cluster         = larger jobs that were run on cluster. Note that there are cluster jobs located elsewhere as well, such as analysis
+├── putative_seq
+├── test            = don't bother about this, just personal testing dir
+└── unit_tests      = unit tests
+
+

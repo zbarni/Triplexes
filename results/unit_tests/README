@@ -6,5 +6,5 @@ HowTo:
         = just make a new directory with any name, e.g., "mytest"
         = create a dna.data (double strand) and rna.data (single strand) input files, fasta format
         = run triplexator with "brute force (default mode)" on this input, and name the output file "reference_lMIN--MAX_cXY_eCD.tpx"
-        = run TRIPLEXATOR_HOME/output/scripts/master_run.py --unit-test="mytest"
+        = run TRIPLEXATOR_HOME/scripts/master_run.py --unit-test="mytest"
 
