@@ -1,0 +1,112 @@
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script type="text/javascript" src="../fig/jquery.tablesorter.min.js"></script>
+<html>
+<head><meta http-equiv="Content-Type" content="text/html"><title>RGT Viz</title>
+<style type="text/css">
+<!--
+@import url("../fig/style.css");
+-->
+</style></head>
+<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0" marginheight="0" marginwidth="0" bgcolor="#FFFFFF">
+<h3 style="background-color:white; border-top:3px solid gray; border-bottom:3px solid gray;">
+<table border="0" width="100%" cellspacing="0" cellpadding="0">
+  <tr>
+    <td width="5%">
+<a href="../index.html">
+    <img border="0" src="../fig/viz_logo.png" width="130" height="100">
+</a>
+    </td>
+     <td width="5%"></td>
+    <td width="90%"><p align="left"><font color="black" size="5">Regulatory Genomics Toolbox - Viz</font></td>
+  </tr>
+</table>
+</h3>
+<a class="pure-button" href="index.html"><font size='1'>jaccard</font></a>
+<p align="center"><a href="jaccard_test1.png"><img src="jaccard_test1.png" width=800></a></p>
+<p style="margin-left: 50">
+<table id="hor-zebra">
+  <thead>
+    <tr>
+    <th scope="col" width="10" align="center">Reference<br>name</th>
+    <th scope="col" width="10" align="center">Query<br>name</th>
+    <th scope="col" width="10" align="center">Reference<br>number</th>
+    <th scope="col" width="10" align="center">Query<br>number</th>
+    <th scope="col" width="10" align="center">True<br>Jaccard<br>index</th>
+    <th scope="col" width="10" align="center">Average<br>random<br>Jaccard</th>
+    <th scope="col" width="10" align="center">Positive<br>Association<br>p-value</th>
+    <th scope="col" width="10" align="center">Negative<br>Association<br>p-value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="odd">
+      <td align="center" >hg38_lncRNA_exons</td>
+      <td align="center" >hg38_l15---1_e20_c2</td>
+      <td align="center" >213303</td>
+      <td align="center" >619092</td>
+      <td align="center" >0.0013</td>
+      <td align="center" >0.0033</td>
+      <td align="center" >1.00</td>
+      <td align="center" >0</td>
+    </tr>
+    <tr>
+      <td align="center" >hg38_protein_coding_exons</td>
+      <td align="center" >hg38_l15---1_e20_c2</td>
+      <td align="center" >1044634</td>
+      <td align="center" >619092</td>
+      <td align="center" >0.0014</td>
+      <td align="center" >0.0038</td>
+      <td align="center" >1.00</td>
+      <td align="center" >0</td>
+    </tr>
+    <tr class="odd">
+      <td align="center" >hg38_pseudogene_exons</td>
+      <td align="center" >hg38_l15---1_e20_c2</td>
+      <td align="center" >38086</td>
+      <td align="center" >619092</td>
+      <td align="center" >0.0008</td>
+      <td align="center" >0.0020</td>
+      <td align="center" >1.00</td>
+      <td align="center" >0</td>
+    </tr>
+    <tr>
+      <td align="center" >hg38_sncRNA_exons</td>
+      <td align="center" >hg38_l15---1_e20_c2</td>
+      <td align="center" >9910</td>
+      <td align="center" >619092</td>
+      <td align="center" >0.0002</td>
+      <td align="center" >0.0004</td>
+      <td align="center" >1.00</td>
+      <td align="center" >0</td>
+    </tr>
+</tbody></table></p>
+<p style="margin-left: 50">
+<table id="hor-zebra">
+  <thead>
+    <tr>
+    <th scope="col" width="10" align="left">Assumptions and hypothesis</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="odd">
+      <td align="left" >Randomization was performed 10 times.</td>
+    </tr>
+    <tr>
+      <td align="left" >For projection test, the reference and query should have non-zero length in order to calculate its Jaccard index.</td>
+    </tr>
+    <tr class="odd">
+      <td align="left" >Positive association is defined by: True Jaccard index > Averaged random Jaccard.</td>
+    </tr>
+    <tr>
+      <td align="left" >Negative association is defined by: True Jaccard index < Averaged random Jaccard.</td>
+    </tr>
+</tbody></table></p>
+<a href="parameters.txt" style="margin-left:100">See parameters</a>
+<a href="reference_experimental_matrix.txt" style="margin-left:100">See reference experimental matrix</a>
+<a href="query_experimental_matrix.txt" style="margin-left:100">See query experimental matrix</a>
+<br><br>
+<p align="center"><font face="Arial" color="#000000" size="2">
+For more details please visit the <a href="http://www.regulatory-genomics.org/"> RGT Website </a>
+</font></p>
+<h3 style="background-color:white; border-top:3px solid gray;"></h3>
+</body>
+</html>

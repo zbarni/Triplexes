@@ -1,0 +1,2 @@
+name    type    file    factor
+hg38_pseudogene_exons	regions	/home/zbarni/code/triplexator/data/classes/hg38_pseudogene_exons.bed	HG38_4cl

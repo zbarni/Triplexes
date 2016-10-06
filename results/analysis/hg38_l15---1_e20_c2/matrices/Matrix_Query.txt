@@ -1,0 +1,2 @@
+name    type    file    factor
+hg38_l15---1_e20_c2	regions	/home/zbarni/code/triplexator/results/analysis/hg38_l15---1_e20_c2/hg38_l15---1_e20_c2.tts.bed	XYZ

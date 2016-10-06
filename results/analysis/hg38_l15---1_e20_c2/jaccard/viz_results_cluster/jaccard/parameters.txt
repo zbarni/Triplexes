@@ -1,0 +1,14 @@
+Time: 2016-10-06 02:24:22
+User: bz107942
+
+Command:
+	$ /hpcwork/izkf/bin/rgt-viz jaccard -r /home/bz107942/triplexator/results/analysis/jaccard/hg38_l15---1_e20_c2/Matrix_HG38_4cl.txt -q /home/bz107942/triplexator/results/analysis/jaccard/hg38_l15---1_e20_c2/Matrix_Query.txt -o /home/bz107942/triplexator/results/analysis/jaccard/hg38_l15---1_e20_c2/viz_results -t jaccard -rt 10
+
+Jaccard Test
+Reference	Query	Repeats	True_Jaccard_index	p-value	Time
+hg38_lncRNA_exons	hg38_l15---1_e20_c2	x10	0.0013	1.00	0:33:01
+hg38_protein_coding_exons	hg38_l15---1_e20_c2	x10	0.0014	1.00	0:39:28
+hg38_pseudogene_exons	hg38_l15---1_e20_c2	x10	0.0008	1.00	0:25:44
+hg38_sncRNA_exons	hg38_l15---1_e20_c2	x10	0.0002	1.00	0:41:26
+
+Total running time is : 2:20:05

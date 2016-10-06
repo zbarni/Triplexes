@@ -1,0 +1,27 @@
+Running Jaccard test
+Finished reading in reference
+Finished reading in query
+sort took: 1.35024499893
+Intersection, union, jaccard score: 1449124.0, 140901406.0, 0.0102846667123
+Jaccard initial score: 0.0103
+Intersection, union, jaccard score: 3966140.0, 215692909.0, 0.0183879016625
+Jaccard random score #10: 0.0184
+Intersection, union, jaccard score: 3959242.0, 215700824.0, 0.0183552474514
+Jaccard random score #10: 0.0184
+Intersection, union, jaccard score: 3953284.0, 215704513.0, 0.0183273124193
+Jaccard random score #10: 0.0183
+Intersection, union, jaccard score: 3970359.0, 215677632.0, 0.0184087657268
+Jaccard random score #10: 0.0184
+Intersection, union, jaccard score: 3960341.0, 215691571.0, 0.0183611301157
+Jaccard random score #10: 0.0184
+Intersection, union, jaccard score: 3970886.0, 215686453.0, 0.0184104562191
+Jaccard random score #10: 0.0184
+Intersection, union, jaccard score: 3969136.0, 215685793.0, 0.0184023989007
+Jaccard random score #10: 0.0184
+Intersection, union, jaccard score: 3978266.0, 215674810.0, 0.0184456682725
+Jaccard random score #10: 0.0184
+Intersection, union, jaccard score: 3961753.0, 215693424.0, 0.0183675187056
+Jaccard random score #10: 0.0184
+Intersection, union, jaccard score: 3975135.0, 215683270.0, 0.0184304280995
+Jaccard random score #10: 0.0184
+Joseph's p ([] > real / nr_tests): 1.0

@@ -1,0 +1,2 @@
+/usr/local/lib/python2.7/dist-packages/RGT-0.0.1-py2.7-linux-x86_64.egg/rgt/GenomicRegionSet.py:532: SyntaxWarning: import * only allowed at module level
+  def filter_by_gene_association_old(self,fileName,geneSet,geneAnnotation,genomeSize,promoterLength=1000,threshDist=50000):

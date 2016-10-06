@@ -1,0 +1,2 @@
+Reference_name	Query_name	Reference_number	Query_number	Proportion	Background_proportion	Positive_association_p-value	Negative_association_p-value
+hg38_protein_coding_exons	hg38_l15---1_e20_c2	1044634	619092	0.0205	0.0816	1.00	3.0e-323

@@ -1,0 +1,13 @@
+Time: 2016-10-06 02:25:28
+User: bz107942
+
+Command:
+	$ /hpcwork/izkf/bin/rgt-viz projection -r /home/bz107942/triplexator/results/analysis/jaccard/hg38_l15---1_e20_c2/Matrix_HG38_4cl.txt -q /home/bz107942/triplexator/results/analysis/jaccard/hg38_l15---1_e20_c2/Matrix_Query.txt -o /home/bz107942/triplexator/results/analysis/jaccard/hg38_l15---1_e20_c2/proj_results -t projection
+
+############# Projection Test #############
+	Reference:        /home/bz107942/triplexator/results/analysis/jaccard/hg38_l15---1_e20_c2/Matrix_HG38_4cl.txt
+	Query:            /home/bz107942/triplexator/results/analysis/jaccard/hg38_l15---1_e20_c2/Matrix_Query.txt
+	Output directory: proj_results
+	Experiment title: projection
+
+Total running time is : 0:05:15
