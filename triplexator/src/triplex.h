@@ -4175,9 +4175,6 @@ namespace SEQAN_NAMESPACE_MAIN
 	        TPotentials 	potentials;
 
     		if (options.forward) {
-#ifdef DEBUG
-    			cout << "### Forward search" << std::flush << endl << endl;
-#endif
     			timeIO = sysTime();
     			processDuplex(ttsSetForward, duplexSeq, duplexSeqNoWithinFile, true, reduceSet, options);
     			options.timeIO += sysTime() - timeIO;
@@ -4192,9 +4189,6 @@ namespace SEQAN_NAMESPACE_MAIN
     	        eraseAll(gardenerForward);
     		}
     		if (options.reverse) {
-#ifdef DEBUG
-    			cout << "### Reverse search" << std::flush << endl << endl;
-#endif
     			timeIO = sysTime();
     			processDuplex(ttsSetReverse, duplexSeq, duplexSeqNoWithinFile, false, reduceSet, options);
     			options.timeIO += sysTime() - timeIO;
@@ -4217,15 +4211,15 @@ namespace SEQAN_NAMESPACE_MAIN
             clear(matches);
 		}
 		file.close();
-
-		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time myers " << ::std::setprecision(3) << times["myers"] << " sec" << ::std::endl;
-		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time verify " << ::std::setprecision(3) << times["verify"] << " sec" << ::std::endl;
-		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time merge  " << ::std::setprecision(3) << times["merge"] << " sec" << ::std::endl;
-		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time seedExtend " << ::std::setprecision(3) << times["seedextend"] << " sec" << ::std::endl;
-		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time fiberLoop " << ::std::setprecision(3) << times["fiberLoop"] << " sec" << ::std::endl;
-		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time findInterval " << ::std::setprecision(3) << times["findInterval"] << " sec" << ::std::endl;
-		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time computeLocalTriplexes " << ::std::setprecision(3) << times["computeLocalTriplexes"] << " sec" << ::std::endl;
-		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time createIntervalTree " << ::std::setprecision(3) << times["createIntervalTree"] << " sec" << ::std::endl;
+//		TODO @barni remove
+//		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time myers " << ::std::setprecision(3) << times["myers"] << " sec" << ::std::endl;
+//		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time verify " << ::std::setprecision(3) << times["verify"] << " sec" << ::std::endl;
+//		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time merge  " << ::std::setprecision(3) << times["merge"] << " sec" << ::std::endl;
+//		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time seedExtend " << ::std::setprecision(3) << times["seedextend"] << " sec" << ::std::endl;
+//		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time fiberLoop " << ::std::setprecision(3) << times["fiberLoop"] << " sec" << ::std::endl;
+//		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time findInterval " << ::std::setprecision(3) << times["findInterval"] << " sec" << ::std::endl;
+//		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time computeLocalTriplexes " << ::std::setprecision(3) << times["computeLocalTriplexes"] << " sec" << ::std::endl;
+//		options.logFileHandle << _getTimeStamp() << std::fixed << " @bit-parallel time createIntervalTree " << ::std::setprecision(3) << times["createIntervalTree"] << " sec" << ::std::endl;
 
         return TRIPLEX_NORMAL_PROGAM_EXIT;
 	}

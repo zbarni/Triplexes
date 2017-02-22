@@ -120,58 +120,6 @@ int edlibCalcEditDistance(
     } while(dynamicK && *bestScore == -1);
     
     if (*bestScore >= 0) {  // If there is solution.
-
-//        // Find starting locations.
-//        if (findStartLocations || findAlignment) {
-//            *startLocations = (int*) malloc((*numLocations) * sizeof(int));
-//            if (mode == EDLIB_MODE_HW) {  // If HW, I need to calculate start locations.
-//                const unsigned char* rTarget = createReverseCopy(target, targetLength);
-//                const unsigned char* rQuery  = createReverseCopy(query, queryLength);
-//                Word* rPeq = buildPeq(alphabetLength, rQuery, queryLength); // Peq for reversed query
-//                for (int i = 0; i < *numLocations; i++) {
-//                    int endLocation = (*endLocations)[i];
-//                    int bestScoreSHW, numPositionsSHW;
-//                    int* positionsSHW;
-//                    myersCalcEditDistanceSemiGlobal(
-//                            blocks, rPeq, W, maxNumBlocks,
-//                            rQuery, queryLength, rTarget + targetLength - endLocation - 1, endLocation + 1,
-//                            alphabetLength, *bestScore, EDLIB_MODE_SHW,
-//                            &bestScoreSHW, &positionsSHW, &numPositionsSHW);
-//                    // Taking last location as start ensures that alignment will not start with insertions
-//                    // if it can start with mismatches instead.
-//                    (*startLocations)[i] = endLocation - positionsSHW[numPositionsSHW - 1];
-//                    cout << "startloc: " << (*startLocations)[i] << endl;
-//                    delete[] positionsSHW;
-//                }
-//                delete[] rTarget;
-//                delete[] rQuery;
-//                delete[] rPeq;
-//            } else {  // If mode is SHW or NW
-//                for (int i = 0; i < *numLocations; i++) {
-//                    (*startLocations)[i] = 0;
-//                }
-//            }
-//        }
-
-//        // Find alignment -> all comes down to finding alignment for NW.
-//        // Currently we return alignment only for first pair of locations.
-//        if (findAlignment) {
-//            int alnStartLocation = (*startLocations)[0];
-//            int alnEndLocation = (*endLocations)[0];
-//
-//            if (mode != EDLIB_MODE_NW) {  // Calculate align data.
-//                int score_, endLocation_;  // Used only to call function.
-////                myersCalcEditDistanceNW(blocks, Peq, W, maxNumBlocks, query, queryLength,
-////                                        target + alnStartLocation, alnEndLocation - alnStartLocation + 1,
-////                                        alphabetLength, *bestScore, &score_,
-////                                        &endLocation_, true, &alignData);
-//                assert(score_ == *bestScore);
-//                assert(endLocation_ == alnEndLocation - alnStartLocation);
-//            }
-//            obtainAlignment(maxNumBlocks, queryLength, alnEndLocation - alnStartLocation + 1, W,
-//                            *bestScore, alnEndLocation - alnStartLocation,
-//                            alignData, alignment, alignmentLength);
-//        }
     }
     /*-------------------------------------------------------*/
 
@@ -276,23 +224,6 @@ static inline int calculateBlock(Word Pv, Word Mv, Word Eq, const int hin,
 
     PvOut = Mh | ~(Xv | Ph);
     MvOut = Ph & Xv;
-    //TODO remove @barni 
-#ifdef BITSET
-    if (blockNr < tLength) {
-        std::string bitPvOut = std::bitset<6>(PvOut).to_string();
-        std::string bitMvOut = std::bitset<6>(MvOut).to_string();
-        std::string bitEq = std::bitset<6>(Eq).to_string();
-        printf("Xv: %s\n", std::bitset<6>(Xv).to_string().c_str());
-        printf("Xh: %s\n", std::bitset<6>(Xh).to_string().c_str());
-        printf("Ph: %s\n", std::bitset<6>(Ph).to_string().c_str());
-        printf("Mh: %s\n", std::bitset<6>(Mh).to_string().c_str());
-        printf("hin: %s\n", std::bitset<64>(hin).to_string().c_str());
-        printf("hout: %s\n", std::bitset<64>(hout).to_string().c_str());
-        std::cout << "block PvOut#: " << ++blockNr << "\t" << bitPvOut  << std::endl;
-        std::cout << "block MvOut#: " << blockNr << "\t" << bitMvOut<< std::endl;
-        std::cout << "EQblk eq   #: " << blockNr << "\t" << bitEq<< std::endl << std::endl;
-    }
-#endif
 
     return hout;
 }
@@ -357,17 +288,7 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
                                            int** positions_, int* numPositions_) {
     *positions_ = NULL;
     *numPositions_ = 0;
-//
-//	cout << endl << "myers bitNedle: ";
-//	for (int i = 0; i < queryLength; ++i) {
-//		cout << (unsigned int)query[i] << " ";
-//	}
-//	cout << endl << "myers bitFiber: ";
-//	for (int i = 0; i < targetLength; ++i) {
-//		cout << (unsigned int)target[i] << " ";
-//	}
-//	cout << endl;
-    
+
     // firstBlock is 0-based index of first block in Ukkonen band.
     // lastBlock is 0-based index of last block in Ukkonen band.
     int firstBlock = 0;
@@ -495,8 +416,6 @@ static int myersCalcEditDistanceSemiGlobal(Block* const blocks, Word* const Peq,
             int colScore = blockScores[i + 1];
 
             matchingScores += (colScore <= originalK) ? 1 : 0;
-//            if (colScore <= k) printf("okay\n");
-//            printf("col score: %d <= %d ; ? %d\n", colScore, k, (bool)(colScore <= k));
 
             if (colScore <= k) { //&& (bestScore == -1 || colScore <= bestScore)) { // @barni match if already <= k
                 if (colScore != bestScore) {
