@@ -1,4 +1,4 @@
-# triplexator
+# Triplexes
 
 1. Compiling
     
