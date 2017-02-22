@@ -1,0 +1,78 @@
+*************************************************************
+*** Triplexator - Finding nucleic acid triple helices     ***
+***         (c) Copyright 2011 by Fabian Buske            ***
+***     Comments, Bugs, Feedback: f.buske@uq.edu.au       ***
+*************************************************************
+*** Version 1.3.2 (30/03/2012) SeqAn Revision: 1225
+*** COMMAND:
+>/home/zbarni/code/triplexator/output/benchmarks/../../triplexator/bin/triplexator -ss /home/zbarni/code/triplexator/output/benchmarks/../../data/rna/CDP_merged.fa -ds /home/zbarni/code/triplexator/output/benchmarks/../../data/dna/mm9/mm9.chr1.fa -o chr1_brute_l30_c3_e20.tpx -v -l 30 -c 3 -e 20 
+*************************************************************
+*** INPUT:
+- single-stranded file supplied : Yes
+- duplex file supplied : Yes
+-> search putative triplexes (matching triplex-forming oligonucleotides and target sites)
+*************************************************************
+*** Output Options:
+- output directory : ./
+- output file : chr1_brute_l30_c3_e20.tpx
+- output format : 0 = Triplex
+- merge features : Yes
+- report duplicate locations : No
+- error reference : 0 = Watson strand (TTS)
+*************************************************************
+*** Main Options:
+- consider forward strand in duplex : Yes
+- consider reverse strand in duplex : Yes
+- maximum error-rate : 20%
+- maximum total error : 6
+- minimum guanine content with respect to the target : 10%
+- maximum guanine content with respect to the target : 100%
+- minimum length : 30 nucleotides
+- maximum length : 30 nucleotides
+- maximum number of tolerated consecutive pyrimidine interruptions in a target: 3
+- include GT-motif : Yes
+- include GA-motif : Yes
+- include TC-motif : Yes
+- minimum guanine-percentage in anti-parallel mixed motif TFOs : 0%
+- maximum guanine-percentage in parallel mixed motif TFOs : 100%
+- number of consecutive matches required in a feature : 1
+- longest match only : yes
+- detect duplicates : 0 = off
+- same sequence duplicates : on
+*************************************************************
+*** Filtration Options :
+- filter repeats : Yes
+- minimum repeat length : 10
+- maximum repeat period : 4
+- duplicate cutoff : -1
+- filtering : none - brute force
+*************************************************************
+*** Runtime mode:
+- OpenMP support : Yes
+- runtime mode : 0 = serial
+*************************************************************
+*** Log messages:
+[05/25/16 18:31:49] * Started checking duplex file
+[05/25/16 18:31:49] * Finished checking duplex file
+[05/25/16 18:31:49] * Started reading single-stranded file:/home/zbarni/code/triplexator/output/benchmarks/../../data/rna/CDP_merged.fa
+[05/25/16 18:31:49] * Finished reading single-stranded file (311 sequences read)
+[05/25/16 18:31:49] * Started detecting triplex-forming oligonucleotides in single-stranded sequences
+[05/25/16 18:31:49] * Finished detecting TFOs within 0.264 seconds (952 TFOs detected)
+[05/25/16 18:31:49] * Started searching for triplexes
+[05/25/16 18:31:49] * Processing /home/zbarni/code/triplexator/output/benchmarks/../../data/dna/mm9/mm9.chr1.fa
+[05/25/16 20:16:56] * Finished processing /home/zbarni/code/triplexator/output/benchmarks/../../data/dna/mm9/mm9.chr1.fa
+
+[05/25/16 20:16:56] * Finished searching for triplexes  within 6307.485 seconds (summed over all cpus)
+[05/25/16 20:16:56] * Time for triplex search only (search + verify - triplex.h) 0.000 seconds (summed over all cpus)
+[05/25/16 20:16:56] * Time for ds IO reading/processing only 0.000 seconds (summed over all cpus)
+[05/25/16 20:16:56] * Time for `verifyAndStore` function in triplex.h 0.000 seconds (summed over all cpus)
+[05/25/16 20:16:56] * Time for `find` function in qgram-Finder 0.000 seconds (summed over all cpus)
+[05/25/16 20:16:56] * Time for `collectSeeds` function in gardener 0.000 seconds (summed over all cpus)
+[05/25/16 20:16:56] * Time for `collectSeeds LOOP` function in gardener 0.000 seconds (summed over all cpus)
+[05/25/16 20:16:56] * Time for `collectSeeds FreeSpace` function in gardener 0.000 seconds (summed over all cpus)
+[05/25/16 20:16:56] * Time for `collectSeeds find loop cnt` function in gardener 0 seconds (summed over all cpus)
+[05/25/16 20:16:56] * Time for `_find` function in gardener 0.000 seconds (summed over all cpus)
+[05/25/16 20:16:56] * Time for `_putSeedsInMap` function in gardener 0.000 seconds (summed over all cpus)
+
+[05/25/16 20:16:56] * Exit without errors 
+[05/25/16 20:16:56] * Finished program within 6307.811 seconds

@@ -1,0 +1,3 @@
+open ./tmp_l25_c1_e5.tpx
+Starting on duplex file genome_hg38_chr1.fa
+rename temorary file ./tmp_l25_c1_e5.tpx to ./l25_c1_e5.tpx

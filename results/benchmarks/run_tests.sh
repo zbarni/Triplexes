@@ -1,8 +1,6 @@
 #!/bin/bash
 # IMPORTANT: must be run from output/mm9 or similar
 
-l=20
-chr="_full"
 DATA_DIR="${PWD}/../../data"
 ROOT_DIR=$PWD
 EXEC_CMD="${PWD}/../../triplexator/bin/triplexator"
@@ -10,21 +8,18 @@ PALINDROM=false
 MYERS=false
 BRUTE=false
 QGRAM=false
-TRUNCATED=0
-eLow=20
+
+l=25
+eLow=5
 eHigh=20
 cLow=1
-cHigh=1
+cHigh=3
 
 while getopts ":mbqpl:c:t:" opt; do
     case ${opt} in
-        t ) TRUNCATED=$OPTARG
-        ;;
         b ) BRUTE=true
         ;;
         m ) MYERS=true
-        ;;
-        p ) PALINDROM=true
         ;;
         q ) QGRAM=true
         ;;
@@ -37,53 +32,26 @@ while getopts ":mbqpl:c:t:" opt; do
     esac
 done
 
-DNA_FILE_FULL="${DATA_DIR}/dna/mm9/mm9.fa"
-DNA_FILE="${DATA_DIR}/dna/mm9/mm9.chr${chr}.fa"
-DNA_TRUNCATED_FILE="${DATA_DIR}/dna/mm9/mm9.chr${chr}.oneline.truncated.fa"
-RNA_FILE="${DATA_DIR}/rna/CDP_merged.fa"
-RNA_TRUNCATED_FILE="${DATA_DIR}/rna/CDP_truncated.fa"
+DNA_FILE="${DATA_DIR}/dna/hg38/genome_hg38_chr1.fa"
+#RNA_FILE="${DATA_DIR}/rna/D0_D4_up/ENSG00000_1_merged.fa"
+RNA_FILE="${DATA_DIR}/rna/D0_D4_up/ENSG_merged_complete.fa"
+#OUTPUT_DIR="D0_D4_up_ENSG00000_1__hg38_chr1"
+OUTPUT_DIR="D0_D4_up_ENSG00000_complete__hg38_chr1"
 
 MYERS_TMP="${ROOT_DIR}/myers.tmp"
 BRUTE_TMP="${ROOT_DIR}/brute.tmp"
+OUTPUT_PREFIX=""
 
 for ((e=$eLow;e<=$eHigh;e+=5)); do
     for ((c=$cLow;c<=$cHigh;c+=1)); do
-
-# switch directory according to options
-        if [ "$PALINDROM" = true ]; then
-            cd ${ROOT_DIR}/palindrom
-
-            DNA=$DNA_FILE_FULL
-            #RNA=$RNA_FILE
-            MAXLENGTH="-nolimit"
-            OUTPUT="chr${chr}_palindrom_l${l}_c${c}_e${e}_ml${MAXLENGTH}"
-
-            echo "Running PALINDROM l: ${l}, c: ${c}, e: ${e}, max-length: ${MAXLENGTH}"
-            $EXEC_CMD -ss $DNA -ds $DNA -o ${OUTPUT}.tpx -v -fm 1 -fr off -l $l -c $c -e $e --bit-parallel-local &> ${OUTPUT}.dbg
-        fi
-
         if [ "$MYERS" = true ]; then
-            cd ${ROOT_DIR}/myers
-            if [[ "$TRUNCATED" = 0 ]]; then
-                DNA=$DNA_FILE
-                RNA=$RNA_FILE
-                OUTPUT="chr${chr}_myers_l${l}_c${c}_e${e}"
-            elif [[ "$TRUNCATED" = 1 ]]; then
-                DNA=$DNA_FILE
-                RNA=$RNA_TRUNCATED_FILE
-                OUTPUT="chr${chr}_myers_l${l}_c${c}_e${e}_truncated_fulldna"
-            elif [[ "$TRUNCATED" = 2 ]]; then
-                DNA=$DNA_TRUNCATED_FILE
-                RNA=$RNA_TRUNCATED_FILE
-                OUTPUT="chr${chr}_myers_l${l}_c${c}_e${e}_truncated"
-            fi
+            cd ${ROOT_DIR}/${OUTPUT_DIR}/bit_parallel/
+            OUTPUT="${OUTPUT_PREFIX}l${l}_c${c}_e${e}"
 
             echo "Running l: ${l}, c: ${c}, e: ${e}"
-            ulimit -Sv 14000000 
-            $EXEC_CMD -ss $RNA -ds $DNA -o ${OUTPUT}.tpx --bit-parallel -fm 1 -v -l $l -c $c -e $e &> ${OUTPUT}.dbg
-
-            sort ${OUTPUT}.tpx > ${MYERS_TMP} 
-            #rm ${OUTPUT}.debug
+            ulimit -Sv 25000000 
+            $EXEC_CMD -ss $RNA_FILE -ds $DNA_FILE -o ${OUTPUT}.tpx --bit-parallel -fm 1 -v -l $l -c $c -e $e &> ${OUTPUT}.dbg
+            #sort ${OUTPUT}.tpx > ${MYERS_TMP}
         fi
 
         if [ "$BRUTE" = true ]; then
